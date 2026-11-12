@@ -7,7 +7,14 @@ import 'app_text_styles.dart';
 
 /// The one app theme. Light only in Phase 1.
 abstract final class AppTheme {
-  static ThemeData light() {
+  /// The theme, built once. Some sub-themes hold `WidgetStateProperty`
+  /// closures that are not equal across builds, so a fresh `ThemeData` on
+  /// every rebuild would make `AnimatedTheme` animate for nothing.
+  static ThemeData light() => _light;
+
+  static final ThemeData _light = _build();
+
+  static ThemeData _build() {
     const ColorScheme scheme = ColorScheme.light(
       primary: AppColors.primary,
       // White on primary fails contrast (1.85:1), so text on mint is ink.
