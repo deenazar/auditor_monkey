@@ -74,7 +74,7 @@ Newest at the bottom.
   background, mint `#70D0B2` hero and cards, lime `#E4E782` and yellow
   `#FDD85C` accents, dark-green `#1E3B31` text, flat rounded cards,
   thin outline icons, curved area charts, rounded doughnuts and pill
-  bars. Full spec in the Design section of `docs/PROJECT.md`.
+  bars. Full spec in `DESIGN.md`.
 - Options considered: keep dark navy; follow the reference exactly;
   follow the reference with accessibility and feature fixes.
 - Reason: Owner's choice; the owner wants the app to match the
@@ -85,3 +85,12 @@ Newest at the bottom.
   unnamed font, and light theme only for Phase 1. Account colours
   (Axis yellow, SBI magenta, SCB green, Hand orange) kept and tuned to
   the palette.
+
+## 2026-11-12: All design tokens in one DESIGN.md
+- Decision: Keep every design token (colours, typography, spacing,
+  radius, shadows, motion, navigation) and the design assumptions in a
+  single `DESIGN.md` at the repo root. `docs/PROJECT.md` links to it.
+- Options considered: Design section inside `docs/PROJECT.md`; a
+  separate `DESIGN.md`.
+- Reason: Owner's request. One file for designers and code to follow;
+  the Flutter theme maps 1:1 to its token names.
