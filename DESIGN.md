@@ -120,6 +120,29 @@ aligned with the date or amount right aligned.
 | `radiusPill` | 999 | Chips, buttons, chart bars, progress bars |
 | `radiusCircle` | 50% | Avatars, icon circles, Quick Add button |
 
+## Component sizes
+| Token | Value | Use |
+|-------|-------|-----|
+| `accountCardHeight` | 200 | Account carousel card |
+| `accountSideTabWidth` | 40 | Card side-tab with the vertical account name |
+| `carouselPeek` | 24 | How far the next card peeks in from the right |
+| `buttonHeight` | 52 | Primary pill button |
+| `fieldHeight` | 52 | Text fields |
+| `iconCircle` | 44 | Leading circle in list rows |
+| `colourDot` | 20 | Colour dot in rows |
+| `colourSwatch` | 32 | Colour swatch in the picker (inside a 44 tap target) |
+| `statChartHeight` | 160 | Chart inside a stat tile |
+| `stepDot` | 8 | Wizard step dot; the active dot is a pill `stepDotActiveWidth` 24 wide |
+
+## Component rules
+| Component | Rule |
+|-----------|------|
+| Account card side-tab | `primaryDeep` tab, `onDark` vertical text. On PF cards the tab is `ink`, because `accountPf` equals `primaryDeep` |
+| Text field | Fill `tile`, no border, `radiusField`. Focused: 2pt `primaryDeep` line. Error: 2pt `danger` line and a `caption` message in `danger` |
+| Primary button | `primary` pill, `ink` label in `bodyStrong`, `buttonHeight`. Disabled: `divider` fill, `inkMuted` label |
+| Selectable tile | Not selected: `tile` fill. Selected: `navIndicator` fill and a `primaryDeep` check icon. No border (flat rule) |
+| Wizard step change | 24pt (`space6`) slide plus fade, `durationMedium`, `curveEnter` in and `curveExit` out. Reduce motion: fade only |
+
 ## Elevation and shadows
 | Token | Value | Use |
 |-------|-------|-----|
