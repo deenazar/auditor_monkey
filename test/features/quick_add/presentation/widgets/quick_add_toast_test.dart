@@ -3,6 +3,7 @@ import 'package:auditor_monkey/shared/theme/app_colors.dart';
 import 'package:auditor_monkey/shared/theme/app_motion.dart';
 import 'package:auditor_monkey/shared/theme/app_sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../support/widget_harness.dart';
@@ -91,5 +92,51 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.text('Undo'), findsOneWidget);
+  });
+
+  testWidgets('the saved toast is a live region; Undo is its own button', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await pumpCompact(
+      tester,
+      Builder(
+        builder: (BuildContext context) => TextButton(
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+            buildQuickAddToast(
+              message: 'Expense saved · ₹250.00',
+              onUndo: () {},
+            ),
+          ),
+          child: const Text('show'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('show'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    debugPrint(
+      tester.getSemantics(find.byType(QuickAddToastContent)).toStringDeep(),
+    );
+    // The message is announced: the SnackBar (an ancestor) is a live region.
+    final SemanticsNode message = tester.getSemantics(
+      find.bySemanticsLabel(RegExp('Expense saved')),
+    );
+    bool announced = false;
+    for (SemanticsNode? node = message; node != null; node = node.parent) {
+      if (node.flagsCollection.isLiveRegion) announced = true;
+    }
+    expect(announced, isTrue);
+
+    // Undo is a separate, labelled button that can be activated.
+    final SemanticsNode undo = tester.getSemantics(
+      find.bySemanticsLabel('Undo'),
+    );
+    expect(undo.flagsCollection.isButton, isTrue);
+    expect(undo.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    expect(undo.label, 'Undo');
+    expect(undo.label, isNot(contains('Expense')));
+    handle.dispose();
   });
 }

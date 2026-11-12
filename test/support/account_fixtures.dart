@@ -178,7 +178,7 @@ List<StatementLine> goldenLines() {
       balanceAfter: 27536050,
       categoryName: 'Groceries',
       categoryIcon: 'shopping-cart',
-      categoryColourGroup: 'food',
+      categoryColourGroup: 'essentials',
     ),
     StatementLine(
       entry: fixtureEntry(

@@ -23,34 +23,37 @@ class QuickAddToastContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final VoidCallback? undo = onUndo;
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.primaryDeep,
-        borderRadius: AppRadius.card,
-        boxShadow: AppShadows.shadowFloat,
-      ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(
-          start: AppSpacing.space4,
-          end: AppSpacing.space2,
-          top: AppSpacing.space2,
-          bottom: AppSpacing.space2,
+    return Semantics(
+      explicitChildNodes: true,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: AppColors.primaryDeep,
+          borderRadius: AppRadius.card,
+          boxShadow: AppShadows.shadowFloat,
         ),
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                message,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.body.copyWith(color: AppColors.onDark),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(
+            start: AppSpacing.space4,
+            end: AppSpacing.space2,
+            top: AppSpacing.space2,
+            bottom: AppSpacing.space2,
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  message,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body.copyWith(color: AppColors.onDark),
+                ),
               ),
-            ),
-            if (undo != null) ...<Widget>[
-              const SizedBox(width: AppSpacing.space2),
-              _UndoButton(onTap: undo),
+              if (undo != null) ...<Widget>[
+                const SizedBox(width: AppSpacing.space2),
+                _UndoButton(onTap: undo),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

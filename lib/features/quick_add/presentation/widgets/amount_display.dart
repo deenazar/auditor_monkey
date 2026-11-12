@@ -7,6 +7,7 @@ import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/rolling_amount.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 
 /// Shows the amount being typed (DESIGN.md Quick Add, Q2 to Q6).
@@ -35,6 +36,8 @@ class AmountDisplay extends StatefulWidget {
     this.isError = false,
     this.refuseTick = 0,
     this.onPaste,
+    this.paise,
+    this.rollTick = 0,
     super.key,
   });
 
@@ -55,9 +58,32 @@ class AmountDisplay extends StatefulWidget {
   /// Called with the clipboard text when the user picks "Paste".
   final ValueChanged<String>? onPaste;
 
+  /// The amount in paise (the screen's `AmountInput.paise`, null when there
+  /// is none). Needed for the roll; without it the text is drawn as typed.
+  final int? paise;
+
+  /// Increase this when a recent entry was applied: the amount then rolls
+  /// from the old value to [paise] over `durationSlow` (instant with reduce
+  /// motion). Typing never changes it, so typing stays instant.
+  final int rollTick;
+
   @override
   State<AmountDisplay> createState() => _AmountDisplayState();
 }
+
+/// Paise in one rupee, and the digits of the paise part.
+const int _paisePerRupee = 100;
+const int _paiseDigits = 2;
+
+/// Height of one caption line: the hint line always keeps this room, so a
+/// refusal hint never moves the layout below the amount.
+final double _hintLineHeight =
+    (AppTextStyles.caption.fontSize ?? 0) * (AppTextStyles.caption.height ?? 1);
+
+/// Text for an intermediate paise value while rolling (e.g. `125.37`).
+String _paiseAsText(int value) =>
+    '${value ~/ _paisePerRupee}.'
+    '${(value % _paisePerRupee).toString().padLeft(_paiseDigits, '0')}';
 
 /// Groups the integer part of raw typed text the Indian way and keeps the
 /// decimal part as typed. `1250.5` -> `1,250.5`; `12345678` ->
@@ -89,6 +115,9 @@ String _groupIndian(String digits) {
 
 class _AmountDisplayState extends State<AmountDisplay>
     with SingleTickerProviderStateMixin {
+  /// `durationSlow` for the roll that follows a recent entry, else zero.
+  Duration _rollDuration = Duration.zero;
+
   late final AnimationController _nudge = AnimationController(
     vsync: this,
     duration: AppMotion.durationMedium,
@@ -111,6 +140,9 @@ class _AmountDisplayState extends State<AmountDisplay>
   @override
   void didUpdateWidget(AmountDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _rollDuration = widget.rollTick != oldWidget.rollTick
+        ? AppMotion.durationSlow
+        : Duration.zero;
     if (widget.refuseTick != oldWidget.refuseTick) {
       // Zero duration with reduce motion: the nudge ends at once.
       _nudge.duration = AppMotion.resolve(context, AppMotion.durationMedium);
@@ -172,40 +204,17 @@ class _AmountDisplayState extends State<AmountDisplay>
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle amountStyle = AppTextStyles.displayAmount.copyWith(
-      color: _colour,
-    );
-    final TextStyle rupee = AppTextStyles.rupeeSign(amountStyle).copyWith(
-      fontFamilyFallback: DefaultTextStyle.of(context).style.fontFamilyFallback,
-    );
-
-    final Widget number = FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text.rich(
-        TextSpan(
-          children: <InlineSpan>[
-            if (widget.type == TransactionType.transfer)
-              WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.space2),
-                  child: Icon(
-                    LucideIcons.arrowLeftRight,
-                    size: AppSizes.iconInline,
-                    color: _colour,
-                  ),
-                ),
-              ),
-            if (_sign.isNotEmpty) TextSpan(text: _sign),
-            TextSpan(text: '₹', style: rupee),
-            TextSpan(text: groupTypedAmount(widget.text)),
-          ],
-        ),
-        maxLines: 1,
-        softWrap: false,
-        style: AppTextStyles.tabular(amountStyle),
-      ),
-    );
+    final int? target = widget.paise;
+    final Widget number = target == null
+        ? _number(widget.text)
+        : RollingAmount(
+            paise: target,
+            duration: _rollDuration,
+            builder: (BuildContext context, int value) => _number(
+              // The final frame is the exact typed text.
+              value == target ? widget.text : _paiseAsText(value),
+            ),
+          );
 
     return Semantics(
       liveRegion: true,
@@ -228,23 +237,70 @@ class _AmountDisplayState extends State<AmountDisplay>
               child: number,
             ),
             const SizedBox(height: AppSpacing.space2),
-            AnimatedSwitcher(
-              duration: AppMotion.resolve(context, AppMotion.durationFast),
-              child: widget.hint == null
-                  ? const SizedBox.shrink(key: ValueKey<String>('no-hint'))
-                  : Text(
-                      widget.hint!,
-                      key: ValueKey<String>('hint-${widget.hint}'),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.caption.copyWith(
-                        color: widget.isError
-                            ? AppColors.danger
-                            : AppColors.inkMuted,
-                      ),
-                    ),
+            // The hint line has a fixed height, shown or not, so a hint never
+            // moves what is below. One line, cut with an ellipsis at large
+            // text sizes.
+            SizedBox(
+              height: _hintLineHeight,
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: AppMotion.resolve(context, AppMotion.durationFast),
+                  child: widget.hint == null
+                      ? const SizedBox.shrink(key: ValueKey<String>('no-hint'))
+                      : Text(
+                          widget.hint!,
+                          key: ValueKey<String>('hint-${widget.hint}'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.caption.copyWith(
+                            color: widget.isError
+                                ? AppColors.danger
+                                : AppColors.inkMuted,
+                          ),
+                        ),
+                ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// The grouped number with the smaller ₹, shrunk to fit.
+  Widget _number(String text) {
+    final TextStyle amountStyle = AppTextStyles.displayAmount.copyWith(
+      color: _colour,
+    );
+    final TextStyle rupee = AppTextStyles.rupeeSign(amountStyle).copyWith(
+      fontFamilyFallback: DefaultTextStyle.of(context).style.fontFamilyFallback,
+    );
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text.rich(
+        TextSpan(
+          children: <InlineSpan>[
+            if (widget.type == TransactionType.transfer)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.space2),
+                  child: Icon(
+                    LucideIcons.arrowLeftRight,
+                    size: AppSizes.iconInline,
+                    color: _colour,
+                  ),
+                ),
+              ),
+            if (_sign.isNotEmpty) TextSpan(text: _sign),
+            TextSpan(text: '₹', style: rupee),
+            TextSpan(text: groupTypedAmount(text)),
+          ],
+        ),
+        maxLines: 1,
+        softWrap: false,
+        style: AppTextStyles.tabular(amountStyle),
       ),
     );
   }

@@ -47,6 +47,7 @@ Future<List<Account>> _seed(TestEnv env) async {
       date: '2026-11-10',
       accountId: accounts[0].id,
       categoryId: groceries,
+      note: 'Weekly vegetables',
     ),
     TransactionDraft(
       type: TransactionType.income,
@@ -197,7 +198,10 @@ void main() {
       env,
       'quick_add_recent_applied',
       act: (WidgetTester t) async {
-        await t.tap(recentChip('SBI → Axis'));
+        // Groceries is the third chip: scroll the strip to it first.
+        await t.ensureVisible(recentChip('Groceries'));
+        await t.pump();
+        await t.tap(recentChip('Groceries'));
         await t.pump();
       },
     );

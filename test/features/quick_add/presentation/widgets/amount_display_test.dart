@@ -1,7 +1,9 @@
 import 'package:auditor_monkey/features/quick_add/presentation/widgets/amount_display.dart';
 import 'package:auditor_monkey/features/transactions/domain/transaction_entry.dart';
 import 'package:auditor_monkey/shared/theme/app_colors.dart';
+import 'package:auditor_monkey/shared/theme/app_motion.dart';
 import 'package:auditor_monkey/shared/theme/app_spacing.dart';
+import 'package:auditor_monkey/shared/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -212,5 +214,114 @@ void main() {
     await pumpCompact(tester, _display(text: '1000000000000.99'), textScale: 2);
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel('₹10,00,00,00,00,000.99'), findsOneWidget);
+  });
+
+  group('hint line and the recent-entry roll', () {
+    /// The amount with a marker widget under it (to see what moves).
+    Future<void> pumpAmount(
+      WidgetTester tester, {
+      required String text,
+      int? paise,
+      int rollTick = 0,
+      String? hint,
+      bool reduce = false,
+    }) => tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        builder: (BuildContext context, Widget? child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: reduce),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 390,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  AmountDisplay(
+                    text: text,
+                    type: TransactionType.expense,
+                    hint: hint,
+                    paise: paise,
+                    rollTick: rollTick,
+                  ),
+                  const Text('below', key: Key('below')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    /// The plain text drawn for the amount (e.g. `₹125.00`).
+    String drawn(WidgetTester tester) => tester
+        .widget<RichText>(
+          find.byWidgetPredicate(
+            (Widget w) => w is RichText && w.text.toPlainText().startsWith('₹'),
+          ),
+        )
+        .text
+        .toPlainText();
+
+    testWidgets('a refusal hint does not move the layout below the amount', (
+      WidgetTester tester,
+    ) async {
+      await pumpAmount(tester, text: '12.34');
+      await tester.pumpAndSettle();
+      final double without = tester
+          .getTopLeft(find.byKey(const Key('below')))
+          .dy;
+
+      await pumpAmount(tester, text: '12.34', hint: 'Only 2 decimal places');
+      await tester.pumpAndSettle();
+      final double withHint = tester
+          .getTopLeft(find.byKey(const Key('below')))
+          .dy;
+      expect(withHint, without);
+      expect(find.text('Only 2 decimal places'), findsOneWidget);
+    });
+
+    testWidgets('a recent entry rolls the amount over durationSlow', (
+      WidgetTester tester,
+    ) async {
+      await pumpAmount(tester, text: '', paise: 0);
+      await tester.pumpAndSettle();
+      expect(drawn(tester), '₹0');
+
+      await pumpAmount(tester, text: '250', paise: 25000, rollTick: 1);
+      await tester.pump(); // the roll starts
+      await tester.pump(AppMotion.durationSlow ~/ 2);
+      expect(drawn(tester), isNot('₹250'));
+      await tester.pumpAndSettle();
+      expect(drawn(tester), '₹250');
+    });
+
+    testWidgets('typing never rolls: the new digits show at once', (
+      WidgetTester tester,
+    ) async {
+      await pumpAmount(tester, text: '25', paise: 2500);
+      await tester.pumpAndSettle();
+      await pumpAmount(tester, text: '250', paise: 25000);
+      await tester.pump();
+      expect(drawn(tester), '₹250');
+    });
+
+    testWidgets('reduce motion: the recent entry shows its amount at once', (
+      WidgetTester tester,
+    ) async {
+      await pumpAmount(tester, text: '', paise: 0, reduce: true);
+      await tester.pumpAndSettle();
+      await pumpAmount(
+        tester,
+        text: '250',
+        paise: 25000,
+        rollTick: 1,
+        reduce: true,
+      );
+      await tester.pump();
+      expect(drawn(tester), '₹250');
+    });
   });
 }
