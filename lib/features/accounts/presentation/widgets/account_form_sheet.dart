@@ -10,6 +10,7 @@ import '../../../../shared/widgets/money_input_formatter.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../domain/account.dart';
 import '../../domain/account_form_rules.dart';
+import 'account_colours.dart';
 import 'account_form_values.dart';
 import 'account_type_chips.dart';
 import 'colour_swatch_picker.dart';
@@ -79,7 +80,7 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
   bool _saving = false;
   AccountFormError? _serverError;
 
-  final List<String> _colourChoices = accountColourTokens.toList();
+  final List<String> _colourChoices = pickerAccountColours;
 
   @override
   void initState() {

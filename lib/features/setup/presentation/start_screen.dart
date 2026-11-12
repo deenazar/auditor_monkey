@@ -28,16 +28,13 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
-  /// Wait this long before showing the ring, so fast starts show no spinner.
-  static const Duration _ringDelay = Duration(milliseconds: 300);
-
   Timer? _ringTimer;
   bool _ringDue = false;
 
   @override
   void initState() {
     super.initState();
-    _ringTimer = Timer(_ringDelay, () {
+    _ringTimer = Timer(AppMotion.loadingIndicatorDelay, () {
       if (mounted) setState(() => _ringDue = true);
     });
   }

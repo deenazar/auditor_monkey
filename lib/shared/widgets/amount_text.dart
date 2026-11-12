@@ -23,6 +23,10 @@ enum AmountKind {
   transfer,
 }
 
+/// Screen reader text for a plain amount: "minus ₹500.00" when negative.
+String spokenPaise(int paise) =>
+    paise < 0 ? 'minus ${formatPaise(paise.abs())}' : formatPaise(paise);
+
 /// A money amount from integer paise, e.g. `₹1,23,456.00`.
 ///
 /// Digits use tabular figures. The ₹ sign is drawn smaller (see
@@ -66,7 +70,7 @@ class AmountText extends StatelessWidget {
 
   String get _sign {
     return switch (kind) {
-      AmountKind.plain => paise < 0 ? '-' : '',
+      AmountKind.plain => paise < 0 ? '−' : '',
       AmountKind.expense => '−',
       AmountKind.income => '+',
       AmountKind.transfer => '',
@@ -76,7 +80,7 @@ class AmountText extends StatelessWidget {
   String get _spokenLabel {
     final String amount = formatPaise(paise.abs());
     return switch (kind) {
-      AmountKind.plain => formatPaise(paise),
+      AmountKind.plain => spokenPaise(paise),
       AmountKind.expense => 'Expense $amount',
       AmountKind.income => 'Income $amount',
       AmountKind.transfer => 'Transfer $amount',

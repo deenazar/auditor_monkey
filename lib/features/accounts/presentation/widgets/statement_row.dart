@@ -46,8 +46,8 @@ class StatementRow extends StatelessWidget {
     final AmountKind kind = kindOf(line.entry.type);
     return Semantics(
       label:
-          '$title, ${_spoken(kind)}, $date, '
-          'balance after ${formatPaise(line.balanceAfter)}',
+          '$title, ${_spoken(kind)} ${formatPaise(line.entry.amount)}, '
+          '$date, balance after ${spokenPaise(line.balanceAfter)}',
       excludeSemantics: true,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

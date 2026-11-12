@@ -74,6 +74,11 @@ abstract final class AppSizes {
   /// Grid line in charts (hairline `divider`).
   static const double chartGridLine = 1;
 
+  /// Loading skeleton: title line (height and width) and balance card.
+  static const double skeletonTitleHeight = 32;
+  static const double skeletonTitleWidth = 180;
+  static const double skeletonCardHeight = 120;
+
   /// Outline stroke of icon circles (DESIGN.md Icons: about 1.5pt).
   static const double outlineStroke = 1.5;
 }

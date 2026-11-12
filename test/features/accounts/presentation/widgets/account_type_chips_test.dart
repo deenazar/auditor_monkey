@@ -78,4 +78,23 @@ void main() {
     );
     expect(size.height, greaterThanOrEqualTo(44));
   });
+
+  testWidgets('chips size to their label, not the full width', (
+    WidgetTester tester,
+  ) async {
+    await pumpCompact(
+      tester,
+      AccountTypeChips(selected: AccountType.bank, onChanged: (_) {}),
+    );
+    final Size cash = tester.getSize(
+      find
+          .descendant(
+            of: find.bySemanticsLabel('Cash'),
+            matching: find.byType(AnimatedContainer),
+          )
+          .first,
+    );
+    expect(cash.width, lessThan(testPhoneWidth / 2));
+    expect(cash.height, greaterThanOrEqualTo(44));
+  });
 }

@@ -108,7 +108,7 @@ void main() {
     expect(_cardMaterial(tester).color, AppColors.accountPf);
   });
 
-  testWidgets('negative balance shows a hyphen before the ₹ sign', (
+  testWidgets('negative balance shows a minus sign before the ₹', (
     WidgetTester tester,
   ) async {
     await pumpCompact(
@@ -120,7 +120,7 @@ void main() {
         balance: -50000,
       ),
     );
-    expect(_amountPlain(tester), '-₹500.00');
+    expect(_amountPlain(tester), '−₹500.00');
   });
 
   testWidgets('archived account shows ARCHIVED in the overline', (

@@ -17,6 +17,21 @@ const Map<String, Color> _colours = <String, Color>{
   'accountPf': AppColors.accountPf,
 };
 
+/// Colours offered when choosing an account colour. `sun` is left out: it is
+/// the same yellow as `accountAxis`. It stays in [_colours] so stored values
+/// still resolve.
+const List<String> pickerAccountColours = <String>[
+  'primary',
+  'lime',
+  'accountAxis',
+  'accountSbi',
+  'accountScb',
+  'accountHand',
+  'accountFoodCard',
+  'accountOutside',
+  'accountPf',
+];
+
 /// Tokens whose text must be `onDark` (DESIGN.md Accounts table). All other
 /// account colours take `ink` text.
 const Set<String> _onDarkTokens = <String>{'accountSbi', 'accountPf'};

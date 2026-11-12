@@ -19,9 +19,14 @@ class StatementLoadingView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const Center(child: SkeletonBlock(height: 32, width: 180)),
+          const Center(
+            child: SkeletonBlock(
+              height: AppSizes.skeletonTitleHeight,
+              width: AppSizes.skeletonTitleWidth,
+            ),
+          ),
           const SizedBox(height: AppSpacing.space6),
-          const SkeletonBlock(height: 120),
+          const SkeletonBlock(height: AppSizes.skeletonCardHeight),
           const SizedBox(height: AppSpacing.space5),
           const SkeletonBlock(height: AppSizes.statChartHeight),
           const SizedBox(height: AppSpacing.sectionGap),

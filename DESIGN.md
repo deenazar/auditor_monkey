@@ -54,6 +54,7 @@ must use these names and values; change them here first.
 | Expense | `ink` | `−` |
 | Income | `accentText` | `+` |
 | Transfer | `inkMuted` | none, with a ⇄ icon |
+| Balance (plain) | `ink` | `−` when negative, none when positive |
 
 ### Accounts
 | Account | Token | Hex | Text on it |
@@ -65,6 +66,8 @@ must use these names and values; change them here first.
 | Food Card (lime) | `accountFoodCard` | `#C9D86A` | `ink` |
 | Outside (sky blue) | `accountOutside` | `#6BB8E0` | `ink` |
 | PF (deep green) | `accountPf` | `#476E61` | `onDark` |
+
+The colour picker offers 9 colours. `sun` (`#FDD85C`) is the same yellow as Axis, so it is left out of the picker. It stays a valid token for stored values.
 
 ### Chart series order
 `primary`, `lime`, `sun`, then account colours in the order above.
@@ -140,6 +143,9 @@ aligned with the date or amount right aligned.
 | `progressStroke` | 2 | Loading ring stroke |
 | `fieldLineWidth` | 2 | Focus and error line on text fields |
 | `stepDot` | 8 | Wizard step dot; the active dot is a pill `stepDotActiveWidth` 24 wide |
+| `skeletonTitleHeight` | 32 | Loading skeleton: title line (height) |
+| `skeletonTitleWidth` | 180 | Loading skeleton: title line (width) |
+| `skeletonCardHeight` | 120 | Loading skeleton: balance card |
 | `chartBarWidth` | 6 | Bar width in the income-vs-expense chart (pill bars) |
 | `chartGridLine` | 1 | Chart grid line (`divider`) |
 
@@ -183,6 +189,7 @@ aligned with the date or amount right aligned.
 | `durationMedium` | 250ms | Sheets, page transitions, list insert/delete |
 | `durationSlow` | 300ms | Number roll, card carousel settle |
 | `durationChart` | 400ms | Charts drawing in and morphing |
+| `loadingIndicatorDelay` | 300ms | Start screen ring waits this long before it shows (no flash on fast starts) |
 | `curveEnter` | `Curves.easeOutCubic` | Anything appearing or moving in |
 | `curveExit` | `Curves.easeInCubic` | Anything leaving |
 | `curveSpring` | soft spring (damping ratio about 0.8) | Card carousel snap |

@@ -83,12 +83,12 @@ void main() {
     expect(find.byIcon(LucideIcons.arrowLeftRight), findsNothing);
   });
 
-  testWidgets('plain negative shows a hyphen before the ₹ sign', (
+  testWidgets('plain negative shows a minus sign (U+2212) before the ₹', (
     WidgetTester tester,
   ) async {
     await pumpThemed(tester, const AmountText(paise: -100000));
-    expect(_plain(tester), '-₹1,000.00');
-    expect(find.bySemanticsLabel('-₹1,000.00'), findsOneWidget);
+    expect(_plain(tester), '−₹1,000.00');
+    expect(find.bySemanticsLabel('minus ₹1,000.00'), findsOneWidget);
   });
 
   testWidgets('explicit colour overrides the kind colour', (

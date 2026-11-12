@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/money/money.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -27,7 +26,7 @@ class AccountListRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '$name, balance ${formatPaise(balancePaise)}',
+      label: '$name, balance ${spokenPaise(balancePaise)}',
       button: true,
       onTap: onTap,
       excludeSemantics: true,

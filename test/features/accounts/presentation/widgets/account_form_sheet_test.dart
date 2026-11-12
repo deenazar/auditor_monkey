@@ -65,6 +65,7 @@ void _tallSurface(WidgetTester tester) {
 }
 
 void main() {
+  sheetMotionTests();
   testWidgets('an empty name shows an error when Save is pressed', (
     WidgetTester tester,
   ) async {
@@ -266,5 +267,63 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+  });
+}
+
+/// Opens the sheet with the given motion setting and reports where its top
+/// edge is one frame after opening and once it has settled.
+Future<(double early, double settled)> _sheetTops(
+  WidgetTester tester, {
+  required bool reduceMotion,
+}) async {
+  await pumpScreen(
+    tester,
+    Builder(
+      builder: (BuildContext context) => Center(
+        child: TextButton(
+          onPressed: () => showAccountFormSheet(
+            context,
+            AccountFormSheet(
+              title: 'Add account',
+              submitLabel: 'Add account',
+              otherNames: const <String>[],
+              onSave: (AccountFormValues v) async => null,
+            ),
+          ),
+          child: const Text('open'),
+        ),
+      ),
+    ),
+    reduceMotion: reduceMotion,
+  );
+  _tallSurface(tester);
+  await tester.pump();
+  await tester.tap(find.text('open'));
+  await tester.pump();
+  final double early = tester.getTopLeft(find.byType(AccountFormSheet)).dy;
+  await tester.pumpAndSettle();
+  final double settled = tester.getTopLeft(find.byType(AccountFormSheet)).dy;
+  return (early, settled);
+}
+
+void sheetMotionTests() {
+  testWidgets('reduce motion: the sheet does not slide in', (
+    WidgetTester tester,
+  ) async {
+    final (double early, double settled) = await _sheetTops(
+      tester,
+      reduceMotion: true,
+    );
+    expect(early, settled);
+  });
+
+  testWidgets('without reduce motion the sheet slides in (control)', (
+    WidgetTester tester,
+  ) async {
+    final (double early, double settled) = await _sheetTops(
+      tester,
+      reduceMotion: false,
+    );
+    expect(early, greaterThan(settled));
   });
 }

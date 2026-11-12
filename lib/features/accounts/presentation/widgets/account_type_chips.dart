@@ -75,15 +75,20 @@ class _TypeChip extends StatelessWidget {
               minHeight: AppSpacing.minTapTarget,
             ),
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space5),
-            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: selected ? AppColors.primaryDeep : AppColors.tile,
               borderRadius: AppRadius.pill,
             ),
-            child: Text(
-              label,
-              style: (selected ? AppTextStyles.bodyStrong : AppTextStyles.body)
-                  .copyWith(color: selected ? AppColors.onDark : AppColors.ink),
+            child: Align(
+              widthFactor: 1,
+              child: Text(
+                label,
+                style:
+                    (selected ? AppTextStyles.bodyStrong : AppTextStyles.body)
+                        .copyWith(
+                          color: selected ? AppColors.onDark : AppColors.ink,
+                        ),
+              ),
             ),
           ),
         ),

@@ -108,6 +108,25 @@ void main() {
     );
   });
 
+  testWidgets('golden: wizard_balances_owes', (WidgetTester tester) async {
+    // The card is first so its "I owe" toggle is on screen without scrolling.
+    final List<WizardAccount> all = _balanceAccounts();
+    final WizardAccount card = all.last;
+    await pumpRupeeGolden(
+      tester,
+      const SetupWizardScreen(),
+      'wizard_balances_owes',
+      overrides: <Override>[
+        wizardStateOverride(
+          _state(
+            WizardStep.balances,
+            accounts: <WizardAccount>[card, ...all.sublist(0, all.length - 1)],
+          ),
+        ),
+      ],
+    );
+  });
+
   testWidgets('golden: wizard_review', (WidgetTester tester) async {
     await pumpRupeeGolden(
       tester,

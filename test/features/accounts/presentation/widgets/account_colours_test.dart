@@ -6,6 +6,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  pickerTests();
   final Map<String, Color> expected = <String, Color>{
     'primary': AppColors.primary,
     'lime': AppColors.lime,
@@ -54,5 +55,17 @@ void main() {
       AccountType.pf: 'PF',
       AccountType.other: 'Other',
     });
+  });
+}
+
+void pickerTests() {
+  test('the picker offers every colour except sun (same yellow as Axis)', () {
+    expect(
+      pickerAccountColours.toSet(),
+      accountColourTokens.difference(<String>{'sun'}),
+    );
+    expect(pickerAccountColours, hasLength(9));
+    // sun still resolves for values stored before it left the picker.
+    expect(accountColourFor('sun'), AppColors.sun);
   });
 }

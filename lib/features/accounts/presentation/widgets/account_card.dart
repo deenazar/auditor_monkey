@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/money/money.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
@@ -57,8 +56,8 @@ class AccountCard extends StatelessWidget {
         ? AppColors.ink
         : AppColors.primaryDeep;
     final String typeLabel = accountTypeLabel(type);
-    final String balance = formatPaise(balancePaise);
-    final String opening = formatPaise(openingPaise);
+    final String balance = spokenPaise(balancePaise);
+    final String opening = spokenPaise(openingPaise);
 
     final String overlineText = archived
         ? '${typeLabel.toUpperCase()} · ARCHIVED'
