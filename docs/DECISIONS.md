@@ -196,3 +196,160 @@ Newest at the bottom.
 - Reason: `primary` on white (about 1.85:1) failed the 3:1 icon rule.
   `ink` is 12.2:1 on white and 10.6:1 on the pill.
 - Decided by: owner.
+
+## 2026-11-12: All 8 tables built in session 2
+- Decision: Session 2 builds all 8 tables from PROJECT.md (accounts,
+  categories, transactions, budgets, loans, gold_holdings, gold_rates,
+  daily_activities) with repositories, providers and tests. No screens.
+- Options considered: all 8 now (matches PROJECT.md); only 4 now and
+  the rest by migration in Phase 2.
+- Reason: Matches the roadmap. One stable v1 schema before sync is
+  built, and `transactions.loan_id` can be a real foreign key.
+- Decided by: owner.
+
+## 2026-11-12: How data is stored on disk
+- Decision:
+  - Enums are lower case text with a CHECK rule (e.g. `expense`).
+  - Calendar dates are text `YYYY-MM-DD` (local date); months `YYYY-MM`.
+  - Timestamps are UTC epoch milliseconds (plain integers).
+  - SQL columns are snake_case.
+  - Money is integer paise only; no decimal columns; CHECK rules reject
+    non-integers.
+  - Ids are UUID v4 text made in Dart. Delete is a soft delete
+    (`deleted_at`). `sync_status` is `pending` or `synced`; every local
+    write sets `pending` and bumps `updated_at`.
+- Options considered: enums as numbers; dates as numbers or Drift
+  `DateTimeColumn`; camelCase columns.
+- Reason: Text enums are readable in Supabase and safe if enum order
+  changes. Text dates never shift a day across time zones, sort
+  correctly and map to Postgres `date`. snake_case matches Postgres, so
+  sync maps column to column. These formats are hard to change later.
+- Decided by: owner.
+
+## 2026-11-12: Default categories with fixed ids
+- Decision: 34 default categories (26 expense, 8 income) are added on
+  first launch, each with a fixed, hard-coded UUID. List in
+  `lib/core/database/seed/default_categories.dart` and DATABASE.md. It
+  includes 4 loan categories (Loan Given, Loan Repayment, Loan Received,
+  Loan Repayment Received) added by the team.
+- Options considered: random ids per install; fixed ids; owner's Excel
+  sheet list.
+- Reason: Fixed ids mean the same category on every install, so a
+  reinstall, restore or second phone does not make duplicates, and the
+  Excel import has stable targets. The owner chose the proposed list
+  over supplying the sheet list. The loan categories let loan entries
+  have a category, as the rules require.
+- Decided by: owner (list and fixed ids); team (4 loan categories).
+
+## 2026-11-12: Loans and money rules
+- Decision:
+  - `transactions.loan_id` is a real foreign key to `loans` (owner).
+  - Lent: giving money is an expense, a repayment is income. Borrowed:
+    the other way round. Outstanding = principal − repayments, in SQL.
+  - Loan entries count in account balances but are left out of
+    spending, income sums, budgets and top categories.
+  - Overpaying is allowed (outstanding goes below zero). Several
+    disbursements are allowed. The principal cannot drop below what was
+    repaid. Lent / borrowed cannot change while entries are linked. A
+    closed loan takes no new links. A loan in use cannot be deleted.
+  - Transfers can never be linked to a loan.
+- Options considered: loan_id without a foreign key; a separate
+  repayments table.
+- Reason: Loans are real money moves, so balances must include them,
+  but they are not spending or earning. Using transactions keeps one
+  balance rule.
+- Decided by: owner (foreign key); team (the other rules).
+
+## 2026-11-12: Account and category rules
+- Decision:
+  - A negative opening balance is allowed only for card accounts
+    (owner). The database allows ± the max amount; the repository
+    enforces the card rule.
+  - Archived accounts and categories still count in balances and net
+    worth and can still be used; screens decide whether to offer them.
+  - Account colour is a DESIGN.md token: `primary`, `lime`, `sun` or
+    one of the 7 `account*` tokens.
+  - A category's kind cannot change while it is in use. Deleting a
+    category also deletes its live budgets. Deleting an account,
+    category or loan that live rows use is refused.
+  - Restoring a deleted row checks all rules again.
+  - Names reject control characters; dates must be years 1900–2100.
+- Options considered: negative opening for any account; hide archived
+  rows from totals.
+- Reason: Keeps history and totals correct. Card balances can start
+  owing money. Token names survive palette changes.
+- Decided by: owner (card rule); team (the rest).
+
+## 2026-11-12: Gold value
+- Decision: Value of a holding = (weight_mg × latest live rate per gram
+  of the same purity + 500) ÷ 1000, in integer maths (rounds half up to
+  whole paise). "Latest" is the newest rate by date, future dates
+  included. No rate means no value. A holding's account is information
+  only and creates no transaction.
+- Options considered: round down; ignore future-dated rates.
+- Reason: Exact integer maths, no doubles. The largest possible value
+  (1e17) fits safely in 64 bits.
+- Decided by: team.
+
+## 2026-11-12: Encryption later, data kept
+- Decision: The database is not encrypted until session 8. It is opened
+  in one file only (`lib/core/database/connection/open_connection.dart`,
+  `NativeDatabase.createInBackground`, statement logging off). Session 8
+  converts the existing data to SQLCipher and never wipes it. Android
+  `allowBackup` is off until then.
+- Options considered: wipe data at session 8; encrypt now.
+- Reason: The owner may record real entries before session 8. One open
+  point keeps the switch small. Backup is off so an unencrypted copy
+  does not leave the phone.
+- Decided by: owner (convert, never wipe); team (allowBackup off).
+
+## 2026-11-12: Database packages and code structure
+- Decision:
+  - Packages: uuid ^4.6.0, path_provider ^2.1.6, path ^1.9.1,
+    sqlite3 ^3.9.1 (its build hook bundles SQLite 3.54.1; no
+    sqlite3_flutter_libs).
+  - DAOs in `lib/core/database/daos/`. Domain models (Account, Category,
+    TransactionEntry, Budget, Loan, GoldHolding, GoldRate,
+    DailyActivity) are separate from Drift rows, which end in `Row`.
+  - Writes use an `XDraft` plus `validateXDraft`. Errors are a sealed
+    `DataFailure`: ValidationFailure, NotFoundFailure, InUseFailure,
+    DuplicateFailure, OverflowFailure, StorageFailure.
+  - Plain Riverpod providers: `appDatabaseProvider`, one repository
+    provider per feature, and stream providers such as
+    `accountBalancesProvider`, `netWorthProvider` and
+    `budgetsForMonthProvider(month)`.
+  - Transaction list uses keyset paging, at most 500 rows per page.
+  - Sum overflow is detected and returned as `OverflowFailure`.
+  - Foreign keys are `ON DELETE RESTRICT`, checked at commit (deferred),
+    so sync batches can arrive in any order.
+  - Logs show the action and the first 8 characters of the id only;
+    never amounts, names, notes, people or SQL text.
+- Options considered: `drift_flutter`; `sqlite3_flutter_libs`; Drift
+  rows used directly in the app; OFFSET paging.
+- Reason: The bundled SQLite needs no extra plugin. A single open point
+  is easy to swap for SQLCipher. Separate models keep screens free of
+  Drift. Keyset paging stays fast with 20,000+ rows.
+- Decided by: team (senior-dev).
+
+## 2026-11-12: Schema change process and tests
+- Decision: `schemaVersion` starts at 1. Schema dumps live in
+  `drift_schemas/app/` and are never edited. Each change raises the
+  version, runs `drift_dev make-migrations` and adds a `stepByStep`
+  step plus a data test (steps start from v2; make-migrations writes no
+  steps file at v1). A guard test fails if a dump is missing. Opening a
+  newer database stops with an error and keeps the data. Timing tests
+  (20,000 rows) record numbers only and do not fail the build; query
+  plan tests check the indexes. Full steps in `docs/DATABASE.md`.
+- Options considered: hand-written migrations without dumps; timing
+  tests as hard gates.
+- Reason: Generated dumps and tests catch broken migrations before
+  they reach the owner's data. Timing gates are flaky on CI machines.
+- Decided by: team.
+
+## 2026-11-12: Open after session 2
+- Archived accounts in net worth: the data layer counts them; confirm
+  on screen in sessions 3 and 6.
+- iOS: exclude the database file from iCloud / device backup; do in
+  session 8 with encryption.
+- Category colour groups have no colours in DESIGN.md yet; decide in
+  session 4.

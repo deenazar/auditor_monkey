@@ -16,7 +16,8 @@ Details are filled in further when each feature is planned and built.
   `₹1,23,456.00` (Indian grouping; negatives `-₹…`). Debug logs off in
   release; logs mask amounts, emails, long digit runs and tokens.
   Animations drop to zero length when "reduce motion" is on.
-- **Data stored**: None. Drift is installed but has no tables.
+- **Data stored**: None. Drift was installed with no tables; the tables
+  came in session 2 (see "Data model" below).
 - **Validations**: `parseRupeesToPaise` returns null (invalid) for
   negatives, more than 2 decimals, bad grouping, non-ASCII digits and
   amounts above ₹10,00,00,00,00,000. Zero is allowed here; Quick Add must
@@ -28,6 +29,68 @@ Details are filled in further when each feature is planned and built.
 - **Status**: Done
 - **Date**: 2026-11-12
 - **PR link**: PR: https://github.com/deenazar/auditor_monkey/pull/6
+
+## Data model (roadmap session 2)
+- **What it does**: The local database that every screen will use. All
+  8 tables (accounts, categories, transactions, budgets, loans,
+  gold_holdings, gold_rates, daily_activities), with repositories and
+  Riverpod providers. Full details in [DATABASE.md](DATABASE.md).
+- **Screens**: None (data layer only).
+- **User flow**: First launch creates the database and adds 34 default
+  categories. Later launches open it without adding them again.
+- **Business rules**:
+  - Balance = opening balance + income − expense − transfers out +
+    transfers in. Only live (not deleted) rows count. Worked out in one
+    SQL query, never stored.
+  - A transfer changes two balances and leaves net worth the same. It is
+    never counted as income or expense.
+  - Loan-linked entries count in balances but are left out of spending,
+    income sums, budgets and top categories.
+  - Loans: lent = giving money is an expense, a repayment is income;
+    borrowed = the other way round. Outstanding = principal − repayments
+    (can go below zero if overpaid).
+  - Gold value = weight (mg) × latest rate per gram for that purity
+    ÷ 1000, rounded half up in whole paise.
+  - Delete is a soft delete (`deleted_at`); rows can be restored. Every
+    write marks the row `pending` for sync.
+  - Archived accounts and categories still count in balances and can
+    still be used; screens decide whether to offer them.
+- **Data stored**: All 8 tables. Money is whole paise. Ids are UUID v4.
+  Times are UTC milliseconds; dates are `YYYY-MM-DD` text. 34 default
+  categories (26 expense, 8 income) with fixed ids.
+- **Validations** (in the repository first, database CHECK rules as a
+  backup; errors come back as a typed failure, never a crash):
+  - Amount above 0 and at most ₹10,00,00,00,00,000 (1e14 paise).
+  - Transfer: different To account, no category, no loan.
+  - Expense / income: category required and of the same kind.
+  - Valid dates (years 1900–2100) and months; due date not before start.
+  - Names: required, max length, no control characters; account names
+    unique (ignoring case); category names unique per kind.
+  - One budget per category per month; one gold rate per date and purity.
+  - Note up to 200 characters (daily activity note up to 1000).
+  - Negative opening balance only for card accounts.
+  - Account colour must be a DESIGN.md token name.
+- **Edge cases**:
+  - Deleting an account, category or loan that live rows still use is
+    refused. Deleting a category also deletes its live budgets.
+  - Restore checks the rules again (for example, a name now taken).
+  - Category kind and loan direction cannot change while in use.
+  - A closed loan takes no new links; the principal cannot go below what
+    was repaid.
+  - Sum overflow returns a typed failure; 10,000 × 1 paisa sums exactly.
+  - Opening a database newer than the app stops with an error and leaves
+    the data untouched.
+- **Known gaps**:
+  - Database is not encrypted yet (session 8 will convert the existing
+    data to SQLCipher, never wipe it). Android backup is off until then.
+  - iOS: the file should be excluded from iCloud / device backup;
+    to do in session 8.
+  - Whether archived accounts count in net worth on screen: to confirm
+    in sessions 3 and 6.
+  - Category colour groups have no colours in DESIGN.md yet (session 4).
+- **Status**: Done
+- **Date**: 2026-11-12
+- **PR link**: -
 
 ## 1. Onboarding and security
 - **What it does**: Sign in, lock the app, and set up accounts on first
@@ -45,8 +108,8 @@ Details are filled in further when each feature is planned and built.
 - **Data stored**: Accounts; PIN hash and DB key in secure storage; auth
   tokens in secure storage.
 - **Validations**: Account name required and unique; opening balance a
-  valid ₹ amount (0 or more; negative allowed only for card/loan-type
-  accounts if needed); PIN 4–6 digits.
+  valid ₹ amount (0 or more; negative allowed only for card accounts);
+  PIN 4–6 digits.
 - **Edge cases**: Biometrics not available or changed; forgotten PIN;
   sign-in cancelled; no network during sign-in.
 - **Status**: Planned (roadmap sessions 3, 8, 9)
@@ -167,24 +230,29 @@ Details are filled in further when each feature is planned and built.
 
 ## 9. Loans (Phase 2)
 - **What it does**: Track money lent and borrowed, with repayments.
-- **Data stored**: Loans (table created in session 2); repayments are
-  Transactions linked by `loanId`.
-- **Status**: Planned (Phase 2)
+- **Data stored**: Loans; disbursements and repayments are Transactions
+  linked by `loan_id`. Table, repository and outstanding-amount query
+  created in session 2.
+- **Status**: Planned (Phase 2; data layer done in session 2, screens
+  later)
 - **Date**: 2026-11-12
 - **PR link**: -
 
 ## 10. Gold (Phase 2)
 - **What it does**: Track gold holdings and their value from daily
   rates.
-- **Data stored**: GoldHoldings, GoldRates (tables created in
-  session 2).
-- **Status**: Planned (Phase 2)
+- **Data stored**: GoldHoldings, GoldRates. Tables, repositories and the
+  current-value query created in session 2.
+- **Status**: Planned (Phase 2; data layer done in session 2, screens
+  later)
 - **Date**: 2026-11-12
 - **PR link**: -
 
 ## 11. Daily Activities (Phase 2)
 - **What it does**: A simple daily log.
-- **Data stored**: DailyActivities (table created in session 2).
-- **Status**: Planned (Phase 2)
+- **Data stored**: DailyActivities. Table and repository created in
+  session 2.
+- **Status**: Planned (Phase 2; data layer done in session 2, screens
+  later)
 - **Date**: 2026-11-12
 - **PR link**: -

@@ -2,13 +2,49 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-12: Session 2, data model and Drift database (PR: -)
+
+### Added
+- Drift database, schema version 1, with all 8 tables: accounts,
+  categories, transactions, budgets, loans, gold_holdings, gold_rates,
+  daily_activities. Every row has a UUID v4 id, `created_at`,
+  `updated_at`, `deleted_at` (soft delete) and `sync_status`.
+- Money stored as whole paise only; database CHECK rules block decimals,
+  zero or negative amounts, bad dates and broken transfer rules.
+- 34 default categories (26 expense, 8 income) with fixed ids, added on
+  first launch only.
+- One SQL query for all account balances; spending, budget and income
+  sums that leave out transfers and loan entries; loan outstanding
+  amount; gold current value.
+- Repositories and plain Riverpod providers for every table (for
+  example `accountBalancesProvider`, `netWorthProvider`,
+  `budgetsForMonthProvider`). Clear typed errors instead of crashes.
+- Migration setup: `build.yaml` for `drift_dev make-migrations`, v1
+  schema dump in `drift_schemas/app/`, schema check and dump guard
+  tests.
+- Unit tests on an in-memory database: CRUD, balances, transfers, soft
+  delete and restore, validation, money precision, loans, gold, query
+  plans and 20,000-row timings.
+- `docs/DATABASE.md`: tables, rules and the step-by-step guide for
+  changing the schema.
+- Packages: uuid, path_provider, path, sqlite3 (bundles SQLite).
+
+### Security
+- The database is opened in one file only
+  (`lib/core/database/connection/open_connection.dart`), ready for
+  SQLCipher in session 8.
+- SQL statement logging is off. Logs show only the action and a short id
+  prefix, never amounts, names, notes or people.
+- Android `allowBackup` is off until the database is encrypted.
+
 ## 2026-11-12: Session 1, project setup (PR: https://github.com/deenazar/auditor_monkey/pull/6)
 
 ### Added
 - Flutter app for iOS and Android (`com.deenazar.auditormonkey`),
   feature-first folders (`lib/app`, `lib/core`, `lib/features`,
   `lib/shared`).
-- Packages: flutter_riverpod, go_router, drift (no tables yet),
+- Packages: flutter_riverpod, go_router, drift (tables added in
+  session 2),
   drift_dev, build_runner, lucide_icons_flutter, flutter_lints.
 - Strict lint rules in `analysis_options.yaml`.
 - Outfit font (300 / 400 / 500 / 600) bundled as assets, with its OFL
