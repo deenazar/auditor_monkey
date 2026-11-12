@@ -220,7 +220,7 @@ Each pair passes WCAG AA for normal text (4.5:1 or better).
   Home (dashboard), Insights (charts), **Quick Add +** (centre),
   Transactions, Accounts.
 - In the reference the centre slot is the profile photo. We replace it
-  with the Quick Add button: a mint circle (56pt) with a white + icon
+  with the Quick Add button: a mint circle (56pt) with an `ink` + icon (white would fail contrast)
   and the soft float shadow. Profile and settings move to an avatar
   in the top bar of Home.
 - Screens open with a small green overline-style title and a large
