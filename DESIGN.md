@@ -61,9 +61,9 @@ must use these names and values; change them here first.
 | SBI (magenta) | `accountSbi` | `#C2457F` | `onDark` |
 | SCB (green) | `accountScb` | `#4CB58E` | `ink` |
 | Hand (orange) | `accountHand` | `#F59E5B` | `ink` |
-| Food Card (lime, pending, see A7) | `accountFoodCard` | `#C9D86A` | `ink` |
-| Outside (sky blue, pending, see A7) | `accountOutside` | `#6BB8E0` | `ink` |
-| PF (deep green, pending, see A7) | `accountPf` | `#476E61` | `onDark` |
+| Food Card (lime) | `accountFoodCard` | `#C9D86A` | `ink` |
+| Outside (sky blue) | `accountOutside` | `#6BB8E0` | `ink` |
+| PF (deep green) | `accountPf` | `#476E61` | `onDark` |
 
 ### Chart series order
 `primary`, `lime`, `sun`, then account colours in the order above.
@@ -205,8 +205,8 @@ answer.
 | A3 | White text on mint fails contrast (1.85:1) | Use `ink` text and icons on mint | Approved |
 | A4 | Only a light theme is shown | Light theme only in Phase 1; dark mode later from the same tokens | Approved |
 | A5 | Centre nav slot is a profile photo | Make it the Quick Add + button; profile moves to Home's top bar | Approved |
-| A6 | No red, amber or income colours in the reference | Added `success` `#3FA37F`, `warning` `#F2B84B`, `danger` `#C2453A`; income in `accentText` | **Pending owner answer** |
-| A7 | Only four account colours were given | Suggested Food Card `#C9D86A`, Outside `#6BB8E0`, PF `#476E61` | **Pending owner answer** |
+| A6 | No red, amber or income colours in the reference | Added `success` `#3FA37F`, `warning` `#F2B84B`, `danger` `#C2453A`; income in `accentText` | Approved |
+| A7 | Only four account colours were given | Suggested Food Card `#C9D86A`, Outside `#6BB8E0`, PF `#476E61` | Approved |
 | A8 | Transaction rows show people's photos | Use category icons on tinted circles | Approved |
-| A9 | The "42" badge and yellow strip on the card | Decoration: the strip is the next card peeking in; the badge is not used | **Pending owner answer** |
+| A9 | The "42" badge and yellow strip on the card | Decoration: the strip is the next card peeking in; the badge is ignored | Approved |
 | A10 | Sizes come from an image, not a design file | Approximate, rounded to the 4pt grid | Approved |
