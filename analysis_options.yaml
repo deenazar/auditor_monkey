@@ -10,6 +10,8 @@ analyzer:
     - android/**
     - ios/**
     - "**/*.g.dart"
+    - "**/*.steps.dart"
+    - "test/drift/**/generated/**"
 
 linter:
   rules:
