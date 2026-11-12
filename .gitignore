@@ -46,3 +46,12 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Secrets — never commit (company template)
+.env
+.env.*
+!.env.example
+*-sa.json
+*service-account*.json
+*.pem
+*.key
