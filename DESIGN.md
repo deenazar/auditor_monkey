@@ -139,6 +139,8 @@ aligned with the date or amount right aligned.
 | `progressStroke` | 2 | Loading ring stroke |
 | `fieldLineWidth` | 2 | Focus and error line on text fields |
 | `stepDot` | 8 | Wizard step dot; the active dot is a pill `stepDotActiveWidth` 24 wide |
+| `chartBarWidth` | 6 | Bar width in the income-vs-expense chart (pill bars) |
+| `chartGridLine` | 1 | Chart grid line (`divider`) |
 
 ## Component rules
 | Component | Rule |
@@ -183,6 +185,8 @@ aligned with the date or amount right aligned.
 | `curveEnter` | `Curves.easeOutCubic` | Anything appearing or moving in |
 | `curveExit` | `Curves.easeInCubic` | Anything leaving |
 | `curveSpring` | soft spring (damping ratio about 0.8) | Card carousel snap |
+| `springStiffness` | 200 | Spring of the card carousel snap (with `curveSpring`) |
+| `springDampingRatio` | 0.8 | Spring damping of the carousel snap (`curveSpring`) |
 
 Rules:
 - Smooth and subtle. Numbers roll to new values; charts draw in and
