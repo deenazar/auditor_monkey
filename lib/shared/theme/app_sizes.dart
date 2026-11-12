@@ -90,4 +90,20 @@ abstract final class AppSizes {
 
   /// Outline stroke of icon circles (DESIGN.md Icons: about 1.5pt).
   static const double outlineStroke = 1.5;
+
+  /// Longest category name in a chip before it is cut with an ellipsis.
+  static const double categoryLabelMaxWidth = 160;
+
+  /// Longest recent-entry label before it is cut with an ellipsis.
+  static const double recentLabelMaxWidth = 120;
+
+  /// Longest note preview in the note pill before it is cut.
+  static const double notePillMaxWidth = 200;
+
+  /// Inset of the sliding pill inside the segmented tab track.
+  static const double typeTabInset = 2;
+
+  /// Height of the Quick Add load-error panel inside the scrolling middle
+  /// (the centred error state needs a finite height there).
+  static const double quickAddErrorHeight = 280;
 }

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/app_motion.dart';
 import '../application/quick_add_notifier.dart';
 import '../application/quick_add_state.dart';
+import 'quick_add_body.dart';
 import 'quick_add_keys.dart';
-import 'quick_add_placeholder_body.dart';
 
 /// The Quick Add bottom sheet: frame, hardware keys and close on success.
 ///
@@ -65,8 +65,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
             handleQuickAddKey(event, ref.read(quickAddProvider.notifier)),
         child: const FractionallySizedBox(
           heightFactor: QuickAddSheet.heightFraction,
-          // Wave 2 swaps this for the final QuickAddBody.
-          child: QuickAddPlaceholderBody(),
+          child: QuickAddBody(),
         ),
       ),
     );

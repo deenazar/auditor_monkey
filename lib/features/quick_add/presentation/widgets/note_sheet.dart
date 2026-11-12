@@ -11,9 +11,6 @@ import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import 'choice_pill.dart';
 
-/// Longest note preview in the pill before it is cut (logical pixels).
-const double _pillLabelMaxWidth = 200;
-
 /// The note pill in the details row: "Add note" or the first words of the
 /// note. Taps open [NoteSheet].
 class NotePill extends StatelessWidget {
@@ -49,7 +46,7 @@ class NotePill extends StatelessWidget {
         color: AppColors.ink,
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: _pillLabelMaxWidth),
+        constraints: const BoxConstraints(maxWidth: AppSizes.notePillMaxWidth),
         child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
     );

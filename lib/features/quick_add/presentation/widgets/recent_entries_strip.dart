@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/money/money.dart';
+import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/category_colours.dart';
@@ -10,9 +11,6 @@ import '../../../../shared/widgets/category_icon.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 import 'choice_pill.dart';
 import 'quick_add_view_models.dart';
-
-/// Longest recent label before it is cut with an ellipsis (logical pixels).
-const double _labelMaxWidth = 120;
 
 /// "RECENT": one horizontal row of chips for the latest entries. Tapping a
 /// chip calls [onTap] with its index (the caller applies it). Hidden when
@@ -96,7 +94,9 @@ class RecentEntryChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _labelMaxWidth),
+            constraints: const BoxConstraints(
+              maxWidth: AppSizes.recentLabelMaxWidth,
+            ),
             child: Text(
               entry.label,
               maxLines: 1,

@@ -70,14 +70,18 @@ String groupTypedAmount(String raw) {
   return '${_groupIndian(whole.isEmpty ? '0' : whole)}$decimals';
 }
 
+/// Indian grouping: the last [_lastGroup] digits, then pairs.
+const int _lastGroup = 3;
+const int _pairGroup = 2;
+
 String _groupIndian(String digits) {
-  if (digits.length <= 3) return digits;
-  final String last3 = digits.substring(digits.length - 3);
-  String rest = digits.substring(0, digits.length - 3);
+  if (digits.length <= _lastGroup) return digits;
+  final String last3 = digits.substring(digits.length - _lastGroup);
+  String rest = digits.substring(0, digits.length - _lastGroup);
   final List<String> parts = <String>[];
-  while (rest.length > 2) {
-    parts.insert(0, rest.substring(rest.length - 2));
-    rest = rest.substring(0, rest.length - 2);
+  while (rest.length > _pairGroup) {
+    parts.insert(0, rest.substring(rest.length - _pairGroup));
+    rest = rest.substring(0, rest.length - _pairGroup);
   }
   if (rest.isNotEmpty) parts.insert(0, rest);
   return '${parts.join(',')},$last3';

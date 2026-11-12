@@ -45,9 +45,8 @@ class QuickAddFrame extends StatelessWidget {
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenPadding,
-            ),
+            // No side padding here: the middle pads its own plain rows, so
+            // the horizontal chip rows can run to the screen edge.
             child: middle,
           ),
         ),

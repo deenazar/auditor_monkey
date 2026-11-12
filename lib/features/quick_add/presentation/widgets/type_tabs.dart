@@ -47,9 +47,6 @@ class TypeTabs extends StatefulWidget {
   State<TypeTabs> createState() => _TypeTabsState();
 }
 
-/// Gap between the sliding pill and the track edge (logical pixels).
-const double _indicatorInset = 2;
-
 const List<TransactionType> _order = <TransactionType>[
   TransactionType.expense,
   TransactionType.income,
@@ -102,7 +99,7 @@ class _TypeTabsState extends State<TypeTabs> {
         widthFactor: 1 / _order.length,
         heightFactor: 1,
         child: const Padding(
-          padding: EdgeInsets.all(_indicatorInset),
+          padding: EdgeInsets.all(AppSizes.typeTabInset),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: AppColors.primaryDeep,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/category_colours.dart';
 import '../../../../shared/widgets/category_icon.dart';
 import 'choice_pill.dart';
@@ -80,9 +81,6 @@ class CategoryChip extends StatelessWidget {
   }
 }
 
-/// Longest chip label before it is cut with an ellipsis (logical pixels).
-const double _labelMaxWidth = 160;
-
 /// Chip label: one line, cut with an ellipsis past 160 pt.
 class _Label extends StatelessWidget {
   const _Label(this.text);
@@ -92,7 +90,9 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: _labelMaxWidth),
+      constraints: const BoxConstraints(
+        maxWidth: AppSizes.categoryLabelMaxWidth,
+      ),
       child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }
