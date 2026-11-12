@@ -2,7 +2,7 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-12: Session 2, data model and Drift database (PR: -)
+## 2026-11-12: Session 2, data model and Drift database (PR: https://github.com/deenazar/auditor_monkey/pull/7)
 
 ### Added
 - Drift database, schema version 1, with all 8 tables: accounts,

@@ -90,7 +90,7 @@ Details are filled in further when each feature is planned and built.
   - Category colour groups have no colours in DESIGN.md yet (session 4).
 - **Status**: Done
 - **Date**: 2026-11-12
-- **PR link**: -
+- **PR link**: PR: https://github.com/deenazar/auditor_monkey/pull/7
 
 ## 1. Onboarding and security
 - **What it does**: Sign in, lock the app, and set up accounts on first
