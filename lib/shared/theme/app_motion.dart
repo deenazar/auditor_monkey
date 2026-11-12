@@ -37,6 +37,9 @@ abstract final class AppMotion {
   static const Curve curveExit = Curves.easeInCubic;
   static final Curve curveSpring = SpringCurve();
 
+  /// How long the saved toast (with Undo) stays.
+  static const Duration toastDuration = Duration(milliseconds: 4000);
+
   /// Wait before the loading ring shows, so fast starts show no spinner.
   static const Duration loadingIndicatorDelay = Duration(milliseconds: 300);
 

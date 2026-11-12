@@ -1,6 +1,6 @@
 # Session 4 plan: Quick Add
 
-- Roadmap item 4 (Feature 2). Status: **Waiting for owner approval**.
+- Roadmap item 4 (Feature 2). Status: **Approved** (owner, 2026-11-12). Built on branch `claude/vigilant-heisenberg-2oik0f`.
 - Date: 2026-11-12. Planned by project-manager.
 - Suggested branch: `feature/20261112-quick-add` (from `develop`).
 - Done when: an entry saves offline in under 100ms and a transfer
@@ -365,9 +365,9 @@ After each save, check `accountBalancesProvider`, `netWorthProvider`,
 ### 5.4 Performance (S7; tag `perf`, runs in normal CI)
 - **Save**: in-memory DB with 20,000 rows; 20 saves through
   `QuickAddNotifier.save()` (validation + repository); print p50 / p95;
-  **gate: p50 < 100ms.**
+  **gate: fail only if p50 > 250ms; print the real p50 / p95 and record them (target 100ms).**
 - **Open data**: `quickAddDataProvider` with 20,000 rows; 10 runs;
-  print p50 / p95; **gate: p50 < 100ms** (leaves room in the 300ms open
+  print p50 / p95; **gate: fail only if p50 > 250ms; print and record the real numbers (target 100ms)** (leaves room in the 300ms open
   budget, which also covers the 250ms sheet animation running at the
   same time).
 - Query plan test: the 5 Quick Add queries use `ix_tx_date`.
@@ -463,6 +463,14 @@ Updated: `test/features/accounts/presentation/goldens/statement_data.png`
     session's "done when"; the margins are large.
 
 ## 8. Owner questions (hard to undo / money storage)
+
+**Owner answers (2026-11-12):**
+- Q1: **(a)** Hide the 4 loan categories in Quick Add for now. Do NOT
+  change how they count in totals.
+- Undo in the toast: **keep**.
+- Speed tests: **fail only above 250ms (p50)**, and print / record the
+  real numbers. Target stays 100ms.
+
 - **Q1. Loan categories in Quick Add.** The seed has 4 loan categories
   (Loan Given, Loan Repayment, Loan Received, Loan Repayment Received).
   Quick Add cannot link an entry to a loan (loan screens are Phase 2).

@@ -79,6 +79,15 @@ abstract final class AppSizes {
   static const double skeletonTitleWidth = 180;
   static const double skeletonCardHeight = 120;
 
+  /// Quick Add number pad key height (DESIGN.md Component sizes).
+  static const double numPadKeyHeight = 56;
+
+  /// Chips, pills and tab segments; equals the 44pt tap target.
+  static const double chipHeight = 44;
+
+  /// Tinted icon circle inside a chip.
+  static const double chipIconCircle = 28;
+
   /// Outline stroke of icon circles (DESIGN.md Icons: about 1.5pt).
   static const double outlineStroke = 1.5;
 }

@@ -509,7 +509,7 @@ Newest at the bottom.
 
 ## 2026-11-12: Session 4 low-risk decisions (Quick Add plan section 7)
 Part of the session 4 plan (`docs/plans/session-4-quick-add.md`),
-waiting for owner approval of the plan.
+approved by the owner on 2026-11-12.
 - Decision:
   1. "Last used" and "recent / frequent" come from SQL queries on live
      transactions. No prefs, no new table, no new package, no schema
@@ -549,8 +549,10 @@ waiting for owner approval of the plan.
       choice chips, segmented tabs, number pad keys, refused input and
       the toast (plan section 9).
   14. Quick Add speed targets (save < 100ms, open data < 100ms with
-      20,000 rows) are test gates on the median, with numbers printed.
-      Other timing tests stay "record only".
+      20,000 rows): the test prints and records the real median and p95,
+      and fails only if the median is above 250ms (owner answer, so slow
+      CI machines do not fail at random). Other timing tests stay
+      "record only".
 - Options considered: shared_preferences for last-used values; a new
   "recent" table; auto-save on recent tap; "add another" mode; offering
   archived rows; timing as record only.
@@ -558,3 +560,21 @@ waiting for owner approval of the plan.
   package. Fewer taps for the common case, no accidental entries, and
   every choice is easy to change later.
 - Decided by: team (project-manager plan).
+
+## 2026-11-12: Loan categories hidden in Quick Add
+- Decision: The 4 seeded loan categories (Loan Given, Loan Repayment,
+  Loan Received, Loan Repayment Received) are not offered in Quick Add
+  until the loan screens exist. How they count in totals does not
+  change. Lending meanwhile can be a transfer to "Outside".
+- Options considered: (a) hide; (b) show, counted as spending / income;
+  (c) show and leave loan categories out of every total.
+- Reason: Quick Add cannot link an entry to a loan, so such entries would
+  count as normal spending and need a data fix later.
+- Decided by: owner (session 4 plan Q1).
+
+## 2026-11-12: Undo in the saved toast
+- Decision: Keep Undo in the 4s saved toast (soft delete via the existing
+  repository). It is not a delete screen.
+- Reason: The only way to fix a mistake before the transactions list
+  (session 5).
+- Decided by: owner.
