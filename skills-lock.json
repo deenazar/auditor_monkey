@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "skills": {
+    "design-taste": {
+      "source": "h3nryprod01/design-taste",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "b4e39b56cd011296772862c5fd709d1c77702447398796c784920455c5509894"
+    },
+    "flutter-mobile-design": {
+      "source": "saaip7/ipdev-mobileapps-skill",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-mobile-design/SKILL.md",
+      "computedHash": "ee435cf9232a9b1df3efa631ed18426ef29695221f6ddfa55daef8cf85db25ad"
+    }
+  }
+}
