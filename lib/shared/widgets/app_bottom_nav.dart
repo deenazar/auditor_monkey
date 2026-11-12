@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_motion.dart';
+import '../theme/app_radius.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import 'quick_add_button.dart';
@@ -61,6 +62,7 @@ class AppBottomNav extends StatelessWidget {
       child: _NavSlot(
         label: label,
         icon: icon,
+        indicatorKey: ValueKey<String>('nav-indicator-${label.toLowerCase()}'),
         selected: index == currentIndex,
         onTap: () => onSelect(index),
       ),
@@ -72,10 +74,12 @@ class _NavSlot extends StatelessWidget {
   const _NavSlot({
     required this.label,
     required this.icon,
+    required this.indicatorKey,
     required this.selected,
     required this.onTap,
   });
 
+  final Key indicatorKey;
   final String label;
   final IconData icon;
   final bool selected;
@@ -83,7 +87,7 @@ class _NavSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = selected ? AppColors.primary : AppColors.iconInactive;
+    final Color color = selected ? AppColors.ink : AppColors.iconInactive;
     return Semantics(
       label: label,
       button: true,
@@ -98,12 +102,49 @@ class _NavSlot extends StatelessWidget {
           height: AppBottomNav.height,
           width: double.infinity,
           child: Center(
-            child: TweenAnimationBuilder<Color?>(
-              tween: ColorTween(end: color),
-              duration: AppMotion.resolve(context, AppMotion.durationFast),
-              curve: AppMotion.curveEnter,
-              builder: (BuildContext context, Color? value, Widget? child) =>
-                  Icon(icon, size: AppSizes.iconNav, color: value),
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                // Fades always; scales only when reduce motion is off.
+                AnimatedOpacity(
+                  opacity: selected ? 1 : 0,
+                  duration: AppMotion.durationFast,
+                  curve: AppMotion.curveEnter,
+                  child: AnimatedScale(
+                    scale: selected || AppMotion.reduceMotion(context)
+                        ? 1
+                        : AppSizes.navIndicatorStartScale,
+                    duration: AppMotion.resolve(
+                      context,
+                      AppMotion.durationFast,
+                    ),
+                    curve: AppMotion.curveEnter,
+                    child: DecoratedBox(
+                      key: indicatorKey,
+                      decoration: const BoxDecoration(
+                        color: AppColors.navIndicator,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(AppRadius.radiusPill),
+                        ),
+                      ),
+                      child: const SizedBox(
+                        width: AppSizes.navIndicatorWidth,
+                        height: AppSizes.navIndicatorHeight,
+                      ),
+                    ),
+                  ),
+                ),
+                TweenAnimationBuilder<Color?>(
+                  tween: ColorTween(end: color),
+                  duration: AppMotion.resolve(context, AppMotion.durationFast),
+                  curve: AppMotion.curveEnter,
+                  builder: (
+                    BuildContext context,
+                    Color? value,
+                    Widget? child,
+                  ) => Icon(icon, size: AppSizes.iconNav, color: value),
+                ),
+              ],
             ),
           ),
         ),

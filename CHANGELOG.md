@@ -18,6 +18,7 @@ One entry per pull request, grouped as Added / Changed / Fixed / Security.
   mode only.
 - Bottom nav: Home, Insights, Quick Add (+) centre, Transactions,
   Accounts. Placeholder screens; Quick Add opens an empty bottom sheet.
+  Active tab: `ink` icon on a soft mint pill (`navIndicator`).
 - Central logger (`AppLogger`) with levels, release-mode debug off,
   redaction of sensitive values, and app error capture.
 - Money helpers: `formatPaise` and `parseRupeesToPaise`, with tests.

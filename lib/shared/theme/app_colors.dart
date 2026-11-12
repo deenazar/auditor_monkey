@@ -22,6 +22,7 @@ abstract final class AppColors {
   static const Color ink = Color(0xFF1E3B31);
   static const Color inkMuted = Color(0xFF5F7670);
   static const Color iconInactive = Color(0xFF868E8B);
+  static const Color navIndicator = Color(0xFFDDF4EC);
   static const Color onDark = Color(0xFFFFFFFF);
 
   // Status

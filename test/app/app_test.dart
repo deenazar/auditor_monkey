@@ -1,7 +1,9 @@
 import 'package:auditor_monkey/app/app.dart';
+import 'package:auditor_monkey/shared/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 Widget _app({bool disableAnimations = false}) {
   return MediaQuery(
@@ -52,5 +54,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('New entry'), findsOneWidget);
     handle.dispose();
+  });
+
+  testWidgets('active tab icon is ink and only it shows the pill', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    double pillOpacity(String id) => tester
+        .widget<AnimatedOpacity>(
+          find.ancestor(
+            of: find.byKey(ValueKey<String>('nav-indicator-$id')),
+            matching: find.byType(AnimatedOpacity),
+          ),
+        )
+        .opacity;
+    Color? iconColor(IconData icon) =>
+        tester.widget<Icon>(find.byIcon(icon)).color;
+
+    expect(iconColor(LucideIcons.house), AppColors.ink);
+    expect(iconColor(LucideIcons.wallet), AppColors.iconInactive);
+    expect(pillOpacity('home'), 1);
+    expect(pillOpacity('accounts'), 0);
+
+    await tester.tap(find.byIcon(LucideIcons.wallet));
+    await tester.pumpAndSettle();
+
+    expect(iconColor(LucideIcons.wallet), AppColors.ink);
+    expect(iconColor(LucideIcons.house), AppColors.iconInactive);
+    expect(pillOpacity('accounts'), 1);
+    expect(pillOpacity('home'), 0);
   });
 }

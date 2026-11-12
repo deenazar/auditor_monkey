@@ -6,6 +6,13 @@ abstract final class AppSizes {
   /// Icon size in the nav bar.
   static const double iconNav = 24;
 
+  /// Active nav indicator pill (behind the icon).
+  static const double navIndicatorWidth = 56;
+  static const double navIndicatorHeight = 32;
+
+  /// Pill starts at this scale and grows to 1 when a tab becomes active.
+  static const double navIndicatorStartScale = 0.8;
+
   /// Quick Add button diameter.
   static const double quickAddSize = 56;
 

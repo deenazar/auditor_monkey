@@ -23,9 +23,8 @@ Details are filled in further when each feature is planned and built.
   reject zero later.
 - **Edge cases**: Reduce motion on; large system text; app or platform
   errors are routed to the logger.
-- **Known gaps**: Active nav icon colour (`primary` on white, about
-  1.85:1) is below the 3:1 icon rule; needs owner choice (see
-  DECISIONS.md). iOS build not verified (no macOS runner).
+- **Known gaps**: iOS build not verified (no macOS runner); owner
+  will test on a Mac before release.
 - **Status**: Done
 - **Date**: 2026-11-12
 - **PR link**: PR: https://github.com/deenazar/auditor_monkey/pull/6

@@ -183,8 +183,16 @@ Newest at the bottom.
 - Reason: Same Flutter version as cloud sessions; least privilege.
 
 ## 2026-11-12: Open / needs owner
-- Active nav icon colour: `primary` `#70D0B2` on white is about 1.85:1,
-  below DESIGN.md's own 3:1 rule for icons. Kept as specified for now.
-  Options: keep `primary`; use `ink`; use `accentText`.
-- iOS build not verified: there is no macOS runner. Options: test on a
-  Mac; add a macOS CI job (paid minutes).
+- ~~Active nav icon colour~~: closed, see the decision below.
+- iOS build not verified (still open): there is no macOS runner. Owner
+  will test on their own Mac before release. Deferred.
+
+## 2026-11-12: Active nav icon is ink on a mint pill (closed)
+- Decision: The active nav icon uses `ink` `#1E3B31`, with a soft mint
+  pill behind it (`navIndicator` `#DDF4EC`, 56x32, `radiusPill`). The
+  pill fades and scales in over `durationFast`; it only fades with
+  reduce motion on. Inactive icons stay `iconInactive`. DESIGN.md is
+  updated.
+- Reason: `primary` on white (about 1.85:1) failed the 3:1 icon rule.
+  `ink` is 12.2:1 on white and 10.6:1 on the pill.
+- Decided by: owner.
