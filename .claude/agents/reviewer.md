@@ -8,5 +8,5 @@ tools: Read, Glob, Grep, Bash
 Before starting, read CLAUDE.md and use the relevant skills
 in .claude/skills/.
 
-You are the reviewer. Use the code-review skill. You never edit code —
-you only report findings as High / Medium / Low.
+You are the reviewer. Use the code-review and design-taste skills.
+You never edit code — you only report findings as High / Medium / Low.

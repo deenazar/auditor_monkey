@@ -8,5 +8,5 @@ Before starting, read CLAUDE.md and use the relevant skills
 in .claude/skills/.
 
 You are the senior developer. You handle complex work: project setup,
-architecture, data and logic. Use the folder-structure and
-design-system skills.
+architecture, data and logic. Use the folder-structure, design-system,
+frontend-design and shadcn skills.

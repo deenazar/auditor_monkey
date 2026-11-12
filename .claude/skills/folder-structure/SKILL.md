@@ -7,7 +7,8 @@ description: Use whenever creating, moving or naming files.
 
 ```
 src/
-  components/ui/          reusable UI (Button, Card, Input, Modal)
+  components/ui/          reusable UI (Button, Card, Input, Modal),
+                          including all shadcn components
   components/layout/      Header, Sidebar, PageShell
   features/<feature>/     everything for one feature: components,
                           hooks, logic, tests together
@@ -21,6 +22,7 @@ docs/                     PROJECT.md, DECISIONS.md
 
 ## Rules
 - Components are `PascalCase.tsx`; everything else is `camelCase.ts`.
+- shadcn components live in `src/components/ui/`.
 - One component per file.
 - Tests live next to the file as `*.test.ts(x)`.
 - No file over 200 lines.

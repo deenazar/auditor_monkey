@@ -54,3 +54,5 @@ same accent.
 - Mobile-first; every screen works at 360px width.
 - WCAG AA contrast.
 - Visible focus rings in saffron.
+- shadcn components must be themed with Warm Paper tokens. Never ship
+  default shadcn look.
