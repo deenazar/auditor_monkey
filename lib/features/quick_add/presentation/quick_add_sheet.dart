@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/theme/app_motion.dart';
+import '../../../shared/theme/app_sizes.dart';
 import '../application/quick_add_notifier.dart';
 import '../application/quick_add_state.dart';
 import 'quick_add_body.dart';
@@ -13,9 +14,6 @@ import 'quick_add_keys.dart';
 /// was closed without saving. Closing drops the draft without asking.
 class QuickAddSheet extends ConsumerStatefulWidget {
   const QuickAddSheet({super.key});
-
-  /// Share of the available height the sheet uses.
-  static const double heightFraction = 0.92;
 
   /// Opens the sheet: [AppMotion.durationMedium], [AppMotion.curveEnter];
   /// closes with [AppMotion.curveExit]. Zero durations with reduce motion.
@@ -44,6 +42,9 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
   void _onStatus(SaveStatus? previous, SaveStatus next) {
     if (next != SaveStatus.done || _closing) return;
     _closing = true;
+    // Already closing (for example a swipe-down during the save): the toast
+    // comes from the shell, and a second pop would close the page below.
+    if (ModalRoute.of(context)?.isCurrent != true) return;
     Navigator.of(context).pop(ref.read(quickAddProvider).saved);
   }
 
@@ -64,7 +65,7 @@ class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
         onKeyEvent: (FocusNode node, KeyEvent event) =>
             handleQuickAddKey(event, ref.read(quickAddProvider.notifier)),
         child: const FractionallySizedBox(
-          heightFactor: QuickAddSheet.heightFraction,
+          heightFactor: AppSizes.quickAddSheetHeightFraction,
           child: QuickAddBody(),
         ),
       ),

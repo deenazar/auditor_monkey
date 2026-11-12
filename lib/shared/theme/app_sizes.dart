@@ -88,6 +88,9 @@ abstract final class AppSizes {
   /// Tinted icon circle inside a chip.
   static const double chipIconCircle = 28;
 
+  /// Share of the available height the Quick Add sheet uses.
+  static const double quickAddSheetHeightFraction = 0.92;
+
   /// Outline stroke of icon circles (DESIGN.md Icons: about 1.5pt).
   static const double outlineStroke = 1.5;
 

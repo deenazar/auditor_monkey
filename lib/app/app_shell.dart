@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/logging/app_logger.dart';
+import '../features/quick_add/application/quick_add_saved.dart';
 import '../features/quick_add/application/quick_add_state.dart';
 import '../features/quick_add/application/quick_add_undo.dart';
 import '../features/quick_add/presentation/quick_add_sheet.dart';
@@ -40,24 +41,29 @@ class AppShell extends ConsumerWidget {
     );
   }
 
-  /// Opens Quick Add. After a save the sheet returns the entry and this
-  /// shell (which stays mounted) shows the toast with Undo.
-  Future<void> _onQuickAdd(BuildContext context, WidgetRef ref) async {
+  /// Opens Quick Add. The toast comes from [quickAddSavedProvider] (see
+  /// [build]), so it shows even if the sheet closed while saving.
+  void _onQuickAdd(BuildContext context) {
     logger.info('quick_add', 'sheet opened');
-    final QuickAddUndo undo = ref.read(quickAddUndoProvider);
-    final SavedEntry? saved = await QuickAddSheet.show(context);
-    if (saved == null || !context.mounted) return;
-    showSavedToast(context, saved, undo: undo);
+    QuickAddSheet.show(context);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<SavedEntry?>(quickAddSavedProvider, (
+      SavedEntry? previous,
+      SavedEntry? saved,
+    ) {
+      if (saved == null) return;
+      showSavedToast(context, saved, undo: ref.read(quickAddUndoProvider));
+      ref.read(quickAddSavedProvider.notifier).clear();
+    });
     return Scaffold(
       body: body,
       bottomNavigationBar: AppBottomNav(
         currentIndex: navigationShell.currentIndex,
         onSelect: _onSelect,
-        onQuickAdd: () => _onQuickAdd(context, ref),
+        onQuickAdd: () => _onQuickAdd(context),
       ),
     );
   }

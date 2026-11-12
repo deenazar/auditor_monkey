@@ -105,6 +105,22 @@ void main() {
     await end(tester);
   });
 
+  testWidgets('closing the sheet mid-save still shows the toast with Undo', (
+    WidgetTester tester,
+  ) async {
+    await openSheet(tester);
+    await keys(tester, two50);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    // A swipe-down pops the route even while a save runs.
+    Navigator.of(tester.element(find.byType(QuickAddSheet))).pop();
+    await settle(tester);
+    expect(find.byType(QuickAddSheet), findsNothing);
+    expect(await env.count('transactions', liveOnly: true), 1);
+    expect(find.text('Expense saved · ₹250.00'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+    await end(tester);
+  });
+
   testWidgets('a double Enter saves exactly one entry', (
     WidgetTester tester,
   ) async {

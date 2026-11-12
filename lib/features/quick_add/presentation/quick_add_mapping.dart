@@ -2,21 +2,21 @@ import '../../accounts/domain/account.dart';
 import '../../categories/domain/category.dart';
 import '../../transactions/domain/transaction_entry.dart';
 import '../application/quick_add_data_provider.dart';
+import '../domain/category_order.dart';
+import '../domain/quick_add_validator.dart';
 import 'widgets/quick_add_view_models.dart';
 
-/// Chips shown in the category row before the list is opened (suggested
-/// categories come first). The picked category is always shown too.
-const int quickAddChipLimit = 6;
-
-/// Days after today that an entry may be dated (the validator's rule).
-const int quickAddFutureDays = 31;
+/// Chips shown in the category row before the list is opened: the suggested
+/// categories (the same limit as the ordering rule). The picked category is
+/// always shown too.
+const int quickAddChipLimit = maxSuggestedCategories;
 
 /// Earliest date the date picker offers.
 final DateTime quickAddFirstDate = DateTime(1900, 1, 1);
 
-/// The date picker's last day for [today]: today + 31.
+/// The date picker's last day for [today]: today + [maxDaysAhead].
 DateTime quickAddLastDate(DateTime today) =>
-    DateTime(today.year, today.month, today.day + quickAddFutureDays);
+    DateTime(today.year, today.month, today.day + maxDaysAhead);
 
 /// Parses a stored `YYYY-MM-DD` day (local midnight).
 DateTime dayOf(String date) => DateTime.parse(date);
@@ -30,7 +30,7 @@ CategoryChipData chipDataOf(Category c) => CategoryChipData(
 );
 
 /// Accounts for pills and pickers. Balances come from the account balance
-/// stream; an account without one shows 0.
+/// stream; an account without one has no balance (none is shown).
 List<AccountOption> accountOptionsOf(
   List<Account> accounts,
   Map<String, int> balances,
@@ -40,7 +40,7 @@ List<AccountOption> accountOptionsOf(
       id: a.id,
       name: a.name,
       colourToken: a.colour,
-      balancePaise: balances[a.id] ?? 0,
+      balancePaise: balances[a.id],
     ),
 ];
 

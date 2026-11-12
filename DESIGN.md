@@ -168,6 +168,7 @@ aligned with the date or amount right aligned.
 | `numPadKeyHeight` | 56 | Quick Add number pad key (gap `space2`) |
 | `chipHeight` | 44 | Category chips, recent chips, detail pills, tab segments (= the 44 tap target) |
 | `chipIconCircle` | 28 | Tinted icon circle inside a chip (icon `iconChip` 16) |
+| `quickAddSheetHeightFraction` | 0.92 | Share of the available height the Quick Add sheet uses |
 | `categoryLabelMaxWidth` | 160 | Longest category name in a chip before it is cut with an ellipsis |
 | `recentLabelMaxWidth` | 120 | Longest recent-entry label before it is cut with an ellipsis |
 | `notePillMaxWidth` | 200 | Longest note preview in the note pill before it is cut |

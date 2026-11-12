@@ -43,8 +43,8 @@ class AccountPill extends StatelessWidget {
     final AccountOption? a = account;
     final String spoken = a == null
         ? placeholder
-        : showBalance
-        ? '${a.name}, balance ${formatPaise(a.balancePaise)}'
+        : showBalance && a.balancePaise != null
+        ? '${a.name}, balance ${formatPaise(a.balancePaise!)}'
         : a.name;
     return Semantics(
       button: true,
@@ -94,9 +94,9 @@ class AccountPill extends StatelessWidget {
                               )
                             : AppTextStyles.bodyStrong,
                       ),
-                      if (showBalance && a != null)
+                      if (showBalance && a != null && a.balancePaise != null)
                         AmountText(
-                          paise: a.balancePaise,
+                          paise: a.balancePaise!,
                           style: AppTextStyles.caption,
                         ),
                     ],

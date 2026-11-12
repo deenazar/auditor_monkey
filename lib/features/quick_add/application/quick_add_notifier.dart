@@ -37,12 +37,14 @@ import '../../../core/utils/date_keys.dart';
 import '../../../core/utils/validation_failure.dart';
 import '../../../core/utils/validators.dart';
 import '../../transactions/application/transactions_providers.dart';
+import '../../transactions/data/transactions_repository.dart';
 import '../../transactions/domain/transaction_entry.dart';
 import '../domain/amount_input.dart';
 import '../domain/quick_add_defaults.dart';
 import '../domain/quick_add_validator.dart';
 import 'quick_add_data_provider.dart';
 import 'quick_add_resolve.dart';
+import 'quick_add_saved.dart';
 import 'quick_add_state.dart';
 
 const String _tag = 'quick_add';
@@ -264,26 +266,38 @@ class QuickAddNotifier extends Notifier<QuickAddState> {
       return;
     }
     state = state.copyWith(status: SaveStatus.saving, clearError: true);
-    _log.info(_tag, 'save started type=${type.name}');
+    // Read before the await: the sheet may close (and this notifier be
+    // disposed) while the save runs.
+    final AppLogger log = _log;
+    final QuickAddSavedNotifier announce = ref.read(
+      quickAddSavedProvider.notifier,
+    );
+    final TransactionsRepository repository = ref.read(
+      transactionsRepositoryProvider,
+    );
+    log.info(_tag, 'save started type=${type.name}');
     final Stopwatch watch = Stopwatch()..start();
     try {
-      final TransactionEntry saved = await ref
-          .read(transactionsRepositoryProvider)
-          .create(buildQuickAddDraft(form));
-      _log.info(
+      final TransactionEntry saved = await repository.create(
+        buildQuickAddDraft(form),
+      );
+      log.info(
         _tag,
         'save done type=${type.name} ms=${watch.elapsedMilliseconds}',
       );
-      if (!ref.mounted) return;
-      state = state.copyWith(
-        status: SaveStatus.done,
-        saved: SavedEntry(id: saved.id, type: type, amount: saved.amount),
+      final SavedEntry entry = SavedEntry(
+        id: saved.id,
+        type: type,
+        amount: saved.amount,
       );
+      announce.announce(entry); // the shell shows the toast
+      if (!ref.mounted) return;
+      state = state.copyWith(status: SaveStatus.done, saved: entry);
     } on DataFailure catch (failure) {
-      _log.warning(_tag, 'save failed: ${failure.code.name}');
+      log.warning(_tag, 'save failed: ${failure.code.name}');
       _fail(failure.message);
     } on Object {
-      _log.warning(_tag, 'save failed: unknown');
+      log.warning(_tag, 'save failed: unknown');
       _fail(_genericSaveError);
     }
   }

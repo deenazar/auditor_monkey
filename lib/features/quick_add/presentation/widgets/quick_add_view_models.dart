@@ -22,20 +22,21 @@ class CategoryChipData {
 }
 
 /// One account in a pill or a picker. [colourToken] is the stored token
-/// (for example `accountSbi`). [balancePaise] is integer paise.
+/// (for example `accountSbi`). [balancePaise] is integer paise, or null
+/// while the balance is not known yet (then no balance is shown).
 @immutable
 class AccountOption {
   const AccountOption({
     required this.id,
     required this.name,
     required this.colourToken,
-    required this.balancePaise,
+    this.balancePaise,
   });
 
   final String id;
   final String name;
   final String colourToken;
-  final int balancePaise;
+  final int? balancePaise;
 }
 
 /// One recent entry shown as a chip. [label] is the category or account

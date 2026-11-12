@@ -135,6 +135,23 @@ void main() {
     });
   });
 
+  group('unknown balance', () {
+    const AccountOption unknown = AccountOption(
+      id: 'u',
+      name: 'Loading',
+      colourToken: 'accountPf',
+    );
+
+    testWidgets('the pill shows no balance text', (WidgetTester tester) async {
+      await pumpCompact(
+        tester,
+        AccountPill(account: unknown, onTap: () {}, showBalance: true),
+      );
+      expect(find.text('Loading'), findsOneWidget);
+      expect(find.textContaining('₹'), findsNothing);
+    });
+  });
+
   group('AccountPickerSheet', () {
     testWidgets('rows show name, balance and a check on the selected one', (
       WidgetTester tester,

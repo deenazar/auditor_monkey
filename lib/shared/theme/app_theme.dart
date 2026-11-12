@@ -90,7 +90,8 @@ abstract final class AppTheme {
     actionTextColor: AppColors.onDark,
     disabledActionTextColor: AppColors.navIndicator,
     shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
-    elevation: 8,
+    // Flat: the toast content draws `shadowFloat` itself.
+    elevation: 0,
     insetPadding: const EdgeInsets.all(AppSpacing.space6),
     showCloseIcon: false,
   );
@@ -103,8 +104,9 @@ abstract final class AppTheme {
     return DatePickerThemeData(
       backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
-      shadowColor: AppColors.shadowInk,
-      elevation: 16,
+      // Flat: Material's elevation shadow is not `shadowFloat`; the scrim
+      // separates the dialog from the page.
+      elevation: 0,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
       headerBackgroundColor: AppColors.background,
       headerForegroundColor: AppColors.ink,

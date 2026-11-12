@@ -125,7 +125,9 @@ class _AccountRow extends StatelessWidget {
       button: true,
       selected: selected,
       enabled: !disabled,
-      label: '${account.name}, balance ${formatPaise(account.balancePaise)}',
+      label: account.balancePaise == null
+          ? account.name
+          : '${account.name}, balance ${formatPaise(account.balancePaise!)}',
       excludeSemantics: true,
       onTap: disabled ? null : onTap,
       child: GestureDetector(
@@ -166,10 +168,11 @@ class _AccountRow extends StatelessWidget {
                         color: nameColour,
                       ),
                     ),
-                    AmountText(
-                      paise: account.balancePaise,
-                      style: AppTextStyles.caption,
-                    ),
+                    if (account.balancePaise != null)
+                      AmountText(
+                        paise: account.balancePaise!,
+                        style: AppTextStyles.caption,
+                      ),
                   ],
                 ),
               ),
