@@ -67,4 +67,10 @@ abstract final class AppSizes {
   /// Wizard step dot, and the width of the active (pill) dot.
   static const double stepDot = 8;
   static const double stepDotActiveWidth = 24;
+
+  /// Bar width in the income-vs-expense chart (pill bars, DESIGN "Charts").
+  static const double chartBarWidth = 6;
+
+  /// Grid line in charts (hairline `divider`).
+  static const double chartGridLine = 1;
 }

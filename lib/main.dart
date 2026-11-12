@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'core/logging/app_logger.dart';
+import 'core/utils/no_retry.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,5 +34,5 @@ void main() {
   });
 
   logger.info('app', 'app started');
-  runApp(const ProviderScope(child: AuditorMonkeyApp()));
+  runApp(const ProviderScope(retry: noRetry, child: AuditorMonkeyApp()));
 }
