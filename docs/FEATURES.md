@@ -28,7 +28,7 @@ Details are filled in further when each feature is planned and built.
   DECISIONS.md). iOS build not verified (no macOS runner).
 - **Status**: Done
 - **Date**: 2026-11-12
-- **PR link**: PR: pending
+- **PR link**: PR: https://github.com/deenazar/auditor_monkey/pull/6
 
 ## 1. Onboarding and security
 - **What it does**: Sign in, lock the app, and set up accounts on first

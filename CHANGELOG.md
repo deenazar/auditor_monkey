@@ -2,7 +2,7 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-12: Session 1, project setup (PR: pending)
+## 2026-11-12: Session 1, project setup (PR: https://github.com/deenazar/auditor_monkey/pull/6)
 
 ### Added
 - Flutter app for iOS and Android (`com.deenazar.auditormonkey`),
