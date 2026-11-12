@@ -506,3 +506,55 @@ Newest at the bottom.
   delete UI exists.
 - Archived accounts in net worth: done on the Accounts screen; confirm
   on the dashboard in session 6.
+
+## 2026-11-12: Session 4 low-risk decisions (Quick Add plan section 7)
+Part of the session 4 plan (`docs/plans/session-4-quick-add.md`),
+waiting for owner approval of the plan.
+- Decision:
+  1. "Last used" and "recent / frequent" come from SQL queries on live
+     transactions. No prefs, no new table, no new package, no schema
+     change.
+  2. Quick Add queries look at entries dated in the last 90 days
+     (future dates included), ordered by entry time (`created_at`).
+     Loan-linked entries are left out.
+  3. Archived accounts and categories are not offered in Quick Add.
+  4. The sheet always opens on Expense. Amount, date and note are shared
+     by the tabs; account and category picks are kept per tab.
+  5. Defaults: last-used account / category per type, with fallbacks to
+     the first account or category. Transfer needs 2 offered accounts;
+     otherwise the tab is disabled with a hint.
+  6. Categories: up to 6 suggested (last used, then most used), then
+     the rest in sort order, in one scrolling row plus an "All" sheet
+     grouped by colour group.
+  7. Recent strip: up to 6 distinct recent entries of all types. A tap
+     fills the form (keeps the form's date) and does not save by itself.
+  8. The number pad is always on screen. Input that would need rounding
+     (more than 2 decimals, above the max) is refused with a hint, never
+     rounded. Paste by long press on the amount.
+  9. Quick Add date rule: up to 31 days after today; "Today" and
+     "Yesterday" chips plus a date picker. The repository keeps the
+     1900-2100 rule.
+  10. After save the sheet closes and a toast shows for 4s with Undo
+      (soft delete via the existing repository). No "add another" mode.
+      Closing the sheet drops the draft without asking.
+  11. Today's date is read from the clock on each open.
+  12. Category colour groups use existing tokens at 20% tint:
+      essentials `accountScb`, food `accountHand`, transport
+      `accountOutside`, home `sun`, lifestyle `accountSbi`, health
+      `primaryLight`, family `lime`, finance `accountPf`, other
+      `iconInactive`, income `primary`. Statement rows use the group
+      tint (closes the session 2 / 3 open item).
+  13. DESIGN.md additions: `numPadKeyHeight` 56, `chipHeight` 44,
+      `chipIconCircle` 28, motion `toastDuration` 4000ms; rules for
+      choice chips, segmented tabs, number pad keys, refused input and
+      the toast (plan section 9).
+  14. Quick Add speed targets (save < 100ms, open data < 100ms with
+      20,000 rows) are test gates on the median, with numbers printed.
+      Other timing tests stay "record only".
+- Options considered: shared_preferences for last-used values; a new
+  "recent" table; auto-save on recent tap; "add another" mode; offering
+  archived rows; timing as record only.
+- Reason: Derived values cannot go out of sync and need no migration or
+  package. Fewer taps for the common case, no accidental entries, and
+  every choice is easy to change later.
+- Decided by: team (project-manager plan).
