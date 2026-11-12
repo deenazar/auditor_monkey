@@ -5139,6 +5139,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'ix_loans_pending',
     'CREATE INDEX ix_loans_pending ON loans (sync_status) WHERE sync_status = \'pending\'',
   );
+  late final Index ixGoldHoldingsAccount = Index(
+    'ix_gold_holdings_account',
+    'CREATE INDEX ix_gold_holdings_account ON gold_holdings (account_id)',
+  );
   late final Index ixGoldHoldingsPending = Index(
     'ix_gold_holdings_pending',
     'CREATE INDEX ix_gold_holdings_pending ON gold_holdings (sync_status) WHERE sync_status = \'pending\'',
@@ -5196,6 +5200,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     uxBudgetsCategoryMonth,
     ixBudgetsPending,
     ixLoansPending,
+    ixGoldHoldingsAccount,
     ixGoldHoldingsPending,
     uxGoldRatesDatePurity,
     ixGoldRatesPending,

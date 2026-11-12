@@ -81,7 +81,9 @@ class AppDatabase extends _$AppDatabase {
         throw StateError('Database is newer than this app version.');
       }
       _logger.info(_tag, 'migrating database v$from -> v$to');
-      // Step-by-step migrations go here. See docs/DATABASE.md.
+      // TODO(schema v2): use the generated `stepByStep(...)` from
+      // app_database.steps.dart here. Follow "Change the schema" in
+      // docs/DATABASE.md. A test fails if a schema dump is missing.
     },
     beforeOpen: (OpeningDetails details) async {
       // Foreign keys are off by default in SQLite. Must be set outside a

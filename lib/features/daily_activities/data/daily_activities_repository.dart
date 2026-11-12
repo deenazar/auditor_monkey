@@ -73,16 +73,20 @@ class DailyActivitiesRepository {
       }, idOf: (_) => id);
 
   Future<void> softDelete(String id) => _ctx.run(_tag, 'softDelete', () async {
-    if (await _dao.findById(id) == null) throw const NotFoundFailure();
-    await _dao.softDelete(id, _ctx.clock.nowMs());
+    await _ctx.db.transaction(() async {
+      if (await _dao.findById(id) == null) throw const NotFoundFailure();
+      await _dao.softDelete(id, _ctx.clock.nowMs());
+    });
   }, idOf: (_) => id);
 
   Future<DailyActivity> restore(String id) =>
       _ctx.run(_tag, 'restore', () async {
-        if (await _dao.findById(id, includeDeleted: true) == null) {
-          throw const NotFoundFailure();
-        }
-        await _dao.restore(id, _ctx.clock.nowMs());
+        await _ctx.db.transaction(() async {
+          if (await _dao.findById(id, includeDeleted: true) == null) {
+            throw const NotFoundFailure();
+          }
+          await _dao.restore(id, _ctx.clock.nowMs());
+        });
         return (await _dao.findById(id))!.toDomain();
       }, idOf: (_) => id);
 

@@ -109,12 +109,14 @@ class AccountsRepository {
     _tag,
     'restore',
     () async {
-      final AccountRow? existing = await _dao.findById(
-        id,
-        includeDeleted: true,
-      );
-      if (existing == null) throw const NotFoundFailure();
-      await _dao.restore(id, _ctx.clock.nowMs());
+      await _ctx.db.transaction(() async {
+        final AccountRow? existing = await _dao.findById(
+          id,
+          includeDeleted: true,
+        );
+        if (existing == null) throw const NotFoundFailure();
+        await _dao.restore(id, _ctx.clock.nowMs());
+      });
       return (await _dao.findById(id))!.toDomain();
     },
     idOf: (_) => id,

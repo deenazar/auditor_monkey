@@ -103,8 +103,10 @@ class GoldRepository {
 
   Future<void> softDeleteHolding(String id) =>
       _ctx.run(_tag, 'softDeleteHolding', () async {
-        if (await _dao.findHolding(id) == null) throw const NotFoundFailure();
-        await _dao.softDeleteHolding(id, _ctx.clock.nowMs());
+        await _ctx.db.transaction(() async {
+          if (await _dao.findHolding(id) == null) throw const NotFoundFailure();
+          await _dao.softDeleteHolding(id, _ctx.clock.nowMs());
+        });
       }, idOf: (_) => id);
 
   Future<GoldHolding> restoreHolding(String id) =>
@@ -206,18 +208,22 @@ class GoldRepository {
 
   Future<void> softDeleteRate(String id) =>
       _ctx.run(_tag, 'softDeleteRate', () async {
-        if (await _dao.findRate(id) == null) throw const NotFoundFailure();
-        await _dao.softDeleteRate(id, _ctx.clock.nowMs());
+        await _ctx.db.transaction(() async {
+          if (await _dao.findRate(id) == null) throw const NotFoundFailure();
+          await _dao.softDeleteRate(id, _ctx.clock.nowMs());
+        });
       }, idOf: (_) => id);
 
   Future<GoldRate> restoreRate(String id) => _ctx.run(
     _tag,
     'restoreRate',
     () async {
-      if (await _dao.findRate(id, includeDeleted: true) == null) {
-        throw const NotFoundFailure();
-      }
-      await _dao.restoreRate(id, _ctx.clock.nowMs());
+      await _ctx.db.transaction(() async {
+        if (await _dao.findRate(id, includeDeleted: true) == null) {
+          throw const NotFoundFailure();
+        }
+        await _dao.restoreRate(id, _ctx.clock.nowMs());
+      });
       return (await _dao.findRate(id))!.toDomain();
     },
     idOf: (_) => id,

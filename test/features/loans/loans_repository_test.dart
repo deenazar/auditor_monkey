@@ -237,6 +237,133 @@ void main() {
       },
     );
 
+    test('direction cannot change while live entries are linked', () async {
+      final Loan l = await env.loans.create(loanDraft());
+      LoanDraft flipped() => loanDraft(direction: LoanDirection.borrowed);
+      // No entries yet: allowed.
+      expect(
+        (await env.loans.update(l.id, flipped())).direction,
+        LoanDirection.borrowed,
+      );
+      final String cat = await env.seededCategoryId('Loan Received', 'income');
+      final t = await env.transactions.create(
+        incomeDraft(accountId: a.id, categoryId: cat, loanId: l.id),
+      );
+      await expectLater(
+        env.loans.update(l.id, loanDraft()),
+        throwsA(isA<InUseFailure>()),
+      );
+      // Same direction is fine, and so is a flip once entries are deleted.
+      await env.loans.update(l.id, flipped());
+      await env.transactions.softDelete(t.id);
+      await env.loans.update(l.id, loanDraft());
+    });
+
+    test('principal cannot go below what was repaid', () async {
+      final Loan l = await env.loans.create(loanDraft(principal: 100000));
+      final String back = await env.seededCategoryId(
+        'Loan Repayment Received',
+        'income',
+      );
+      await env.transactions.create(
+        incomeDraft(
+          accountId: a.id,
+          categoryId: back,
+          amount: 60000,
+          loanId: l.id,
+        ),
+      );
+      await expectLater(
+        env.loans.update(l.id, loanDraft(principal: 59999)),
+        throwsA(
+          isA<ValidationFailure>().having(
+            (ValidationFailure f) => f.field,
+            'field',
+            'principal',
+          ),
+        ),
+      );
+      expect(
+        (await env.loans.update(l.id, loanDraft(principal: 60000))).principal,
+        60000,
+      );
+      expect(await outstandingOf(l.id), 0);
+    });
+
+    test('new repayments may overpay: outstanding goes negative', () async {
+      final Loan l = await env.loans.create(loanDraft(principal: 1000));
+      final String back = await env.seededCategoryId(
+        'Loan Repayment Received',
+        'income',
+      );
+      await env.transactions.create(
+        incomeDraft(
+          accountId: a.id,
+          categoryId: back,
+          amount: 1200,
+          loanId: l.id,
+        ),
+      );
+      expect(await outstandingOf(l.id), -200);
+    });
+
+    test('a closed loan accepts no new entries, but keeps old ones', () async {
+      final Loan l = await env.loans.create(loanDraft());
+      final String given = await env.seededCategoryId('Loan Given', 'expense');
+      final t = await env.transactions.create(
+        expenseDraft(accountId: a.id, categoryId: given, loanId: l.id),
+      );
+      final t2 = await env.transactions.create(
+        expenseDraft(accountId: a.id, categoryId: given),
+      );
+      await env.loans.update(l.id, loanDraft().copyClosed());
+
+      // Create with a closed loan: refused.
+      await expectLater(
+        env.transactions.create(
+          expenseDraft(accountId: a.id, categoryId: given, loanId: l.id),
+        ),
+        throwsA(isA<ValidationFailure>()),
+      );
+      // Setting the link on another entry: refused.
+      await expectLater(
+        env.transactions.update(
+          t2.id,
+          expenseDraft(accountId: a.id, categoryId: given, loanId: l.id),
+        ),
+        throwsA(isA<ValidationFailure>()),
+      );
+      // Editing an entry that already has the link: allowed.
+      await env.transactions.update(
+        t.id,
+        expenseDraft(
+          accountId: a.id,
+          categoryId: given,
+          loanId: l.id,
+          amount: 5,
+        ),
+      );
+      // Restore of a linked entry while closed: refused. Reopen, then fine.
+      await env.transactions.softDelete(t.id);
+      await expectLater(
+        env.transactions.restore(t.id),
+        throwsA(isA<ValidationFailure>()),
+      );
+      await env.loans.update(l.id, loanDraft());
+      await env.transactions.restore(t.id);
+    });
+
+    test('several disbursements on one loan are allowed', () async {
+      final Loan l = await env.loans.create(loanDraft());
+      final String given = await env.seededCategoryId('Loan Given', 'expense');
+      for (int i = 0; i < 3; i++) {
+        await env.transactions.create(
+          expenseDraft(accountId: a.id, categoryId: given, loanId: l.id),
+        );
+      }
+      expect(await env.count('transactions'), 3);
+    });
+
     test('missing loan is a NotFoundFailure', () async {
       await expectLater(
         env.loans.softDelete('x'),
@@ -244,4 +371,14 @@ void main() {
       );
     });
   });
+}
+
+extension on LoanDraft {
+  LoanDraft copyClosed() => LoanDraft(
+    direction: direction,
+    person: person,
+    principal: principal,
+    startDate: startDate,
+    closed: true,
+  );
 }

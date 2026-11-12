@@ -1230,6 +1230,20 @@
       "type": "index",
       "data": {
         "on": 5,
+        "name": "ix_gold_holdings_account",
+        "sql": "CREATE INDEX ix_gold_holdings_account ON gold_holdings (account_id)",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 22,
+      "references": [
+        5
+      ],
+      "type": "index",
+      "data": {
+        "on": 5,
         "name": "ix_gold_holdings_pending",
         "sql": "CREATE INDEX ix_gold_holdings_pending ON gold_holdings (sync_status) WHERE sync_status = 'pending'",
         "unique": false,
@@ -1237,7 +1251,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 23,
       "references": [
         6
       ],
@@ -1251,7 +1265,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 24,
       "references": [
         6
       ],
@@ -1265,7 +1279,7 @@
       }
     },
     {
-      "id": 24,
+      "id": 25,
       "references": [
         7
       ],
@@ -1279,7 +1293,7 @@
       }
     },
     {
-      "id": 25,
+      "id": 26,
       "references": [
         7
       ],
@@ -1480,6 +1494,15 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX ix_loans_pending ON loans (sync_status) WHERE sync_status = 'pending'"
+        }
+      ]
+    },
+    {
+      "name": "ix_gold_holdings_account",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX ix_gold_holdings_account ON gold_holdings (account_id)"
         }
       ]
     },

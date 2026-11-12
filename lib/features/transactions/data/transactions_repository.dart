@@ -78,7 +78,8 @@ class TransactionsRepository {
         await _ctx.db.transaction(() async {
           final TransactionRow? existing = await _dao.findById(id);
           if (existing == null) throw const NotFoundFailure();
-          await _checkReferences(d);
+          // Keeping the same (closed) loan is fine; a new link is not.
+          await _checkReferences(d, keepLoanId: existing.loanId);
           await _dao.updateRow(
             id,
             TransactionsCompanion(
@@ -102,8 +103,10 @@ class TransactionsRepository {
       }, idOf: (_) => id);
 
   Future<void> softDelete(String id) => _ctx.run(_tag, 'softDelete', () async {
-    if (await _dao.findById(id) == null) throw const NotFoundFailure();
-    await _dao.softDelete(id, _ctx.clock.nowMs());
+    await _ctx.db.transaction(() async {
+      if (await _dao.findById(id) == null) throw const NotFoundFailure();
+      await _dao.softDelete(id, _ctx.clock.nowMs());
+    });
   }, idOf: (_) => id);
 
   /// Restores a deleted entry, if everything it points to is still live.
@@ -242,7 +245,13 @@ class TransactionsRepository {
 
   /// Everything the entry points to must exist and be live, and the
   /// category kind must match the type.
-  Future<void> _checkReferences(TransactionDraft d) async {
+  ///
+  /// A loan link needs an open loan, unless it is the loan the entry
+  /// already had ([keepLoanId]).
+  Future<void> _checkReferences(
+    TransactionDraft d, {
+    String? keepLoanId,
+  }) async {
     await _requireAccount('accountId', d.accountId);
     if (d.toAccountId != null) {
       await _requireAccount('toAccountId', d.toAccountId!);
@@ -268,12 +277,22 @@ class TransactionsRepository {
       }
     }
     final String? loanId = d.loanId;
-    if (loanId != null && await _ctx.db.loansDao.findById(loanId) == null) {
-      throw const ValidationFailure(
-        'loanId',
-        FailureCode.referenceMissing,
-        'That loan is not available.',
-      );
+    if (loanId != null) {
+      final LoanRow? loan = await _ctx.db.loansDao.findById(loanId);
+      if (loan == null) {
+        throw const ValidationFailure(
+          'loanId',
+          FailureCode.referenceMissing,
+          'That loan is not available.',
+        );
+      }
+      if (loan.closed && loanId != keepLoanId) {
+        throw const ValidationFailure(
+          'loanId',
+          FailureCode.rule,
+          'That loan is closed. Reopen it to add entries.',
+        );
+      }
     }
   }
 

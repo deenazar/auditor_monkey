@@ -86,10 +86,12 @@ class BudgetsRepository {
   );
 
   Future<void> softDelete(String id) => _ctx.run(_tag, 'softDelete', () async {
-    if (await _ctx.db.budgetsDao.findById(id) == null) {
-      throw const NotFoundFailure();
-    }
-    await _ctx.db.budgetsDao.softDelete(id, _ctx.clock.nowMs());
+    await _ctx.db.transaction(() async {
+      if (await _ctx.db.budgetsDao.findById(id) == null) {
+        throw const NotFoundFailure();
+      }
+      await _ctx.db.budgetsDao.softDelete(id, _ctx.clock.nowMs());
+    });
   }, idOf: (_) => id);
 
   /// Restores a budget. Refused when its category is deleted, or when the

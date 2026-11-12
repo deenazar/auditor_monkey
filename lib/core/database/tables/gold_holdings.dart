@@ -6,6 +6,9 @@ import 'sync_columns.dart';
 
 @DataClassName('GoldHoldingRow')
 @TableIndex.sql(
+  'CREATE INDEX ix_gold_holdings_account ON gold_holdings (account_id)',
+)
+@TableIndex.sql(
   'CREATE INDEX ix_gold_holdings_pending ON gold_holdings (sync_status) '
   "WHERE sync_status = 'pending'",
 )

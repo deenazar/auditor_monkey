@@ -119,11 +119,13 @@ class CategoriesRepository {
     _tag,
     'restore',
     () async {
-      if (await _ctx.db.categoriesDao.findById(id, includeDeleted: true) ==
-          null) {
-        throw const NotFoundFailure();
-      }
-      await _ctx.db.categoriesDao.restore(id, _ctx.clock.nowMs());
+      await _ctx.db.transaction(() async {
+        if (await _ctx.db.categoriesDao.findById(id, includeDeleted: true) ==
+            null) {
+          throw const NotFoundFailure();
+        }
+        await _ctx.db.categoriesDao.restore(id, _ctx.clock.nowMs());
+      });
       return (await _ctx.db.categoriesDao.findById(id))!.toDomain();
     },
     idOf: (_) => id,

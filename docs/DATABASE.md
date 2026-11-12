@@ -41,6 +41,9 @@ cloud copy comes later (session 9). Code lives in `lib/core/database/`.
 | `gold_rates` | Price per gram per day | one live rate per date and purity. Rate above 0, at most Rs 1 crore per gram. |
 | `daily_activities` | Simple daily log | title 1-80, note up to 1000. |
 
+Archived accounts and categories can still be used in new entries and
+still count in balances; the screens decide whether to offer them.
+
 Deleting an account, category or loan that live rows still use is refused.
 Deleting a category also deletes its live budgets. Restoring a row checks
 the same rules again (for example, a name that is taken now).
@@ -68,17 +71,28 @@ Income sums also leave out loan-linked rows.
 - Borrowed: receiving the money is an income with `loan_id`; a repayment
   is an expense with `loan_id`.
 - Outstanding = principal - repayments (live rows only), worked out in SQL.
-  It can go below zero if more than the principal was repaid.
+  New repayments may go over the principal (overpaid): outstanding then
+  shows below zero. This is allowed on purpose.
+- Several disbursements on one loan are allowed.
+- A loan entry must be an expense or income, with a category of the same
+  kind. Transfers can never be linked to a loan.
+- A closed loan takes no new links: creating an entry for it, setting or
+  changing `loan_id` on an entry, or restoring a linked entry is refused.
+  Entries already linked can still be edited. Reopen the loan to add more.
+- Changing lent / borrowed is refused while the loan has live entries.
+- The principal cannot be lowered below what was repaid so far.
+- A loan with live linked entries cannot be deleted (close it instead).
 
 ## Gold value
 Current value of a holding =
 `(weight_mg * latest live rate_per_gram of the same purity + 500) / 1000`
-in whole-number maths (rounds half up). No rate yet means no value.
+in whole-number maths (rounds half up). "Latest" means the newest rate by
+date, future dates included. No rate yet means no value.
 
 ## Speed
 Indexes cover balances (`ix_tx_account`, `ix_tx_to_account`), list paging
 (`ix_tx_date`), category sums (`ix_tx_category_date`) and loans
-(`ix_tx_loan`). The list uses keyset paging (no OFFSET). A test checks the
+(`ix_tx_loan`), and gold by account (`ix_gold_holdings_account`). The list uses keyset paging (no OFFSET). A test checks the
 query plans and records timings with 20,000 rows.
 
 ## Change the schema (migration steps)
@@ -104,9 +118,16 @@ Keep it a plain number. Never edit an old schema dump.
 An app never opens a database that is newer than itself: it logs an error
 and stops, and the data is left untouched.
 
+`test/drift/app/schema_dump_guard_test.dart` fails when `schemaVersion`
+is raised without a dump for every version 1..schemaVersion.
+
 The test `test/drift/app/migration_test.dart` checks that the code and the
 v1 dump match. (`make-migrations` writes its own tests only from version 2.)
 
 ## Generated code
 `*.g.dart` files are made by `dart run build_runner build` and are
 committed. Do not edit them by hand.
+
+## Backup note (Android)
+`android:allowBackup="false"` is set in the Android manifest because the
+database file is not encrypted until session 8. Revisit it then.

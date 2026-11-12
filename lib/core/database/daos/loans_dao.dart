@@ -58,6 +58,21 @@ class LoansDao extends DatabaseAccessor<AppDatabase> with _$LoansDaoMixin {
     return rows.single.read<bool>('used');
   }
 
+  /// Total of live repayments (paise) for a loan with this [direction]:
+  /// income for `lent`, expense for `borrowed`.
+  Future<int> repaidTotal(String id, String direction) async {
+    final List<QueryRow> rows = await customSelect(
+      'SELECT COALESCE(SUM(amount), 0) AS total FROM transactions '
+      'WHERE loan_id = ? AND deleted_at IS NULL AND type = ?',
+      variables: <Variable<Object>>[
+        Variable<String>(id),
+        Variable<String>(direction == 'lent' ? 'income' : 'expense'),
+      ],
+      readsFrom: <TableInfo<Table, Object?>>{transactions},
+    ).get();
+    return rows.single.read<int>('total');
+  }
+
   Future<int> softDelete(String id, int now) =>
       softDeleteRow(attachedDatabase, loans, id, now);
 
