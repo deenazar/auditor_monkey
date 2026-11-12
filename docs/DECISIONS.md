@@ -67,3 +67,21 @@ Newest at the bottom.
 - Reason: A pinned version keeps builds repeatable. 3.47.9 is the
   newest patch of the previous stable line and has been out for two
   weeks; we can move to 3.50.x once it has settled.
+
+## 2026-11-12: Design changed from dark navy to reference screenshot
+- Decision: Replace the dark navy theme (`#1D293B` / `#334054`) with
+  the light mint design from `docs/design/reference.png`: white
+  background, mint `#70D0B2` hero and cards, lime `#E4E782` and yellow
+  `#FDD85C` accents, dark-green `#1E3B31` text, flat rounded cards,
+  thin outline icons, curved area charts, rounded doughnuts and pill
+  bars. Full spec in the Design section of `docs/PROJECT.md`.
+- Options considered: keep dark navy; follow the reference exactly;
+  follow the reference with accessibility and feature fixes.
+- Reason: Owner's choice; the owner wants the app to match the
+  reference. We changed a few things on purpose: dark text on mint
+  instead of white (white fails contrast at 1.85:1), a Quick Add +
+  button in the centre nav slot instead of a profile photo, added
+  red/amber/green status colours, Outfit as a free stand-in for the
+  unnamed font, and light theme only for Phase 1. Account colours
+  (Axis yellow, SBI magenta, SCB green, Hand orange) kept and tuned to
+  the palette.

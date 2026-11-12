@@ -2,6 +2,18 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-12: New design from reference screenshot
+
+### Added
+- `docs/design/reference.png`: the owner's design reference.
+
+### Changed
+- Design section of `docs/PROJECT.md` replaced: light mint palette,
+  Outfit font, type scale, spacing, card, icon, chart, navigation and
+  motion rules, tuned account colours, and a list of assumptions.
+- Roadmap session 1 now sets up the new theme.
+- `docs/DECISIONS.md`: logged the design change.
+
 ## 2026-11-12: Project kickoff
 
 ### Added
