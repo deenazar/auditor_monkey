@@ -2,6 +2,59 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-12: Session 3, accounts and setup wizard (PR: (link added after opening))
+
+### Added
+- Setup wizard on first launch (`/setup`): welcome, pick accounts (7
+  presets plus your own), opening balances (card accounts get an
+  "I owe" toggle), review with starting net worth. "Create accounts"
+  saves all accounts in one go, all or nothing.
+- Start screen (`/start`): loading ring after 300ms; on a database
+  error a safe message and "Try again" (re-opens the database, never
+  wipes data).
+- Accounts tab: net worth (rolls on change), card carousel in each
+  account's colour with spring snap, and an "All accounts" list.
+  Loading, empty and error states.
+- Account statement (`/accounts/:accountId`): balance card, 6-month
+  income-vs-expense pill bar chart, entries newest first with the
+  running balance after each one, opening balance as the last row.
+  Pages of 50, next page at 80% scroll, live refresh.
+- "Edit account" sheet on the statement and "Add account" on the
+  Accounts screen (name, type, colour, opening balance). No archive or
+  delete UI.
+- The 7 preset accounts have fixed, hard-coded ids; custom accounts get
+  random ids.
+- New queries: statement page with running balance in SQL, monthly
+  income / expense per account, "has live account", one account's
+  balance, max sort order. `createAll`, `addAccount`, `editAccount` in
+  `AccountsRepository`.
+- Shared widgets: `PageHeader`, `AmountText`, `PrimaryButton`,
+  `AppTextField`, `EmptyState`, `ErrorState`, `SkeletonBlock`,
+  `StepDots`, `RollingAmount`, `StatTile`, category icons, money input
+  formatter.
+- New DESIGN.md tokens in code (`AppSizes`, `AppMotion`): component
+  sizes (card, side-tab, peek, button, field, icon circle, colour dot,
+  swatch, chart, step dots, icon sizes, progress ring, field line,
+  chart bar and grid line) and the spring stiffness / damping values.
+- Golden tests (20 PNGs under `test/**/goldens/`), with Outfit, Lucide
+  and a test-only Roboto ₹ fallback loaded in
+  `test/flutter_test_config.dart`. CI uploads `**/failures/*.png` as an
+  artifact when tests fail.
+- Acceptance test: balances match the sum of transactions after the
+  database is closed and reopened.
+- Package: fl_chart 1.3.1 (pinned).
+
+### Changed
+- App start now goes `/start` → `/setup` (no accounts) or the normal
+  tabs. `test/app/app_test.dart` uses an in-memory database.
+- `accountBalancesProvider` and `netWorthProvider` no longer retry, so
+  error states show.
+
+### Security
+- Logs from the wizard, statement and account edits show no account
+  names or amounts (tested).
+- The start screen never shows the raw error; it is logged instead.
+
 ## 2026-11-12: Session 2, data model and Drift database (PR: https://github.com/deenazar/auditor_monkey/pull/7)
 
 ### Added

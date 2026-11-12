@@ -95,6 +95,56 @@ Indexes cover balances (`ix_tx_account`, `ix_tx_to_account`), list paging
 (`ix_tx_loan`), and gold by account (`ix_gold_holdings_account`). The list uses keyset paging (no OFFSET). A test checks the
 query plans and records timings with 20,000 rows.
 
+## Session 3 queries (accounts and setup wizard)
+**No schema change in session 3 (still schema v1).** Only new queries
+and repository methods. No new index.
+
+Accounts (`lib/core/database/daos/accounts_dao.dart`,
+`lib/features/accounts/data/accounts_repository.dart`):
+- `watchHasLive()`: `SELECT EXISTS (... accounts WHERE deleted_at IS
+  NULL)`, as a live stream. This is the "setup done" rule (archived
+  accounts count). Stops at the first row.
+- `getBalance(id)`: one live account with its balance (the session 2
+  balance query, filtered to one id). `null` if not found.
+- `maxSortOrder()`: largest live `sort_order`, or -1 when none.
+- `createAll(drafts, fixedIds)`: 1 to 50 drafts. Every draft is
+  validated; names must be unique ignoring case, inside the list and
+  against saved accounts. Preset accounts use their fixed ids
+  (`lib/features/setup/domain/account_presets.dart`, never change them);
+  others get random ids. Sort order continues after `maxSortOrder()`
+  (0..n on a fresh database). All rows saved in ONE transaction: all or
+  nothing.
+- `addAccount(details)`: same checks; random id; goes last in the list.
+- `editAccount(id, details)`: changes name, type, colour and opening
+  balance only (sort order and archived stay). Same checks, including
+  "negative opening only for card". Marks the row `pending`. Balances
+  and running balances follow at once because they are calculated.
+
+Transactions (`lib/core/database/daos/transactions_dao.dart`,
+`lib/features/transactions/data/transactions_repository.dart`):
+- **Statement page** (`statementPage`): the account's live rows, newest
+  first (`date`, `created_at`, `id`), keyset paging, default 50 rows
+  (max 500). The rows come from two branches joined with `UNION ALL`:
+  `account_id = ?` (uses `ix_tx_account`; income +, expense and
+  transfer out −) and `to_account_id = ?` (uses `ix_tx_to_account`;
+  transfer in +). A window sum
+  `opening_balance + SUM(effect) OVER (ORDER BY date, created_at, id)`
+  gives the running balance over ALL live rows before the page is cut.
+  Category and other-account names come by `LEFT JOIN`. An overflowing
+  sum (SQLite turns it into a float) returns `OverflowFailure`. A bad
+  or unknown account id returns `NotFoundFailure`.
+- `statementThrough(id, count)`: re-reads the first `count` lines (max
+  5,000) in one read transaction, for live refresh of loaded pages.
+- **Monthly totals per account** (`watchMonthlyTotalsForAccount`):
+  income and expense per `YYYY-MM` for one account between two months.
+  Leaves out transfers and loan-linked rows (`+loan_id IS NULL` keeps
+  SQLite off the weak `ix_tx_loan` index). Empty months are filled with
+  0 in Dart.
+
+Timings with 20,000 rows on one account (test mode, recorded only, not
+a gate): statement first page 42ms, next page 32ms, monthly totals 6ms.
+`test/core/database/query_plan_test.dart` checks the indexes are used.
+
 ## Change the schema (migration steps)
 The version is `schemaVersion` in `lib/core/database/app_database.dart`.
 Keep it a plain number. Never edit an old schema dump.

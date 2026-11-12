@@ -1,6 +1,7 @@
 # Session 3 plan: Accounts + setup wizard
 
-- Roadmap item 3 (Features 1 part, 3). Status: **waiting for owner approval**.
+- Roadmap item 3 (Features 1 part, 3). Status: **Done** (owner approved
+  2026-11-12; built, QA-reviewed and documented 2026-11-12).
 - Date: 2026-11-12. Planned by project-manager.
 - Suggested branch: `feature/20261112-accounts-setup-wizard` (from `develop`).
 - Done when: balances match the sum of transactions after reload.

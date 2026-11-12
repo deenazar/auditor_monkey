@@ -353,3 +353,156 @@ Newest at the bottom.
   session 8 with encryption.
 - Category colour groups have no colours in DESIGN.md yet; decide in
   session 4.
+
+## 2026-11-12: Opening balance means "balance today" (session 3, Q1)
+- Decision: The opening balance is the account's balance today. No
+  opening date column; no schema change (still v1). In session 10 the
+  Excel import offers to lower each opening balance by the imported net
+  amount, with a preview, so today's balance stays right.
+- Options considered: (a) "balance today" + fix at import; (b) add
+  `opening_balance_date` now (schema v2); (c) enter the balance from
+  the sheet's first date.
+- Reason: No migration needed, and the import fix is a normal opening
+  balance edit that the owner sees first.
+- Decided by: owner.
+
+## 2026-11-12: Fixed ids for the 7 preset accounts (session 3, Q2)
+- Decision: Hand, SBI, Axis, SCB, Food Card, Outside and PF get fixed,
+  hard-coded UUIDs in `lib/features/setup/domain/account_presets.dart`
+  (never change them; a test pins them). Custom accounts get random ids.
+- Options considered: random ids for all; fixed ids for presets.
+- Reason: If the wizard runs again on a new phone or after a reinstall
+  before sign-in, the same ids let sync merge the accounts instead of
+  making a second "SBI". Hard to change once synced.
+- Decided by: owner.
+
+## 2026-11-12: Edit / Add account sheets, no archive or delete (session 3, Q3)
+- Decision: "Edit account" (name, type, colour, opening balance) on the
+  statement and "Add account" on the Accounts screen, both reusing the
+  wizard sheet. No archive or delete UI.
+- Options considered: add now; leave to a later session.
+- Reason: No roadmap session covered it, so a typo or wrong opening
+  balance could not be fixed.
+- Decided by: owner.
+
+## 2026-11-12: DESIGN.md component sizes and rules (session 3)
+- Decision: Approved the Component sizes and Component rules sections
+  (`AppSizes` in code): `accountCardHeight` 200, `accountSideTabWidth`
+  40, `carouselPeek` 24, `buttonHeight` 52, `fieldHeight` 52,
+  `iconCircle` 44, `colourDot` 20 (swatch 32 in a 44 target),
+  `statChartHeight` 160, `stepDot` 8 (active 24 wide); PF side-tab in
+  `ink`; text field, disabled button and selected tile styles; wizard
+  step motion.
+- Options considered: as proposed in the session 3 plan.
+- Reason: DESIGN.md did not give these sizes; one set of tokens keeps
+  screens consistent.
+- Decided by: owner.
+
+## 2026-11-12: Session 3 low-risk decisions (plan section 7)
+- Decision:
+  1. "Setup done" = at least one live account exists (archived
+     included). No new table or pref.
+  2. The wizard cannot be skipped. Nothing is saved until "Create
+     accounts"; leaving mid-way loses the draft.
+  3. Preset types and colours: Hand cash `accountHand`, SBI bank
+     `accountSbi`, Axis bank `accountAxis`, SCB bank `accountScb`, Food
+     Card wallet `accountFoodCard`, Outside other `accountOutside`, PF
+     pf `accountPf`. All editable.
+  4. Empty opening balance = ₹0.00. Card debt uses an "I owe" toggle
+     (stored negative); the field never takes a minus sign.
+  5. Wizard steps live in one route (`/setup`) with in-memory Notifier
+     state; statement is `/accounts/:accountId` inside the Accounts tab.
+  6. Statement chart: last 6 months including this month; transfers and
+     loan entries left out.
+  7. Statement: newest first, 50 rows per page, running balance after
+     each row, opening balance as the last row with no date.
+  8. Running balance and chart sums are computed in SQL, never stored.
+  9. Accounts screen: net worth (includes archived accounts; closes the
+     session 2 open point for this screen), carousel, then an "All
+     accounts" list. Archived accounts last.
+  10. Category circles use a neutral tint with an `ink` icon until
+      session 4 sets category colour groups.
+  11. Goldens: Linux-only masters, 0.5% pixel tolerance, PNGs next to
+      the tests.
+  12. fl_chart added now.
+  13. Start ring shows only after 300ms; a database error shows a safe
+      message and never wipes data.
+- Options considered: as listed in the plan.
+- Reason: Low risk and easy to change later.
+- Decided by: team (project-manager plan, owner approved the plan).
+
+## 2026-11-12: Session 3 data and app-start choices
+- Decision:
+  - The "setup done" check is a live `EXISTS` stream on accounts. The
+    router uses `resolveSetupRedirect` with a `refreshListenable`
+    bridged from Riverpod: `/start` while loading, `/setup` with no
+    accounts, otherwise the tabs.
+  - Name uniqueness in `createAll` is checked across the whole list and
+    against saved accounts.
+  - Running balance: one SQL window sum over a `UNION ALL` of the two
+    account indexes; no new index (that would be a schema change). The
+    page joins category and counterpart names with `LEFT JOIN`.
+  - Live refresh re-reads the pages already loaded (up to 5,000 lines).
+    Fine for personal data; optimise if it gets slow.
+  - `accountBalancesProvider` and `netWorthProvider` use `noRetry`, so
+    error states show instead of retrying forever.
+  - Start error "Try again" re-opens the database (nothing is wiped).
+    This differs from plan A2, which had no retry; re-opening cannot
+    harm data.
+  - fl_chart pinned to 1.3.1.
+- Options considered: a stored "setup done" flag; running balance in
+  Dart; OFFSET paging; Riverpod's default retry.
+- Reason: Derived state cannot go out of sync. SQL keeps memory low and
+  stays fast with 20,000 rows (first page 42ms, next 32ms, monthly 6ms
+  in test mode, recorded only).
+- Decided by: team (senior-dev).
+
+## 2026-11-12: Session 3 UI choices
+- Decision:
+  - Extra size tokens: `iconInline` 20, `iconChip` 16, `iconLarge` 48,
+    `progressRing` 24, `progressStroke` 2, `fieldLineWidth` 2,
+    `chartBarWidth` 6, `chartGridLine` 1; motion `springStiffness` 200
+    and `springDampingRatio` 0.8. Added to DESIGN.md.
+  - Loading rings: `primaryDeep` on white (`primary` is only 1.9:1 and
+    fails the 3:1 rule), `ink` on mint. A loading button keeps its
+    `primary` fill with an `ink` ring; pressed = `primaryDeep` +
+    `onDark`.
+  - Amounts and card text scale down (FittedBox) at large text instead
+    of clipping.
+  - Archived card overline: "BANK · ARCHIVED".
+  - `StartScreen` is a `Scaffold` and never shows the raw error; the
+    caller logs it.
+  - 30 category icon names mapped; unknown names use Lucide ellipsis.
+  - Statement icon circle tint uses `navIndicator` (closest token to
+    `primary` at 20%).
+  - The save error card sits above "Create accounts".
+  - Sheet field errors show while typing and on press; Save stays
+    enabled.
+  - "Remove account" only for custom accounts in the wizard.
+  - Statement loads the next page at 80% scroll.
+  - Negative balances show "−" (U+2212), like expenses.
+  - Bottom sheets honour reduce motion. Reduce motion in the wizard:
+    `durationFast` fade; the carousel uses a critically damped spring.
+  - The colour picker hides `sun` (same colour as `accountAxis`); the
+    token still resolves for existing rows.
+  - Type chips sit in a `Wrap` so they never overflow.
+- Options considered: n/a (filling gaps in the plan and DESIGN.md).
+- Reason: Contrast, large-text and reduce-motion rules; fewer
+  confusing choices.
+- Decided by: team (senior-dev, junior-dev, qa-reviewer).
+
+## 2026-11-12: ₹ glyph uses the system font
+- Decision: Outfit has no ₹ glyph, so phones draw ₹ with the system
+  fallback font. Golden tests load Roboto as a test-only fallback
+  (`RupeeFallback`), so the ₹ in goldens looks slightly different from
+  a real phone.
+- Options considered: bundle a second font for ₹; draw ₹ as an icon.
+- Reason: System fonts already have a good ₹; no extra asset.
+- Decided by: team.
+
+## 2026-11-12: Open after session 3
+- Statement live refresh re-reads loaded pages; optimise if slow.
+- Fixed preset id vs a soft-deleted row with the same id: test once
+  delete UI exists.
+- Archived accounts in net worth: done on the Accounts screen; confirm
+  on the dashboard in session 6.
