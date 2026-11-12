@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 import 'app_radius.dart';
+import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
 /// The one app theme. Light only in Phase 1.
@@ -66,6 +67,76 @@ abstract final class AppTheme {
         shadowColor: AppColors.shadowInk,
         showDragHandle: false,
         clipBehavior: Clip.antiAlias,
+      ),
+      snackBarTheme: _snackBar(),
+      datePickerTheme: _datePicker(),
+    );
+  }
+
+  /// Toast (DESIGN.md sec. 9): `primaryDeep` fill, `onDark` text, floating
+  /// above the nav bar with `space6` margin. Material's own slide is kept;
+  /// the Quick Add toast wraps its content for the fade.
+  static SnackBarThemeData _snackBar() => SnackBarThemeData(
+    behavior: SnackBarBehavior.floating,
+    backgroundColor: AppColors.primaryDeep,
+    contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.onDark),
+    actionTextColor: AppColors.onDark,
+    disabledActionTextColor: AppColors.navIndicator,
+    shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
+    elevation: 8,
+    insetPadding: const EdgeInsets.all(AppSpacing.space6),
+    showCloseIcon: false,
+  );
+
+  /// Date picker (DESIGN.md sec. 9): `primaryDeep` selected day with
+  /// `onDark` text, `ink` text elsewhere, `radiusCard` corners.
+  static DatePickerThemeData _datePicker() {
+    Color? onSelected(Set<WidgetState> states, Color other) =>
+        states.contains(WidgetState.selected) ? AppColors.onDark : other;
+    return DatePickerThemeData(
+      backgroundColor: AppColors.background,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: AppColors.shadowInk,
+      elevation: 16,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
+      headerBackgroundColor: AppColors.background,
+      headerForegroundColor: AppColors.ink,
+      headerHeadlineStyle: AppTextStyles.title,
+      headerHelpStyle: AppTextStyles.caption,
+      weekdayStyle: AppTextStyles.caption.copyWith(color: AppColors.inkMuted),
+      dayStyle: AppTextStyles.body,
+      yearStyle: AppTextStyles.body,
+      dayForegroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> s) => s.contains(WidgetState.disabled)
+            ? AppColors.iconInactive
+            : onSelected(s, AppColors.ink),
+      ),
+      dayBackgroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> s) =>
+            s.contains(WidgetState.selected) ? AppColors.primaryDeep : null,
+      ),
+      todayForegroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> s) => onSelected(s, AppColors.primaryDeep),
+      ),
+      todayBackgroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> s) =>
+            s.contains(WidgetState.selected) ? AppColors.primaryDeep : null,
+      ),
+      todayBorder: const BorderSide(color: AppColors.primaryDeep),
+      yearForegroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> s) => onSelected(s, AppColors.ink),
+      ),
+      yearBackgroundColor: WidgetStateProperty.resolveWith(
+        (Set<WidgetState> s) =>
+            s.contains(WidgetState.selected) ? AppColors.primaryDeep : null,
+      ),
+      confirmButtonStyle: TextButton.styleFrom(
+        foregroundColor: AppColors.primaryDeep,
+        textStyle: AppTextStyles.bodyStrong,
+      ),
+      cancelButtonStyle: TextButton.styleFrom(
+        foregroundColor: AppColors.inkMuted,
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }

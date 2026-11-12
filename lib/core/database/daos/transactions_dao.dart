@@ -47,6 +47,7 @@ class StatementRowData {
     required this.balanceAfter,
     required this.categoryName,
     required this.categoryIcon,
+    required this.categoryColourGroup,
     required this.counterpartName,
   });
 
@@ -55,6 +56,7 @@ class StatementRowData {
   final int balanceAfter;
   final String? categoryName;
   final String? categoryIcon;
+  final String? categoryColourGroup;
   final String? counterpartName;
 }
 
@@ -104,6 +106,7 @@ WITH rel AS (
 )
 SELECT p.*, typeof(p.balance_after) AS balance_type,
        c.name AS category_name, c.icon AS category_icon,
+       c.colour_group AS category_colour_group,
        a.name AS counterpart_name
   FROM (
     SELECT * FROM run
@@ -253,6 +256,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
         balanceAfter: r.read<int>('balance_after'),
         categoryName: r.readNullable<String>('category_name'),
         categoryIcon: r.readNullable<String>('category_icon'),
+        categoryColourGroup: r.readNullable<String>('category_colour_group'),
         counterpartName: r.readNullable<String>('counterpart_name'),
       );
     });

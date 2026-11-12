@@ -58,3 +58,14 @@ const List<String> _shortMonthNames = <String>[
 /// Short English name of a `YYYY-MM` month, e.g. `2026-11` -> `Nov`.
 String shortMonthName(String month) =>
     _shortMonthNames[int.parse(month.substring(5, 7)) - 1];
+
+/// The date [days] after (or before, when negative) a `YYYY-MM-DD` date.
+/// Pure calendar maths in UTC, so daylight saving never shifts the result.
+String addDays(String date, int days) {
+  final DateTime base = DateTime.utc(
+    int.parse(date.substring(0, 4)),
+    int.parse(date.substring(5, 7)),
+    int.parse(date.substring(8, 10)),
+  );
+  return dateKey(base.add(Duration(days: days)));
+}
