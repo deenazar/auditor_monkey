@@ -4,7 +4,7 @@
 /// All maths here is integer maths.
 library;
 
-/// Largest amount accepted from input: ₹1,00,00,00,00,000.00 (₹1 trillion).
+/// Largest amount accepted from input: ₹10,00,00,00,00,000.00 (₹10 trillion).
 const int maxPaise = 100000000000000;
 
 const int _maxInputLength = 40;
@@ -56,6 +56,8 @@ int? parseRupeesToPaise(String? input) {
   if (text.isEmpty) return null;
 
   if (text.contains(',')) {
+    // A leading zero in the first group ('0,123') is never valid.
+    if (text.startsWith('0')) return null;
     if (!_groupedInteger.hasMatch(text)) return null;
     text = text.replaceAll(',', '');
   }

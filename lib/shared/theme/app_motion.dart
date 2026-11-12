@@ -4,35 +4,26 @@ import 'package:flutter/widgets.dart';
 /// A soft spring curve: damping ratio about 0.8, stiffness 200, mass 1.
 class SpringCurve extends Curve {
   /// Creates the spring used for the card carousel snap.
-  const SpringCurve({
-    this.mass = 1,
-    this.stiffness = 200,
-    this.dampingRatio = 0.8,
-  });
+  SpringCurve({
+    double mass = 1,
+    double stiffness = 200,
+    double dampingRatio = 0.8,
+  }) : _sim = SpringSimulation(
+         SpringDescription.withDampingRatio(
+           mass: mass,
+           stiffness: stiffness,
+           ratio: dampingRatio,
+         ),
+         0,
+         1,
+         0,
+       );
 
-  final double mass;
-  final double stiffness;
-  final double dampingRatio;
-
-  @override
-  double transformInternal(double t) {
-    final SpringDescription spring = SpringDescription.withDampingRatio(
-      mass: mass,
-      stiffness: stiffness,
-      ratio: dampingRatio,
-    );
-    return _SpringSim(spring).x(t);
-  }
-}
-
-class _SpringSim {
-  _SpringSim(SpringDescription spring)
-    : _sim = SpringSimulation(spring, 0, 1, 0);
-
+  // Built once; curve time (0..1) maps onto the first second of the spring.
   final SpringSimulation _sim;
 
-  // Map curve time (0..1) onto the first second of the simulation.
-  double x(double t) => t >= 1 ? 1 : _sim.x(t);
+  @override
+  double transformInternal(double t) => t >= 1 ? 1 : _sim.x(t);
 }
 
 /// Design tokens: motion.
@@ -44,7 +35,7 @@ abstract final class AppMotion {
 
   static const Curve curveEnter = Curves.easeOutCubic;
   static const Curve curveExit = Curves.easeInCubic;
-  static const Curve curveSpring = SpringCurve();
+  static final Curve curveSpring = SpringCurve();
 
   /// True when the phone's "reduce motion" setting is on.
   static bool reduceMotion(BuildContext context) =>

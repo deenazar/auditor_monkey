@@ -117,6 +117,14 @@ void main() {
       expect(LogRedactor.clean('Rs 20'), '[amount]');
     });
 
+    test('masks long alphanumeric tokens (JWT-like)', () {
+      const String jwt =
+          'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abcDEF123_-xyz';
+      final String out = LogRedactor.clean('token $jwt end');
+      expect(out, 'token [token] end');
+      expect(LogRedactor.clean('short_token_ok'), 'short_token_ok');
+    });
+
     test('masks phone-like numbers', () {
       expect(LogRedactor.clean('call 9876543210'), 'call [number]');
     });

@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_motion.dart';
+import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import 'quick_add_button.dart';
 
@@ -20,7 +21,7 @@ class AppBottomNav extends StatelessWidget {
   });
 
   /// Bar height without the system bottom inset.
-  static const double height = 72;
+  static const double height = AppSizes.navBarHeight;
 
   final int currentIndex;
   final ValueChanged<int> onSelect;
@@ -102,7 +103,7 @@ class _NavSlot extends StatelessWidget {
               duration: AppMotion.resolve(context, AppMotion.durationFast),
               curve: AppMotion.curveEnter,
               builder: (BuildContext context, Color? value, Widget? child) =>
-                  Icon(icon, size: 24, color: value),
+                  Icon(icon, size: AppSizes.iconNav, color: value),
             ),
           ),
         ),

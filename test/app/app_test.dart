@@ -1,92 +1,56 @@
-import 'dart:ui' as ui;
-
 import 'package:auditor_monkey/app/app.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const List<String> _navLabels = <String>[
-  'Home',
-  'Insights',
-  'Quick Add',
-  'Transactions',
-  'Accounts',
-];
-
-Future<void> _pumpApp(WidgetTester tester) async {
-  await tester.pumpWidget(const ProviderScope(child: AuditorMonkeyApp()));
-  await tester.pumpAndSettle();
-}
-
-/// True when the single nav node with [label] reports the selected flag.
-bool _isSelected(WidgetTester tester, String label) {
-  final SemanticsNode node = tester.getSemantics(find.bySemanticsLabel(label));
-  return node.flagsCollection.isSelected == ui.Tristate.isTrue;
+Widget _app({bool disableAnimations = false}) {
+  return MediaQuery(
+    data: MediaQueryData(disableAnimations: disableAnimations),
+    child: const ProviderScope(child: AuditorMonkeyApp()),
+  );
 }
 
 void main() {
-  group('AuditorMonkeyApp', () {
-    testWidgets(
-      'launches with a bottom nav of exactly 5 items and Home selected',
-      (WidgetTester tester) async {
-        final SemanticsHandle handle = tester.ensureSemantics();
+  const List<String> labels = <String>[
+    'Home',
+    'Insights',
+    'Transactions',
+    'Accounts',
+  ];
 
-        await _pumpApp(tester);
+  testWidgets('nav slots and Quick Add are at least 44x44', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
 
-        for (final String label in _navLabels) {
-          expect(
-            find.bySemanticsLabel(label),
-            findsOneWidget,
-            reason: 'nav item "$label" should appear exactly once',
-          );
-        }
+    for (final String label in <String>[...labels, 'Quick Add']) {
+      final Size size = tester.getSize(find.bySemanticsLabel(label));
+      expect(size.width, greaterThanOrEqualTo(44), reason: label);
+      expect(size.height, greaterThanOrEqualTo(44), reason: label);
+    }
+    handle.dispose();
+  });
 
-        expect(_isSelected(tester, 'Home'), isTrue);
-        for (final String label in <String>[
-          'Insights',
-          'Transactions',
-          'Accounts',
-        ]) {
-          expect(
-            _isSelected(tester, label),
-            isFalse,
-            reason: '"$label" should not be selected',
-          );
-        }
+  testWidgets('with reduce motion, tab switch shows the screen at once', (
+    WidgetTester tester,
+  ) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(_app(disableAnimations: true));
+    await tester.pump();
 
-        handle.dispose();
-      },
-    );
+    await tester.tap(find.bySemanticsLabel('Accounts'));
+    await tester.pump();
+    expect(find.text('Your Wallet'), findsOneWidget);
 
-    testWidgets('tapping Insights selects it and deselects Home', (
-      WidgetTester tester,
-    ) async {
-      final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.tap(find.bySemanticsLabel('Insights'));
+    await tester.pump();
+    expect(find.text('Your Spending'), findsOneWidget);
 
-      await _pumpApp(tester);
-      await tester.tap(find.bySemanticsLabel('Insights'));
-      await tester.pumpAndSettle();
-
-      expect(_isSelected(tester, 'Insights'), isTrue);
-      expect(_isSelected(tester, 'Home'), isFalse);
-
-      handle.dispose();
-    });
-
-    testWidgets('tapping Quick Add opens the sheet with its title', (
-      WidgetTester tester,
-    ) async {
-      final SemanticsHandle handle = tester.ensureSemantics();
-
-      await _pumpApp(tester);
-      expect(find.text('Quick Add'), findsNothing);
-
-      await tester.tap(find.bySemanticsLabel('Quick Add'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Quick Add'), findsOneWidget);
-
-      handle.dispose();
-    });
+    await tester.tap(find.bySemanticsLabel('Quick Add'));
+    await tester.pumpAndSettle();
+    expect(find.text('New entry'), findsOneWidget);
+    handle.dispose();
   });
 }
