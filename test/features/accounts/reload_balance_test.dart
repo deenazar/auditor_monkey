@@ -10,6 +10,7 @@ import 'package:auditor_monkey/core/utils/clock.dart';
 import 'package:auditor_monkey/features/accounts/application/account_statement_provider.dart';
 import 'package:auditor_monkey/features/accounts/application/accounts_providers.dart';
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
+import 'package:auditor_monkey/features/loans/application/loans_providers.dart';
 import 'package:auditor_monkey/features/setup/application/setup_wizard_notifier.dart';
 import 'package:auditor_monkey/features/setup/application/setup_wizard_state.dart';
 import 'package:auditor_monkey/features/transactions/application/transactions_providers.dart';
@@ -86,6 +87,8 @@ void main() {
           (await db.categoriesDao.watchLive(kind: 'expense').first).first.id;
       final String incomeCat =
           (await db.categoriesDao.watchLive(kind: 'income').first).first.id;
+      final String loanId =
+          (await c.read(loansRepositoryProvider).create(loanDraft())).id;
       final List<String> deleted = <String>[];
       for (int i = 0; i < 200; i++) {
         clock.advance();
@@ -104,12 +107,14 @@ void main() {
             categoryId: expenseCat,
             amount: amount,
             date: date,
+            loanId: i % 8 == 0 ? loanId : null,
           ),
           1 => incomeDraft(
             accountId: a.id,
             categoryId: incomeCat,
             amount: amount,
             date: date,
+            loanId: i % 8 == 1 ? loanId : null,
           ),
           _ => transferDraft(from: a.id, to: b.id, amount: amount, date: date),
         });
@@ -119,6 +124,13 @@ void main() {
         await tx.softDelete(id);
       }
       expect(deleted, isNotEmpty);
+      final int loanRows = await db
+          .customSelect(
+            'SELECT COUNT(*) AS c FROM transactions WHERE loan_id IS NOT NULL',
+          )
+          .getSingle()
+          .then((r) => r.read<int>('c'));
+      expect(loanRows, greaterThan(5));
 
       // 3. Close everything and reopen the same file.
       c.dispose();
@@ -160,6 +172,27 @@ void main() {
           expect(all.lines.first.balanceAfter, b.balance);
           final StatementLine oldest = all.lines.last;
           expect(oldest.balanceAfter - oldest.effect, b.account.openingBalance);
+        }
+        // Chart sums: hand sum that leaves out transfers and loan rows.
+        final Map<String, int> income = <String, int>{};
+        final Map<String, int> expense = <String, int>{};
+        for (final TransactionRow t in live) {
+          if (t.accountId != b.account.id || t.loanId != null) continue;
+          final String m = t.date.substring(0, 7);
+          if (t.type == 'income') income[m] = (income[m] ?? 0) + t.amount;
+          if (t.type == 'expense') expense[m] = (expense[m] ?? 0) + t.amount;
+        }
+        final List<MonthlyTotal> monthly = await c
+            .read(transactionsRepositoryProvider)
+            .monthlyTotalsForAccount(
+              b.account.id,
+              fromMonth: '2026-01',
+              toMonth: '2026-12',
+            );
+        expect(monthly, hasLength(12));
+        for (final MonthlyTotal m in monthly) {
+          expect(m.income, income[m.month] ?? 0, reason: m.month);
+          expect(m.expense, expense[m.month] ?? 0, reason: m.month);
         }
         // Through the provider too.
         c.listen(accountStatementProvider(b.account.id), (_, _) {});
