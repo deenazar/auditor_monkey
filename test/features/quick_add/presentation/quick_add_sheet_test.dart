@@ -23,6 +23,16 @@ void main() {
   });
   tearDown(() => env.close());
 
+  /// Lets the real database work finish, then plays the animations.
+  Future<void> settle(WidgetTester tester) async {
+    for (int i = 0; i < 30; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
   Future<void> openSheet(
     WidgetTester tester, {
     bool reduceMotion = false,
@@ -41,6 +51,8 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Quick Add'));
     await tester.pumpAndSettle();
     expect(find.byType(QuickAddSheet), findsOneWidget);
+    // Let the sheet's data load (real database work) finish.
+    await settle(tester);
   }
 
   Future<void> keys(WidgetTester tester, List<LogicalKeyboardKey> list) async {
@@ -67,7 +79,7 @@ void main() {
     await openSheet(tester);
     await keys(tester, two50);
     await keys(tester, <LogicalKeyboardKey>[LogicalKeyboardKey.enter]);
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     expect(find.byType(QuickAddSheet), findsNothing);
     expect(find.text('Expense saved · ₹250.00'), findsOneWidget);
@@ -82,11 +94,11 @@ void main() {
     await openSheet(tester);
     await keys(tester, two50);
     await tester.tap(find.text('Save expense'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect((await env.accounts.getBalances()).single.balance, 100000 - 25000);
 
     await tester.tap(find.text('Undo'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Entry removed'), findsOneWidget);
     expect(await env.count('transactions', liveOnly: true), 0);
     expect((await env.accounts.getBalances()).single.balance, 100000);
@@ -100,7 +112,7 @@ void main() {
     await keys(tester, two50);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(await env.count('transactions'), 1);
     await end(tester);
   });
@@ -141,11 +153,8 @@ void main() {
     await openSheet(tester, reduceMotion: true);
     await keys(tester, two50);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pump();
-    await tester.pump();
-    await tester.pump();
+    await settle(tester);
     expect(find.byType(QuickAddSheet), findsNothing);
-    await tester.pumpAndSettle();
     await end(tester);
   });
 }

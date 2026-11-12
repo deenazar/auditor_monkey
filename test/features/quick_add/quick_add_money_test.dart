@@ -376,7 +376,6 @@ void main() {
       c.invalidate(quickAddDataProvider);
     }
 
-    // Income needs an income category; use the notifier default for it.
     await save(TransactionType.expense, '250', account: 'Hand');
     await save(
       TransactionType.transfer,
