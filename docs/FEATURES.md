@@ -3,6 +3,33 @@
 One section per feature. Status: Planned / In progress / Done.
 Details are filled in further when each feature is planned and built.
 
+## 0. Project setup (roadmap session 1)
+- **What it does**: The app's base: Flutter project, theme, navigation,
+  logger, money formatting, lint and CI. No real features yet.
+- **Screens**: Home, Insights, Transactions, Accounts (placeholders with
+  page header and empty state); Quick Add (empty bottom sheet).
+- **User flow**: App opens on Home → bottom bar (icons only) switches
+  tabs with a short fade; tabs keep their state; tapping the current tab
+  again returns to its root. Centre + opens the empty Quick Add sheet.
+- **Business rules**: Theme built only from `DESIGN.md` tokens, light
+  mode only. Outfit font bundled (no runtime download). Money shown as
+  `₹1,23,456.00` (Indian grouping; negatives `-₹…`). Debug logs off in
+  release; logs mask amounts, emails, long digit runs and tokens.
+  Animations drop to zero length when "reduce motion" is on.
+- **Data stored**: None. Drift is installed but has no tables.
+- **Validations**: `parseRupeesToPaise` returns null (invalid) for
+  negatives, more than 2 decimals, bad grouping, non-ASCII digits and
+  amounts above ₹10,00,00,00,00,000. Zero is allowed here; Quick Add must
+  reject zero later.
+- **Edge cases**: Reduce motion on; large system text; app or platform
+  errors are routed to the logger.
+- **Known gaps**: Active nav icon colour (`primary` on white, about
+  1.85:1) is below the 3:1 icon rule; needs owner choice (see
+  DECISIONS.md). iOS build not verified (no macOS runner).
+- **Status**: Done
+- **Date**: 2026-11-12
+- **PR link**: PR: pending
+
 ## 1. Onboarding and security
 - **What it does**: Sign in, lock the app, and set up accounts on first
   launch.
