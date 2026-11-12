@@ -380,7 +380,7 @@ void main() {
     });
 
     test('transfer needs two different offered accounts, no category', () {
-      TransactionType t = TransactionType.transfer;
+      const TransactionType t = TransactionType.transfer;
       expect(
         validateQuickAdd(form(type: t, to: 'a1', category: null))!.message,
         'Pick two different accounts.',
