@@ -2,7 +2,7 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-12: Session 3, accounts and setup wizard (PR: (link added after opening))
+## 2026-11-12: Session 3, accounts and setup wizard (PR: [#9](https://github.com/deenazar/auditor_monkey/pull/9))
 
 ### Added
 - Setup wizard on first launch (`/setup`): welcome, pick accounts (7

@@ -171,7 +171,7 @@ Details are filled in further when each feature is planned and built.
   `start_error.png`.
 - **Status**: Done
 - **Date**: 2026-11-12
-- **PR link**: PR: (link added after opening)
+- **PR link**: [#9](https://github.com/deenazar/auditor_monkey/pull/9)
 
 ## 2. Quick Add
 - **What it does**: Add an expense, income or transfer in a few taps.
@@ -256,7 +256,7 @@ Details are filled in further when each feature is planned and built.
   `test/support/goldens/golden_infra.png`.
 - **Status**: Done
 - **Date**: 2026-11-12
-- **PR link**: PR: (link added after opening)
+- **PR link**: [#9](https://github.com/deenazar/auditor_monkey/pull/9)
 
 ## 4. Dashboard
 - **What it does**: One-screen overview of the month.
