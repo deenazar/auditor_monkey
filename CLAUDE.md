@@ -1,24 +1,26 @@
 # Company Standards
 
-This repo follows our company standards. Project-specific requirements
-live in docs/PROJECT.md, never in this file.
+Project-specific details (requirements, tech stack, design, folder
+structure, project skills, roadmap) live in docs/PROJECT.md.
 
-## Always use skills
-Before doing ANY task, check .claude/skills/ and use every skill that
-applies. Subagents must do the same. Never skip a skill.
-- New project, no docs/PROJECT.md yet → project-kickoff skill
-- Any file created or moved → folder-structure skill
-- Any UI work → design-system skill
-- Every feature → feature-workflow skill
-- Every review → code-review skill
+Read order: CLAUDE.md → docs/PROJECT.md → docs/DECISIONS.md.
 
-## Default tech stack
-React + Vite + TypeScript + Tailwind CSS, Vitest for tests.
-A project may change this only if docs/PROJECT.md says so.
+## Skills
+Always use the company skills that apply, plus the project skills
+listed in docs/PROJECT.md. No PROJECT.md yet → project-kickoff first.
 
 ## Team
-project-manager, senior-dev, junior-dev, reviewer (in .claude/agents/).
-I am the owner. Never write feature code before I approve the plan.
+project-manager, senior-dev, junior-dev, qa-reviewer. I am the owner.
+Never write feature code before I approve the plan.
+
+## Every feature must
+- Be documented (feature-docs skill)
+- Log properly (logging skill)
+- Be secure and encrypt sensitive data (security skill)
+- Validate all inputs (validation skill)
+- Meet performance targets (performance skill)
+- Look good, feel interactive, use purposeful motion (ui-ux-motion skill)
+- Be tested and reviewed (qa-testing + code-review skills)
 
 ## Communication
-Explain things to me in simple English. Short summaries.
+Simple English, short summaries.

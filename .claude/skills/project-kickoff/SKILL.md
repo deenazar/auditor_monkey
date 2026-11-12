@@ -5,23 +5,33 @@ description: Use at the start of every new project, when docs/PROJECT.md does no
 
 # Project Kickoff
 
-## Steps
-1. Ask the owner these questions in ONE message:
+1. If the owner gave a spec, use it as their answers. Otherwise ask in
+   ONE message:
    - App name
-   - What problem it solves
-   - Who uses it
-   - Main features (must-have vs later)
-   - Web or mobile
-   - Data storage needs
-   - Any design changes from the company default
-2. From the answers, write `docs/PROJECT.md` with these sections:
+   - Problem it solves
+   - Users
+   - Must-have features and later features
+   - Platform and tech stack
+   - Data storage
+   - Design (colors, fonts, theme, motion feel)
+2. Write `docs/PROJECT.md` with these sections:
    - Overview
    - Users
-   - Features (numbered, must-have first)
+   - Features
    - Out of scope
    - Tech stack
-3. Use the project-manager agent to split the features into a
-   one-feature-per-session order. Add that order to `docs/PROJECT.md`
-   as a "Roadmap" section.
-4. Create `docs/DECISIONS.md` (an empty log for important decisions).
-5. Open a pull request.
+   - Design
+   - Folder structure
+   - Project skills
+   - Performance targets
+   - Roadmap (one feature per session, in build order)
+3. Pick project skills from the skills-catalog skill for this stack,
+   install them into `.claude/skills/`, and list them in
+   `docs/PROJECT.md` under "Project skills".
+4. If the stack needs tools in cloud sessions (e.g. Flutter SDK), add a
+   SessionStart hook in `.claude/settings.json` that installs them only
+   when `CLAUDE_CODE_REMOTE` is `"true"`. Tell the owner if the network
+   blocks it.
+5. Create `docs/DECISIONS.md`, `docs/FEATURES.md` and `CHANGELOG.md`
+   (format: see the feature-docs skill).
+6. Open a pull request.
