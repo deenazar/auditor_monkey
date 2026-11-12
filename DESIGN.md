@@ -31,6 +31,7 @@ must use these names and values; change them here first.
 | `lime` | `#E4E782` | Summary card overlapping the hero; second chart series |
 | `sun` | `#FDD85C` | Highlights; third chart series |
 | `notifDot` | `#DCE91D` | Unread badge dot |
+| `navIndicator` | `#DDF4EC` | Soft mint pill behind the active nav icon |
 
 ### Text and icons
 | Token | Hex | Use |
@@ -129,7 +130,8 @@ aligned with the date or amount right aligned.
 - Set: **Lucide** (`lucide_icons_flutter`), outline, about 1.5pt
   stroke, rounded ends.
 - Sizes: 24 in the nav bar, 20 inline, 16 inside chips.
-- Active: `primary`. Inactive: `iconInactive`. On mint: `ink`.
+- Active nav icon: `ink`, on a `navIndicator` pill. Inactive: `iconInactive`.
+  On mint: `ink`.
 - Never emoji as icons. Category rows use an outline icon on a tinted
   circle (category colour at 20% opacity).
 
@@ -167,6 +169,10 @@ Rules:
      `shadowFloat`
   4. Transactions
   5. Accounts
+- Active tab indicator: `navIndicator` pill, 56x32, `radiusPill`, centred
+  behind the 24pt icon. It fades and scales in (0.8 to 1) with
+  `durationFast` and `curveEnter`; it fades out the same way. With reduce
+  motion it only fades (no scale). Tap targets stay at least 44pt.
 - Profile and settings: avatar button in the top bar of Home.
 - Page header pattern: `pageEyebrow` in `accentText`, then
   `displayTitle` below it, both centred.
@@ -190,7 +196,10 @@ Rules:
 ## Accessibility
 - Text contrast WCAG AA (4.5:1 normal, 3:1 large text and icons). All
   token pairs above were checked, e.g. `ink` on `primary` 6.6:1, `ink`
-  on `lime` 9.3:1, `onDark` on `accountSbi` 4.7:1.
+  on `lime` 9.3:1, `onDark` on `accountSbi` 4.7:1, active nav `ink` on
+  `navIndicator` 10.6:1 and `ink` on white 12.2:1. The pill is decoration
+  only (1.15:1 on white); the active state is also shown by the `ink` icon
+  and the `selected` semantics.
 - White on `primary` is **not allowed** (1.85:1).
 - Supports large system text sizes without cutting off amounts.
 
