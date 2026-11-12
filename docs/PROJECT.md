@@ -97,26 +97,17 @@ Rules:
 - Amounts are always positive; the type decides the direction.
 
 ## Design
-- Theme: dark navy. Background `#1D293B`, surface/cards `#334054`.
-- Account colours (from the sheet; exact shades confirmed in session 3):
+All design tokens and rules live in **[DESIGN.md](../DESIGN.md)** at the
+repo root: colours (hex), typography, spacing, radius, shadows, icons,
+charts, motion, navigation, screen patterns, accessibility and the
+design assumptions. The reference image is
+[`docs/design/reference.png`](design/reference.png).
 
-  | Account | Colour | Starting hex |
-  |---------|--------|--------------|
-  | Axis | Yellow | `#F5C542` |
-  | SBI | Magenta | `#D63AAF` |
-  | SCB | Green | `#2FB36B` |
-  | Hand | Orange | `#F28C28` |
-  | Food Card, Outside, PF | Not set yet | pick in session 3 |
-
-- Expense / income / transfer and budget states (green, amber, red)
-  must be readable on navy (WCAG AA).
-- Fonts: chosen in session 1 and logged in `docs/DECISIONS.md`. Amounts
-  use tabular (fixed-width) figures so numbers do not jump.
-- Motion: smooth and subtle. Animated number changes (balances,
-  totals), animated chart entry and updates, gentle list insert and
-  delete. 150–300ms, ease-out. Respect the phone's "reduce motion"
-  setting.
-- Quick Add must be reachable from every main screen with one tap.
+Summary: light mint design. White background, mint `#70D0B2` hero and
+cards, lime and yellow accents, dark-green `#1E3B31` text, Outfit font,
+flat rounded cards, Lucide outline icons, Quick Add + in the centre of
+the bottom bar. Use the DESIGN.md token names in code; if code and
+DESIGN.md disagree, DESIGN.md wins.
 
 ## Folder structure
 Feature-first, per the flutter-mobile-design skill:
@@ -153,7 +144,7 @@ Installed from the skills-catalog into `.claude/skills/`:
 | Skill | Source | Use for |
 |-------|--------|---------|
 | flutter-mobile-design | `saaip7/ipdev-mobileapps-skill` | All Flutter UI, screens and architecture. Note: its Riverpod example uses the older `StateNotifier`; we use the current `Notifier` / `AsyncNotifier` API instead. |
-| design-taste | `h3nryprod01/design-taste` | UI design quality and reviews. Its web-only checks (CSS, `scripts/preflight.mjs`) do not apply to Flutter; the Design section above wins on colours, fonts and brand. |
+| design-taste | `h3nryprod01/design-taste` | UI design quality and reviews. Its web-only checks (CSS, `scripts/preflight.mjs`) do not apply to Flutter; DESIGN.md wins on colours, fonts and brand. |
 
 ## Performance targets
 - Cold start to usable screen: under 2s on a mid-range phone.
@@ -169,8 +160,9 @@ Installed from the skills-catalog into `.claude/skills/`:
 One item per session, offline-first. Each session follows the
 feature-workflow skill (plan → owner approval → build → QA → PR).
 
-1. **Project setup**: Flutter app, Riverpod, go_router, theme (navy,
-   fonts, account colours), central logger, paise formatting helper,
+1. **Project setup**: Flutter app, Riverpod, go_router, theme (all tokens
+   from DESIGN.md: light mint palette, Outfit font, account colours,
+   Lucide icons), central logger, paise formatting helper,
    lint and test setup.
    Done when: app runs on iOS and Android, `flutter analyze` and tests
    pass, `₹1,23,456.00` formatting is tested.

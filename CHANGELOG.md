@@ -2,6 +2,20 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-12: New design from reference screenshot
+
+### Added
+- `docs/design/reference.png`: the owner's design reference.
+
+### Changed
+- `DESIGN.md` at the repo root: all design tokens (colours as hex,
+  typography, spacing, radius, shadows, icons, charts, motion,
+  navigation) and the design assumptions with their approval status.
+- Design section of `docs/PROJECT.md` replaced with a short summary
+  and a link to `DESIGN.md`; the dark navy theme is gone.
+- Roadmap session 1 now sets up the new theme.
+- `docs/DECISIONS.md`: logged the design change.
+
 ## 2026-11-12: Project kickoff
 
 ### Added
