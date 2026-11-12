@@ -63,6 +63,35 @@ class AccountDraft {
   final bool archived;
 }
 
+/// What the add / edit account sheet and the wizard collect. Sort order and
+/// archive state are not part of it: a new account goes last, and an edit
+/// keeps what the account already has.
+class AccountDetails {
+  const AccountDetails({
+    required this.name,
+    required this.type,
+    required this.colour,
+    this.openingBalance = 0,
+  });
+
+  final String name;
+  final AccountType type;
+  final String colour;
+
+  /// Paise. Negative only for card accounts.
+  final int openingBalance;
+
+  AccountDraft toDraft({int sortOrder = 0, bool archived = false}) =>
+      AccountDraft(
+        name: name,
+        type: type,
+        colour: colour,
+        openingBalance: openingBalance,
+        sortOrder: sortOrder,
+        archived: archived,
+      );
+}
+
 /// A live account with its calculated balance in paise.
 class AccountBalance {
   const AccountBalance({required this.account, required this.balance});

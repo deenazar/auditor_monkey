@@ -85,8 +85,8 @@ Details are filled in further when each feature is planned and built.
     data to SQLCipher, never wipe it). Android backup is off until then.
   - iOS: the file should be excluded from iCloud / device backup;
     to do in session 8.
-  - Whether archived accounts count in net worth on screen: to confirm
-    in sessions 3 and 6.
+  - Whether archived accounts count in net worth on screen: yes on the
+    Accounts screen (session 3); confirm on the dashboard in session 6.
   - Category colour groups have no colours in DESIGN.md yet (session 4).
 - **Status**: Done
 - **Date**: 2026-11-12
@@ -112,9 +112,66 @@ Details are filled in further when each feature is planned and built.
   PIN 4–6 digits.
 - **Edge cases**: Biometrics not available or changed; forgotten PIN;
   sign-in cancelled; no network during sign-in.
-- **Status**: Planned (roadmap sessions 3, 8, 9)
+- **Status**: In progress. Setup wizard done (session 3, below). App
+  lock planned for session 8, sign-in for session 9.
 - **Date**: 2026-11-12
 - **PR link**: -
+
+### 1a. Setup wizard and start screen (roadmap session 3)
+- **What it does**: On first launch (no live account yet) the app opens
+  a wizard to create accounts with opening balances. After that the app
+  opens normally.
+- **Screens**:
+  - Start (`/start`): white screen; small ring only after 300ms.
+    Database error: "We can't open your data" / "Your data is safe.
+    Update or restart the app." and "Try again".
+  - Wizard (`/setup`, one route, 4 steps):
+    - Welcome: mint hero, "Set up your accounts", "Get started".
+    - Pick accounts ("Step 1 of 3"): 7 preset tiles, all selected; edit
+      icon and "Add another account" open the account sheet (name, type
+      chips, colour swatches). "Remove account" only on custom accounts.
+    - Opening balances ("Step 2 of 3"): one ₹ field per account; card
+      accounts have an "I have / I owe" toggle.
+    - Review ("Step 3 of 3"): "STARTING NET WORTH", one mini card per
+      account, "Create accounts". Saving shows a ring and blocks a
+      second tap; a save error shows a card above the button and keeps
+      every entry.
+- **User flow**: Open app → Start → Wizard: Welcome → Pick → Balances →
+  Review → "Create accounts" → Accounts tab. Android back on steps 1-3
+  goes to the previous step; on step 0 it leaves the app.
+- **Business rules**:
+  - "Setup done" = at least one live account exists (archived count).
+  - Nothing is saved until "Create accounts"; then all accounts are
+    saved in one database transaction (all or nothing), sort order in
+    list order.
+  - Presets: Hand (cash), SBI, Axis, SCB (bank), Food Card (wallet),
+    Outside (other), PF (pf), each with its `account*` colour and a
+    fixed id. Custom accounts get random ids.
+  - Opening balance means "balance today". Empty = ₹0.00. Debt on a
+    card is entered with "I owe" (stored negative); the field never
+    takes a minus sign.
+  - The wizard cannot be skipped.
+- **Data stored**: Accounts only.
+- **Validations**: Name required, up to 40 characters, no control
+  characters, unique ignoring case (inside the list and against saved
+  accounts). Amount: digits, one dot, at most 2 decimals, Indian commas,
+  max ₹10,00,00,00,00,000. Negative only via "I owe" on a card. Errors
+  show while typing and on press; Save stays enabled. Continue is
+  disabled with a hint when no account is picked.
+- **Edge cases**: Leaving mid-way loses the draft. Database newer than
+  the app or failing to open: safe message, "Try again" re-opens it,
+  nothing wiped. Double tap on "Create accounts" saves once.
+- **Tests**: `test/features/setup/` (wizard notifier, redirect, presets
+  pinned, opening balance input, wizard screen, start screen),
+  `test/features/accounts/create_all_test.dart`,
+  `test/shared/widgets/money_input_formatter_test.dart`.
+- **Goldens** (`test/features/setup/presentation/goldens/`):
+  `wizard_welcome.png`, `wizard_pick.png`, `wizard_pick_add_sheet.png`,
+  `wizard_balances.png`, `wizard_review.png`, `wizard_review_error.png`,
+  `start_error.png`.
+- **Status**: Done
+- **Date**: 2026-11-12
+- **PR link**: [#9](https://github.com/deenazar/auditor_monkey/pull/9)
 
 ## 2. Quick Add
 - **What it does**: Add an expense, income or transfer in a few taps.
@@ -135,19 +192,71 @@ Details are filled in further when each feature is planned and built.
 - **PR link**: -
 
 ## 3. Accounts
-- **What it does**: Shows live balances and each account's statement.
-- **Screens**: Accounts list (balance cards in account colours),
-  Account statement (running balance, income-vs-expense bar chart).
-- **User flow**: Open Accounts → tap a card → scroll statement.
-- **Business rules**: Balance = opening balance + income − expense ±
-  transfers. Balances are never typed in.
-- **Data stored**: Accounts (reads Transactions).
-- **Validations**: Account name required and unique; colour required.
-- **Edge cases**: Account with no transactions; negative balance;
-  archived account with history.
-- **Status**: Planned (roadmap session 3)
+- **What it does**: Shows live balances and each account's statement;
+  lets the owner fix or add an account.
+- **Screens**:
+  - Accounts (`/accounts`): "Your Wallet" / "Accounts" header, "NET
+    WORTH" amount (rolls on change), card carousel (next card peeks
+    24pt, spring snap, page dots), "All accounts" list, "Add account".
+    States: loading (skeleton), empty ("No accounts yet" + "Set up
+    accounts"), error ("Try again").
+  - Account card: account colour, dark side-tab with the name in
+    vertical text (PF uses an `ink` tab), type overline (e.g. "BANK";
+    archived: "BANK · ARCHIVED"), balance, "Opening ₹…".
+  - Statement (`/accounts/:accountId`, inside the Accounts tab): back
+    button, "Edit account", balance card, "INCOME VS EXPENSE" chart
+    (last 6 months, pill bars: income `primary`, expense `sun`),
+    entries newest first. Each row: icon circle, name ("Groceries" /
+    "To Axis" / "From SBI"), signed amount, date, running balance.
+    "Opening balance" is the last row. Footer: ring while the next page
+    loads, "Couldn't load more. Try again" on error. States: loading,
+    no entries, not found ("This account isn't available"), error.
+  - Edit / Add account sheet: name, type, colour, opening balance.
+- **User flow**: Open Accounts → swipe cards or tap a card / row →
+  statement → scroll (next page at 80%) → optional "Edit account".
+  "Add account" on the Accounts screen opens the same sheet.
+- **Business rules**:
+  - Balance = opening balance + income − expense − transfers out +
+    transfers in, from SQL; never typed in.
+  - Net worth includes archived accounts. Archived accounts are listed
+    last.
+  - Running balance is worked out in SQL over all live entries of the
+    account, then cut into pages of 50. Transfers count on both sides.
+    Deleted entries are left out.
+  - Chart: income and expense of this account per month; transfers and
+    loan entries left out; empty months show 0.
+  - Amounts: expense and negative balances use "−" (U+2212); income
+    `+` in `accentText`; transfers no sign.
+  - Editing the opening balance changes every running balance at once
+    (nothing is stored). New accounts go last in the list.
+  - No archive or delete UI yet.
+- **Data stored**: Accounts (reads Transactions and Categories).
+- **Validations**: Same as the wizard: name required, ≤ 40, unique
+  ignoring case; type and colour required; negative opening balance
+  only for card. Account id in the URL must be a UUID shape before any
+  query.
+- **Edge cases**: Account with no entries (zero chart, only the opening
+  row, "Entries you add with + show here."); negative balance; balance
+  too large ("A balance is too large to show"); bad or deleted id;
+  large text (amounts scale down, never clip); reduce motion (fades
+  only, final values at once).
+- **Known gaps**: Live refresh re-reads every loaded page (fine for
+  personal data; optimise if slow). Fixed preset ids vs a soft-deleted
+  row with the same id: test once delete UI exists.
+- **Tests**: `test/features/accounts/` (create all, balances, statement
+  provider, form rules, reload acceptance test, screens, sheet, card,
+  carousel, chart), `test/core/database/query_plan_test.dart` (indexes
+  used; 20,000-row timings recorded), `test/shared/widgets/`.
+- **Goldens** (`test/features/accounts/presentation/goldens/`):
+  `accounts_data.png`, `accounts_loading.png`, `accounts_empty.png`,
+  `accounts_error.png`, `accounts_data_textscale2.png`,
+  `statement_data.png`, `statement_empty.png`, `statement_loading.png`,
+  `statement_not_found.png`, `account_card_all_colours.png`,
+  `edit_account_sheet.png`, `add_account_sheet.png`. Golden setup check:
+  `test/support/goldens/golden_infra.png`.
+- **Status**: Done
 - **Date**: 2026-11-12
-- **PR link**: -
+- **PR link**: [#9](https://github.com/deenazar/auditor_monkey/pull/9)
 
 ## 4. Dashboard
 - **What it does**: One-screen overview of the month.

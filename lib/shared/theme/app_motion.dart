@@ -37,6 +37,13 @@ abstract final class AppMotion {
   static const Curve curveExit = Curves.easeInCubic;
   static final Curve curveSpring = SpringCurve();
 
+  /// Wait before the loading ring shows, so fast starts show no spinner.
+  static const Duration loadingIndicatorDelay = Duration(milliseconds: 300);
+
+  /// Spring of the card carousel snap (same values as [curveSpring]).
+  static const double springStiffness = 200;
+  static const double springDampingRatio = 0.8;
+
   /// True when the phone's "reduce motion" setting is on.
   static bool reduceMotion(BuildContext context) =>
       MediaQuery.disableAnimationsOf(context);

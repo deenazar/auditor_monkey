@@ -144,4 +144,57 @@ void main() {
       'year expense total ${sums.elapsedMilliseconds} ms',
     );
   });
+
+  test('statement and monthly sums use the account indexes', () async {
+    await seed(50);
+    final String statement = await plan(
+      statementPageSql(hasCursor: false),
+      <Variable<Object>>[const Variable<String>(_a1), const Variable<int>(51)],
+    );
+    expect(statement, contains('ix_tx_account'));
+    expect(statement, contains('ix_tx_to_account'));
+    final String withCursor = await plan(
+      statementPageSql(hasCursor: true),
+      <Variable<Object>>[
+        const Variable<String>(_a1),
+        const Variable<String>('2026-06-01'),
+        const Variable<int>(5000),
+        const Variable<String>('x'),
+        const Variable<int>(51),
+      ],
+    );
+    expect(withCursor, contains('ix_tx_account'));
+    final String monthly = await plan(accountMonthlySumsSql, <Variable<Object>>[
+      const Variable<String>(_a1),
+      const Variable<String>('2026-06-01'),
+      const Variable<String>('2026-11-31'),
+    ]);
+    expect(monthly, contains('ix_tx_account'));
+  });
+
+  test('statement and monthly totals on 20,000 rows (timings recorded)', () async {
+    await seed(20000);
+    final Stopwatch first = Stopwatch()..start();
+    final page = await env.transactions.statementPage(_a1);
+    first.stop();
+    expect(page.lines, hasLength(50));
+    expect(page.hasMore, isTrue);
+    final Stopwatch next = Stopwatch()..start();
+    await env.transactions.statementPage(_a1, after: page.nextCursor);
+    next.stop();
+    final Stopwatch monthly = Stopwatch()..start();
+    final totals = await env.transactions.monthlyTotalsForAccount(
+      _a1,
+      fromMonth: '2026-06',
+      toMonth: '2026-11',
+    );
+    monthly.stop();
+    expect(totals, hasLength(6));
+    // ignore: avoid_print
+    print(
+      'PERF 20,000 rows, one busy account: statement first page '
+      '${first.elapsedMilliseconds} ms, next page ${next.elapsedMilliseconds} '
+      'ms, monthly totals ${monthly.elapsedMilliseconds} ms',
+    );
+  });
 }

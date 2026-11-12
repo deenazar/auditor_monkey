@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_provider.dart';
+import '../../../core/utils/no_retry.dart';
 import '../data/accounts_repository.dart';
 import '../domain/account.dart';
 
@@ -19,9 +20,11 @@ final StreamProvider<List<Account>> accountsProvider =
 final StreamProvider<List<AccountBalance>> accountBalancesProvider =
     StreamProvider<List<AccountBalance>>(
       (Ref ref) => ref.watch(accountsRepositoryProvider).watchBalances(),
+      retry: noRetry,
     );
 
 /// Total of all live account balances (paise).
 final StreamProvider<int> netWorthProvider = StreamProvider<int>(
   (Ref ref) => ref.watch(accountsRepositoryProvider).watchNetWorth(),
+  retry: noRetry,
 );

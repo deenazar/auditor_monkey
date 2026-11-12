@@ -14,6 +14,10 @@ final RegExp _controlChars = RegExp(
 final RegExp _controlCharsNoNewline = RegExp(r'[\u0000-\u001F\u007F]');
 final RegExp _dateShape = RegExp(r'^\d{4}-\d{2}-\d{2}$');
 final RegExp _monthShape = RegExp(r'^\d{4}-\d{2}$');
+final RegExp _uuidShape = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+  caseSensitive: false,
+);
 
 const int _minYear = 1900;
 const int _maxYear = 2100;
@@ -134,3 +138,8 @@ void validateMonth(String field, String? value) {
 void ensure(bool ok, String field, FailureCode code, String message) {
   if (!ok) throw ValidationFailure(field, code, message);
 }
+
+/// True when [value] has the shape of a UUID (36 characters, hex groups).
+/// Used to reject malformed ids (for example from a deep link) before any
+/// query runs.
+bool isUuidShape(String? value) => value != null && _uuidShape.hasMatch(value);
