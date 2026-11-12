@@ -6,6 +6,24 @@ abstract final class AppSizes {
   /// Icon size in the nav bar.
   static const double iconNav = 24;
 
+  /// Icon size inline with text (DESIGN.md Icons: 20 inline).
+  static const double iconInline = 20;
+
+  /// Icon size inside chips (DESIGN.md Icons: 16 inside chips).
+  static const double iconChip = 16;
+
+  /// Large icon on empty and error states. Not yet in DESIGN.md.
+  static const double iconLarge = 48;
+
+  /// Progress ring size (loading button, start screen). Not yet in DESIGN.md.
+  static const double progressRing = 24;
+
+  /// Progress ring stroke width. Not yet in DESIGN.md.
+  static const double progressStroke = 2;
+
+  /// Focused and error line on text fields (DESIGN.md Component rules: 2pt).
+  static const double fieldLineWidth = 2;
+
   /// Active nav indicator pill (behind the icon).
   static const double navIndicatorWidth = 56;
   static const double navIndicatorHeight = 32;

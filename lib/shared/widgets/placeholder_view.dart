@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import 'page_header.dart';
 
-/// Centred page header (eyebrow + title) with a short empty state.
+/// Header (eyebrow + title) with a short centred message.
 /// Used by the Session 1 placeholder screens.
 class PlaceholderView extends StatelessWidget {
   const PlaceholderView({
@@ -29,25 +30,7 @@ class PlaceholderView extends StatelessWidget {
         ),
         child: Column(
           children: <Widget>[
-            Semantics(
-              header: true,
-              container: true,
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    eyebrow,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.pageEyebrow,
-                  ),
-                  const SizedBox(height: AppSpacing.space1),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.displayTitle,
-                  ),
-                ],
-              ),
-            ),
+            PageHeader(eyebrow: eyebrow, title: title),
             Expanded(
               child: Center(
                 child: Padding(

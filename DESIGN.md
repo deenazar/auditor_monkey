@@ -132,6 +132,12 @@ aligned with the date or amount right aligned.
 | `colourDot` | 20 | Colour dot in rows |
 | `colourSwatch` | 32 | Colour swatch in the picker (inside a 44 tap target) |
 | `statChartHeight` | 160 | Chart inside a stat tile |
+| `iconInline` | 20 | Inline icons (see Icons) |
+| `iconChip` | 16 | Icons inside chips |
+| `iconLarge` | 48 | Icon in empty and error states |
+| `progressRing` | 24 | Loading ring |
+| `progressStroke` | 2 | Loading ring stroke |
+| `fieldLineWidth` | 2 | Focus and error line on text fields |
 | `stepDot` | 8 | Wizard step dot; the active dot is a pill `stepDotActiveWidth` 24 wide |
 
 ## Component rules
@@ -141,6 +147,7 @@ aligned with the date or amount right aligned.
 | Text field | Fill `tile`, no border, `radiusField`. Focused: 2pt `primaryDeep` line. Error: 2pt `danger` line and a `caption` message in `danger` |
 | Primary button | `primary` pill, `ink` label in `bodyStrong`, `buttonHeight`. Disabled: `divider` fill, `inkMuted` label |
 | Selectable tile | Not selected: `tile` fill. Selected: `navIndicator` fill and a `primaryDeep` check icon. No border (flat rule) |
+| Loading ring | `progressRing` size, `progressStroke`, colour `primaryDeep` on white (`primary` is only 1.9:1, below the 3:1 rule for graphics); `ink` on mint |
 | Wizard step change | 24pt (`space6`) slide plus fade, `durationMedium`, `curveEnter` in and `curveExit` out. Reduce motion: fade only |
 
 ## Elevation and shadows
