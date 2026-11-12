@@ -13,6 +13,7 @@ description: Use at the start of every new project, when docs/PROJECT.md does no
    - Must-have features and later features
    - Platform and tech stack
    - Data storage
+   - Cloud services and their account details (cloud-accounts skill)
    - Design (colors, fonts, theme, motion feel)
 2. Write `docs/PROJECT.md` with these sections:
    - Overview
@@ -22,6 +23,7 @@ description: Use at the start of every new project, when docs/PROJECT.md does no
    - Tech stack
    - Design
    - Folder structure
+   - Cloud accounts (IDs only, no secrets)
    - Project skills
    - Performance targets
    - Roadmap (one feature per session, in build order)
@@ -32,6 +34,8 @@ description: Use at the start of every new project, when docs/PROJECT.md does no
    SessionStart hook in `.claude/settings.json` that installs them only
    when `CLAUDE_CODE_REMOTE` is `"true"`. Tell the owner if the network
    blocks it.
-5. Create `docs/DECISIONS.md`, `docs/FEATURES.md` and `CHANGELOG.md`
+5. Set up cloud projects and keys with the cloud-accounts skill.
+   Add `.env.example` and make sure `.env` is gitignored.
+6. Create `docs/DECISIONS.md`, `docs/FEATURES.md` and `CHANGELOG.md`
    (format: see the feature-docs skill).
-6. Open a pull request.
+7. Open a pull request into `develop` (git-branching skill).

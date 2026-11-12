@@ -9,6 +9,16 @@ Read order: CLAUDE.md → docs/PROJECT.md → docs/DECISIONS.md.
 Always use the company skills that apply, plus the project skills
 listed in docs/PROJECT.md. No PROJECT.md yet → project-kickoff first.
 
+## Git
+Follow the git-branching skill. Before the first query of every day /
+session, create a new branch from `develop`. Never commit to `main` or
+`develop` directly.
+
+## Cloud accounts
+Account details are per project, given by the owner. Use the
+cloud-accounts skill to create cloud projects, get keys and configure
+them yourself. Secrets never go in git.
+
 ## Team
 project-manager, senior-dev, junior-dev, qa-reviewer. I am the owner.
 Never write feature code before I approve the plan.
