@@ -10,18 +10,26 @@ import '../theme/app_spacing.dart';
 /// wider `primaryDeep` pill; the others are small `divider` dots. Shows
 /// progress only (not tappable), so it needs no 44pt tap target.
 class StepDots extends StatelessWidget {
-  const StepDots({required this.count, required this.current, super.key})
-    : assert(count > 0, 'count must be positive'),
-      assert(
-        current >= 0 && current < count,
-        'current must be between 0 and count - 1',
-      );
+  const StepDots({
+    required this.count,
+    required this.current,
+    this.semanticsLabel,
+    super.key,
+  }) : assert(count > 0, 'count must be positive'),
+       assert(
+         current >= 0 && current < count,
+         'current must be between 0 and count - 1',
+       );
 
   /// Number of steps.
   final int count;
 
   /// Zero-based index of the current step.
   final int current;
+
+  /// Screen reader text. Defaults to "Step N of M"; the account carousel
+  /// passes "Card N of M" instead.
+  final String? semanticsLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +55,7 @@ class StepDots extends StatelessWidget {
       );
     }
     return Semantics(
-      label: 'Step ${current + 1} of $count',
+      label: semanticsLabel ?? 'Step ${current + 1} of $count',
       container: true,
       child: ExcludeSemantics(
         child: Row(mainAxisSize: MainAxisSize.min, children: dots),

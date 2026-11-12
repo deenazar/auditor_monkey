@@ -51,9 +51,9 @@ class _StartScreenState extends State<StartScreen> {
   @override
   Widget build(BuildContext context) {
     final bool hasError = widget.error != null;
-    return ColoredBox(
-      color: AppColors.background,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
         child: hasError
             ? ErrorState(
                 title: "We can't open your data",
@@ -84,7 +84,7 @@ class _FadingRing extends StatelessWidget {
         height: AppSizes.progressRing,
         child: CircularProgressIndicator(
           strokeWidth: AppSizes.progressStroke,
-          color: AppColors.primary,
+          color: AppColors.primaryDeep,
           semanticsLabel: 'Loading',
         ),
       ),

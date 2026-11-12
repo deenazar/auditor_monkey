@@ -88,7 +88,13 @@ class AmountText extends StatelessWidget {
     final Color textColour = color ?? colourFor(kind, plainColour: style.color);
     final TextStyle base = AppTextStyles.tabular(style)
         .copyWith(color: textColour);
-    final TextStyle rupee = AppTextStyles.rupeeSign(base);
+    // The ₹ span is a child with its own style. Give it the font fallback
+    // of the surrounding text, or a font without ₹ draws a box.
+    final TextStyle rupee = AppTextStyles.rupeeSign(base).copyWith(
+      fontFamilyFallback:
+          base.fontFamilyFallback ??
+          DefaultTextStyle.of(context).style.fontFamilyFallback,
+    );
 
     // formatPaise gives "₹…" for a positive value; split off the ₹ glyph.
     final String formatted = formatPaise(paise.abs());

@@ -21,7 +21,7 @@ void main() {
     final CircularProgressIndicator ring = tester.widget(
       find.byType(CircularProgressIndicator),
     );
-    expect(ring.color, AppColors.primary);
+    expect(ring.color, AppColors.primaryDeep);
     expect(ring.semanticsLabel, 'Loading');
   });
 
@@ -37,13 +37,13 @@ void main() {
 
   testWidgets('white background while loading', (WidgetTester tester) async {
     await pumpThemed(tester, const StartScreen());
-    final ColoredBox box = tester.widget<ColoredBox>(
+    final Scaffold scaffold = tester.widget<Scaffold>(
       find.descendant(
         of: find.byType(StartScreen),
-        matching: find.byType(ColoredBox),
+        matching: find.byType(Scaffold),
       ),
     );
-    expect(box.color, AppColors.background);
+    expect(scaffold.backgroundColor, AppColors.background);
   });
 
   testWidgets('error: danger icon, title, body and Try again', (

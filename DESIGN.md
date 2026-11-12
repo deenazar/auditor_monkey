@@ -134,6 +134,7 @@ aligned with the date or amount right aligned.
 | `statChartHeight` | 160 | Chart inside a stat tile |
 | `iconInline` | 20 | Inline icons (see Icons) |
 | `iconChip` | 16 | Icons inside chips |
+| `outlineStroke` | 1.5 | Lucide outline icon stroke |
 | `iconLarge` | 48 | Icon in empty and error states |
 | `progressRing` | 24 | Loading ring |
 | `progressStroke` | 2 | Loading ring stroke |

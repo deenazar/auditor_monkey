@@ -73,4 +73,7 @@ abstract final class AppSizes {
 
   /// Grid line in charts (hairline `divider`).
   static const double chartGridLine = 1;
+
+  /// Outline stroke of icon circles (DESIGN.md Icons: about 1.5pt).
+  static const double outlineStroke = 1.5;
 }
