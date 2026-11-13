@@ -682,3 +682,18 @@ approved by the owner on 2026-11-12.
 - Reason: Small, widely used, works inside scroll views; saves memory
   and battery from the WebView.
 - Decided by: team.
+
+## 2026-11-13: Mascot loopback server on Android (lead)
+- Decision: `flutter_3d_controller` serves `assets/3d/monkey.glb` to its
+  WebView from a small HTTP server on `127.0.0.1`. Android blocks plain
+  HTTP by default, so the app gets a `network_security_config.xml` that
+  allows cleartext **only** for `127.0.0.1` and `localhost`; everything
+  else stays HTTPS-only. The `INTERNET` permission is added to the main
+  manifest (the WebView needs it even for loopback; Supabase sync needs it
+  in session 9 anyway). iOS needs no change: App Transport Security does
+  not apply to loopback IP addresses, and the old
+  `io.flutter.embedded_views_preview` flag is no longer needed.
+- Options considered: the package's suggested app-wide
+  `usesCleartextTraffic="true"`.
+- Reason: a money app must not allow plain HTTP to any real host.
+- Decided by: team (lead).
