@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/widgets/rolling_amount.dart';
 import '../../domain/account.dart';
 import 'account_colours.dart';
 import 'account_type_label.dart';
@@ -28,6 +29,7 @@ class AccountCard extends StatelessWidget {
     required this.openingPaise,
     this.archived = false,
     this.onTap,
+    this.rollKey,
     super.key,
   });
 
@@ -44,6 +46,9 @@ class AccountCard extends StatelessWidget {
   final int openingPaise;
 
   final bool archived;
+
+  /// Lets the balance roll from 0 once per launch (see `RollingAmount`).
+  final String? rollKey;
 
   /// Called when the card is tapped. Null makes the card non-interactive.
   final VoidCallback? onTap;
@@ -99,11 +104,16 @@ class AccountCard extends StatelessWidget {
                           style: AppTextStyles.overline.copyWith(color: text),
                         ),
                         Expanded(
-                          child: AmountText(
+                          child: RollingAmount(
                             paise: balancePaise,
-                            style: AppTextStyles.displayAmount,
-                            color: text,
-                            alignment: AlignmentDirectional.bottomStart,
+                            rollKey: rollKey,
+                            builder: (BuildContext context, int value) =>
+                                AmountText(
+                                  paise: value,
+                                  style: AppTextStyles.displayAmount,
+                                  color: text,
+                                  alignment: AlignmentDirectional.bottomStart,
+                                ),
                           ),
                         ),
                         Text(

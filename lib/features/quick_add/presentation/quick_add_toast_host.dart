@@ -25,6 +25,7 @@ void showSavedToast(
     messenger,
     context,
     '$label saved · ${formatPaise(saved.amount)}',
+    showCheck: true,
     onUndo: () async {
       final bool removed = await undo(saved.id);
       messenger.hideCurrentSnackBar();
@@ -43,10 +44,11 @@ void _show(
   BuildContext context,
   String message, {
   VoidCallback? onUndo,
+  bool showCheck = false,
 }) {
   messenger.hideCurrentSnackBar();
   messenger.showSnackBar(
-    buildQuickAddToast(message: message, onUndo: onUndo),
+    buildQuickAddToast(message: message, onUndo: onUndo, showCheck: showCheck),
     snackBarAnimationStyle: AnimationStyle(
       duration: AppMotion.resolve(context, AppMotion.durationMedium),
       reverseDuration: AppMotion.resolve(context, AppMotion.durationFast),

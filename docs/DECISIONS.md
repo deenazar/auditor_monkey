@@ -697,3 +697,55 @@ approved by the owner on 2026-11-12.
   `usesCleartextTraffic="true"`.
 - Reason: a money app must not allow plain HTTP to any real host.
 - Decided by: team (lead).
+
+## 2026-11-13: Design polish build choices (senior-dev)
+- **Motion tokens**: all DESIGN.md tokens added to `AppMotion`.
+  `StaggeredEntrance` uses ONE controller (delay + move in one interval),
+  so no timers stay pending in tests. Reduce motion returns the child
+  as is.
+- **Tab fade-through**: `FadeIndexedStack` runs one 400ms controller:
+  first 150ms old tab fades out (`curveExit`), then the index swaps and the
+  new tab fades in and scales 0.98 to 1 (250ms, `curveEnter`). Only opacity
+  and scale; one `RepaintBoundary`.
+- **Page push**: `SharedAxisTransition` widget (used by `_slidePage`),
+  slide `pageSlideOffset` (24pt) + fade.
+- **Quick Add sheet spring**: `sheetSpring` (stiffness 380, damping 0.82)
+  is turned into a curve (`AppMotion.sheetSpringCurve`) over 350ms and
+  given to `showModalBottomSheet`. The sheet is built on frame 1, so the
+  pad works during the spring. Known trade-off: the spring overshoots by
+  about 1%, so for a few frames the sheet sits about 8pt above its final
+  place. Close stays `durationMedium` / `curveExit`.
+- **Save success**: `SuccessCheck` (circle + tick drawn with
+  `PathMetric`, `durationSlow`, scale pop 0.8 to 1) inside the saved toast
+  only (not "Entry removed").
+- **Balance roll-up**: `RollingAmount(rollKey: ...)`. The first time a key
+  is shown in an app launch it rolls from 0 (keys live in the in-memory
+  `rolledKeysProvider`); later shows are instant; later changes roll old to
+  new. Keys: `account:<id>`, `statement:<id>`, `net-worth`. Without a key or
+  without a `ProviderScope` nothing changes from before.
+- **Mascot**: `MascotView` builds the viewer only after the first frame,
+  only while `VisibilityDetector` shows it and the app is resumed;
+  otherwise the viewer is unmounted and the poster shows. The viewer is
+  built once per mount (never on rebuilds). Viewer creation goes through
+  `mascotViewerFactoryProvider`, so tests use a fake. 
+  `mascotPosterOnlyProvider` defaults to TRUE under `flutter test`
+  (`FLUTTER_TEST` env), so whole-app tests never build the WebView; mascot
+  tests override it to false. Tap: light haptic, `happy` once (loop count 1,
+  back to the mood after 1.8s). Missing clip uses `idle`. Native taps on
+  the model are off (`enableTouch: false`) so the tap is ours.
+- **Demo data**: `openAppConnection({fileName, directory})` is still the
+  only place that opens files. `appDatabaseProvider` watches
+  `demoModeActiveProvider` (guarded by `!kReleaseMode`). The marker file
+  `auditor_monkey_demo.on` is read once in `main` before `runApp`
+  (`demoModeInitialProvider`). Load: delete any old demo file, open a
+  separate `AppDatabase` on the demo file, seed in ONE transaction through
+  the normal repositories, close, write the marker, switch. Clear: delete
+  the marker, switch back, close the demo database (tracked by
+  `DatabaseCloseTracker`), then delete the demo file and its side files.
+  The seed is a pure function of "today" (seed 20261113): 90 days, every
+  preset account and every default category used, salary on the 1st,
+  transfers have no category, no expense or transfer takes an account below
+  zero (such entries are dropped in a final pass).
+- **Isolate note**: the closure given to `NativeDatabase.createInBackground`
+  must not capture non-sendable objects, so it is built in its own function
+  that holds only the temp path string.

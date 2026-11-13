@@ -5,8 +5,10 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/app_illustration.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/staggered_entrance.dart';
 import '../../application/setup_wizard_state.dart';
 import 'account_pick_tile.dart';
 import 'wizard_frame.dart';
@@ -44,13 +46,31 @@ class WizardPickStep extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const PageHeader(eyebrow: 'Step 1 of 3', title: 'Your accounts'),
-          const SizedBox(height: AppSpacing.space6),
-          for (final WizardAccount a in accounts) ...<Widget>[
-            AccountPickTile(
-              account: a,
-              onToggle: () => onToggle(a.key),
-              onEdit: () => onEdit(a),
+          const StaggeredEntrance(
+            index: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Center(
+                  child: AppIllustration(
+                    'wizard_pick',
+                    size: AppIllustrationSize.wizard,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.space3),
+                PageHeader(eyebrow: 'Step 1 of 3', title: 'Your accounts'),
+                SizedBox(height: AppSpacing.space6),
+              ],
+            ),
+          ),
+          for (int i = 0; i < accounts.length; i++) ...<Widget>[
+            StaggeredEntrance(
+              index: i + 1,
+              child: AccountPickTile(
+                account: accounts[i],
+                onToggle: () => onToggle(accounts[i].key),
+                onEdit: () => onEdit(accounts[i]),
+              ),
             ),
             const SizedBox(height: AppSpacing.space3),
           ],

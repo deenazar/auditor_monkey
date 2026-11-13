@@ -11,7 +11,11 @@ import '../theme/app_motion.dart';
 /// timers are left pending. Reduce motion shows the child at once.
 class StaggeredEntrance extends StatefulWidget {
   /// Creates an entrance for the item at [index].
-  const StaggeredEntrance({required this.index, required this.child, super.key});
+  const StaggeredEntrance({
+    required this.index,
+    required this.child,
+    super.key,
+  });
 
   /// Position in the list or group (0 based).
   final int index;

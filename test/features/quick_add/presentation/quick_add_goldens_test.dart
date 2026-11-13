@@ -297,6 +297,7 @@ void main() {
                 ScaffoldMessenger.of(context).showSnackBar(
                   buildQuickAddToast(
                     message: 'Expense saved · ₹250.00',
+                    showCheck: true,
                     onUndo: () {},
                   ),
                 );

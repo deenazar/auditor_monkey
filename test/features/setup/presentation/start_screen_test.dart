@@ -1,6 +1,7 @@
 import 'package:auditor_monkey/features/setup/presentation/start_screen.dart';
 import 'package:auditor_monkey/shared/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -62,10 +63,8 @@ void main() {
       find.text('Your data is safe. Update or restart the app.'),
       findsOneWidget,
     );
-    final Icon icon = tester.widget<Icon>(
-      find.byIcon(LucideIcons.triangleAlert),
-    );
-    expect(icon.color, AppColors.danger);
+    expect(find.byType(SvgPicture), findsOneWidget);
+    expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsNothing);
 
     await tester.tap(find.bySemanticsLabel('Try again'));

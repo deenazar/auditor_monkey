@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 import 'empty_state.dart';
 import 'primary_button.dart';
 
-/// Error state in the EmptyState layout: `danger` triangle icon, `title`,
+/// Error state in the EmptyState layout: the `error_generic` illustration,
+/// `title`,
 /// a `body` message and a "Try again" button when [onRetry] is given.
 ///
 /// Pass a message a person can act on. Never pass raw exception text.
@@ -33,7 +33,7 @@ class ErrorState extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: EmptyState(
-        icon: LucideIcons.triangleAlert,
+        illustration: 'error_generic',
         iconColour: AppColors.danger,
         title: title,
         message: message,

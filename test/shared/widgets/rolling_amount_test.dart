@@ -2,6 +2,7 @@ import 'package:auditor_monkey/core/money/money.dart';
 import 'package:auditor_monkey/shared/theme/app_motion.dart';
 import 'package:auditor_monkey/shared/widgets/rolling_amount.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/golden.dart';
@@ -106,5 +107,82 @@ void main() {
     );
     expect(find.bySemanticsLabel('₹1,23,456.00'), findsOneWidget);
     handle.dispose();
+  });
+
+  group('rollKey (first show per launch)', () {
+    testWidgets('rolls from 0 the first time, not the second', (
+      WidgetTester tester,
+    ) async {
+      final ProviderContainer container = ProviderContainer();
+      addTearDown(container.dispose);
+      Widget app(Key k) => UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            body: RollingAmount.text(
+              key: k,
+              paise: 500000,
+              rollKey: 'screen-a',
+              style: const TextStyle(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(app(const ValueKey('one')));
+      await tester.pump();
+      expect(_shown(tester), isNot(formatPaise(500000)));
+      await tester.pump(AppMotion.durationSlow * 2);
+      expect(_shown(tester), formatPaise(500000));
+
+      // Show the same key again (new widget): no roll from 0.
+      await tester.pumpWidget(app(const ValueKey('two')));
+      await tester.pump();
+      expect(_shown(tester), formatPaise(500000));
+    });
+
+    testWidgets('reduce motion shows the final value at once', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        goldenApp(
+          Scaffold(
+            body: RollingAmount.text(
+              paise: 500000,
+              rollKey: 'screen-b',
+              style: const TextStyle(),
+            ),
+          ),
+        ),
+      );
+      expect(_shown(tester), formatPaise(500000));
+    });
+
+    testWidgets('changes after the first show roll from the old value', (
+      WidgetTester tester,
+    ) async {
+      final ProviderContainer container = ProviderContainer();
+      addTearDown(container.dispose);
+      Widget app(int paise) => UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            body: RollingAmount.text(
+              paise: paise,
+              rollKey: 'screen-c',
+              style: const TextStyle(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(app(100000));
+      await tester.pump(AppMotion.durationSlow * 2);
+      await tester.pumpWidget(app(200000));
+      await tester.pump(AppMotion.durationSlow ~/ 2);
+      final String mid = _shown(tester);
+      expect(mid, isNot(formatPaise(100000)));
+      expect(mid, isNot(formatPaise(200000)));
+      // Never dips below the old value (did not restart from 0).
+      expect(mid.compareTo('₹1,00,000.00'), isNot(lessThan(0)));
+    });
   });
 }

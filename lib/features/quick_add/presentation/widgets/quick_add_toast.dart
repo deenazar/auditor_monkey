@@ -8,17 +8,26 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import 'press_surface.dart';
+import 'success_check.dart';
 
 /// The saved toast (DESIGN.md "Toast"): `primaryDeep` fill, `onDark` text,
 /// `radiusCard`, `shadowFloat`. The optional [onUndo] is a `bodyStrong`
 /// `onDark` action with a 44 tap target.
 class QuickAddToastContent extends StatelessWidget {
-  const QuickAddToastContent({required this.message, this.onUndo, super.key});
+  const QuickAddToastContent({
+    required this.message,
+    this.onUndo,
+    this.showCheck = false,
+    super.key,
+  });
 
   final String message;
 
   /// Shows an "Undo" action when set.
   final VoidCallback? onUndo;
+
+  /// Shows the animated check mark before the text (saved toast).
+  final bool showCheck;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +49,10 @@ class QuickAddToastContent extends StatelessWidget {
           ),
           child: Row(
             children: <Widget>[
+              if (showCheck) ...<Widget>[
+                const SuccessCheck(color: AppColors.onDark),
+                const SizedBox(width: AppSpacing.space2),
+              ],
               Expanded(
                 child: Text(
                   message,
@@ -105,9 +118,17 @@ class _UndoButton extends StatelessWidget {
 /// The host must be a Scaffold with the bottom nav bar, so a floating
 /// SnackBar sits above the bar. Its slide and fade come from the SnackBar
 /// theme (`SnackBarThemeData` in `app_theme.dart`).
-SnackBar buildQuickAddToast({required String message, VoidCallback? onUndo}) {
+SnackBar buildQuickAddToast({
+  required String message,
+  VoidCallback? onUndo,
+  bool showCheck = false,
+}) {
   return SnackBar(
-    content: QuickAddToastContent(message: message, onUndo: onUndo),
+    content: QuickAddToastContent(
+      message: message,
+      onUndo: onUndo,
+      showCheck: showCheck,
+    ),
     duration: AppMotion.toastDuration,
     behavior: SnackBarBehavior.floating,
     backgroundColor: Colors.transparent,

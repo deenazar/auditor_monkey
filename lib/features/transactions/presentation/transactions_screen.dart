@@ -12,6 +12,7 @@ class TransactionsScreen extends StatelessWidget {
       eyebrow: 'Your Activity',
       title: 'Transactions',
       message: 'No transactions yet.',
+      illustration: 'empty_transactions',
     );
   }
 }

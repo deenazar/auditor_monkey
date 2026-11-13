@@ -4,6 +4,7 @@ import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/widgets/rolling_amount.dart';
 import 'account_colours.dart';
 
 /// The balance card at the top of a statement: the account colour, the
@@ -12,6 +13,7 @@ class StatementBalanceCard extends StatelessWidget {
   const StatementBalanceCard({
     required this.colourToken,
     required this.balancePaise,
+    this.rollKey,
     super.key,
   });
 
@@ -19,6 +21,9 @@ class StatementBalanceCard extends StatelessWidget {
 
   /// Current balance in paise (negative shows `-₹`).
   final int balancePaise;
+
+  /// Lets the balance roll from 0 once per launch (see `RollingAmount`).
+  final String? rollKey;
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +44,14 @@ class StatementBalanceCard extends StatelessWidget {
               style: AppTextStyles.overline.copyWith(color: text),
             ),
             const SizedBox(height: AppSpacing.space2),
-            AmountText(
+            RollingAmount(
               paise: balancePaise,
-              style: AppTextStyles.displayAmount,
-              color: text,
+              rollKey: rollKey,
+              builder: (BuildContext context, int value) => AmountText(
+                paise: value,
+                style: AppTextStyles.displayAmount,
+                color: text,
+              ),
             ),
           ],
         ),
