@@ -3,3 +3,8 @@ tags:
     description: >
       Screenshot comparisons. Masters are made only on Linux with
       Flutter 3.47.9: flutter test --tags golden --update-goldens
+  perf:
+    description: >
+      Speed checks on 20,000 rows (Quick Add save and open). They print the
+      real p50 / p95 and fail only when the median is above 250 ms (the
+      target is 100 ms). They run in normal CI.

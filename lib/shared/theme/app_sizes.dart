@@ -79,6 +79,34 @@ abstract final class AppSizes {
   static const double skeletonTitleWidth = 180;
   static const double skeletonCardHeight = 120;
 
+  /// Quick Add number pad key height (DESIGN.md Component sizes).
+  static const double numPadKeyHeight = 56;
+
+  /// Chips, pills and tab segments; equals the 44pt tap target.
+  static const double chipHeight = 44;
+
+  /// Tinted icon circle inside a chip.
+  static const double chipIconCircle = 28;
+
+  /// Share of the available height the Quick Add sheet uses.
+  static const double quickAddSheetHeightFraction = 0.92;
+
   /// Outline stroke of icon circles (DESIGN.md Icons: about 1.5pt).
   static const double outlineStroke = 1.5;
+
+  /// Longest category name in a chip before it is cut with an ellipsis.
+  static const double categoryLabelMaxWidth = 160;
+
+  /// Longest recent-entry label before it is cut with an ellipsis.
+  static const double recentLabelMaxWidth = 120;
+
+  /// Longest note preview in the note pill before it is cut.
+  static const double notePillMaxWidth = 200;
+
+  /// Inset of the sliding pill inside the segmented tab track.
+  static const double typeTabInset = 2;
+
+  /// Height of the Quick Add load-error panel inside the scrolling middle
+  /// (the centred error state needs a finite height there).
+  static const double quickAddErrorHeight = 280;
 }

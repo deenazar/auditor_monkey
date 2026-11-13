@@ -178,6 +178,7 @@ List<StatementLine> goldenLines() {
       balanceAfter: 27536050,
       categoryName: 'Groceries',
       categoryIcon: 'shopping-cart',
+      categoryColourGroup: 'essentials',
     ),
     StatementLine(
       entry: fixtureEntry(
@@ -191,6 +192,7 @@ List<StatementLine> goldenLines() {
       balanceAfter: 27770100,
       categoryName: 'Salary',
       categoryIcon: 'briefcase',
+      categoryColourGroup: 'income',
     ),
     StatementLine(
       entry: fixtureEntry(
@@ -217,6 +219,7 @@ List<StatementLine> goldenLines() {
       balanceAfter: 19770100,
       categoryName: 'Fuel',
       categoryIcon: 'fuel',
+      categoryColourGroup: 'transport',
     ),
     StatementLine(
       entry: fixtureEntry(
@@ -230,6 +233,7 @@ List<StatementLine> goldenLines() {
       balanceAfter: 19950100,
       categoryName: 'Entertainment & OTT',
       categoryIcon: 'tv',
+      categoryColourGroup: 'lifestyle',
     ),
   ];
 }

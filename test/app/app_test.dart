@@ -2,6 +2,7 @@ import 'package:auditor_monkey/app/app.dart';
 import 'package:auditor_monkey/app/router.dart';
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/accounts/presentation/account_statement_screen.dart';
+import 'package:auditor_monkey/features/quick_add/presentation/quick_add_sheet.dart';
 import 'package:auditor_monkey/features/setup/presentation/setup_wizard_screen.dart';
 import 'package:auditor_monkey/shared/theme/app_colors.dart';
 import 'package:auditor_monkey/shared/widgets/app_bottom_nav.dart';
@@ -89,7 +90,7 @@ void main() {
 
     await tester.tap(find.bySemanticsLabel('Quick Add'));
     await tester.pumpAndSettle();
-    expect(find.text('New entry'), findsOneWidget);
+    expect(find.byType(QuickAddSheet), findsOneWidget);
     handle.dispose();
   });
 

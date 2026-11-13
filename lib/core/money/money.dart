@@ -23,11 +23,12 @@ String formatPaise(int paise) {
   final String digits = (negative ? raw.substring(1) : raw).padLeft(3, '0');
   final String rupees = digits.substring(0, digits.length - 2);
   final String fraction = digits.substring(digits.length - 2);
-  return '${negative ? '-' : ''}₹${_groupIndian(rupees)}.$fraction';
+  return '${negative ? '-' : ''}₹${groupIndianDigits(rupees)}.$fraction';
 }
 
 /// Groups digits the Indian way: last 3, then pairs (`1,23,45,678`).
-String _groupIndian(String digits) {
+/// [digits] must be plain digits (no sign, no dot).
+String groupIndianDigits(String digits) {
   if (digits.length <= 3) return digits;
   final String last3 = digits.substring(digits.length - 3);
   String rest = digits.substring(0, digits.length - 3);

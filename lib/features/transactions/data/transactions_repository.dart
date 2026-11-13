@@ -252,8 +252,18 @@ class TransactionsRepository {
     balanceAfter: r.balanceAfter,
     categoryName: r.categoryName,
     categoryIcon: r.categoryIcon,
+    categoryColourGroup: _knownGroup(r.categoryColourGroup),
     counterpartName: r.counterpartName,
   );
+
+  /// Known colour group name, or `other` for anything else. Null stays null.
+  static String? _knownGroup(String? stored) {
+    if (stored == null) return null;
+    final bool known = CategoryColourGroup.values.any(
+      (CategoryColourGroup g) => g.name == stored,
+    );
+    return known ? stored : CategoryColourGroup.other.name;
+  }
 
   /// Emits (value is meaningless) every time transactions, accounts or
   /// categories change. Screens use it to reload what they show.

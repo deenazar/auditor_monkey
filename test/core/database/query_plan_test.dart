@@ -4,6 +4,7 @@
 import 'package:auditor_monkey/core/database/daos/accounts_dao.dart';
 import 'package:auditor_monkey/core/database/daos/loans_dao.dart';
 import 'package:auditor_monkey/core/database/daos/transactions_dao.dart';
+import 'package:auditor_monkey/core/database/daos/transactions_quick_add_queries.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -107,6 +108,29 @@ void main() {
       anyOf(contains('ix_tx_date'), contains('ix_tx_category_date')),
     );
     expect(await plan(loanOutstandingSql), contains('ix_tx_loan'));
+  });
+
+  test('the Quick Add queries use the date index', () async {
+    await seed(50);
+    const Variable<String> since = Variable<String>('2026-08-14');
+    for (final (String name, String sql, List<Variable<Object>> vars)
+        in <(String, String, List<Variable<Object>>)>[
+          (
+            'last used',
+            quickAddLastUsedSql,
+            <Variable<Object>>[const Variable<String>('expense'), since],
+          ),
+          (
+            'usage',
+            quickAddUsageSql,
+            <Variable<Object>>[const Variable<String>('expense'), since],
+          ),
+          ('recent', quickAddRecentSql, <Variable<Object>>[since]),
+        ]) {
+      final String p = await plan(sql, vars);
+      expect(p, contains('ix_tx_date'), reason: '$name plan: $p');
+      expect(p, isNot(contains('ix_tx_loan')), reason: '$name plan: $p');
+    }
   });
 
   test('gold holdings by account use their index', () async {

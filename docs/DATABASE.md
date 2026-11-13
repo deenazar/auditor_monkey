@@ -145,6 +145,46 @@ Timings with 20,000 rows on one account (test mode, recorded only, not
 a gate): statement first page 42ms, next page 32ms, monthly totals 6ms.
 `test/core/database/query_plan_test.dart` checks the indexes are used.
 
+## Session 4 queries (Quick Add)
+**No schema change in session 4 (still schema v1, `schemaVersion` 1).**
+No new index, no new table, no prefs. Only read queries. Saves use the
+existing `TransactionsRepository.create`; Undo uses `softDelete`.
+
+Code: `lib/core/database/daos/transactions_quick_add_queries.dart` (an
+extension on `TransactionsDao`) and
+`lib/features/quick_add/data/quick_add_repository.dart`
+(`loadHints(today)`, all queries in ONE read transaction).
+
+Rules for all three queries:
+- Only live rows dated on or after today − 90 days (`date >= ?`;
+  future dates included). This range uses `ix_tx_date`.
+- Loan-linked rows are left out (`+loan_id IS NULL`; the unary plus
+  keeps SQLite off the weak `ix_tx_loan` index). Quick Add cannot
+  create a loan link, so repeating one would drop it.
+- "Newest" means entry time: `created_at DESC, id DESC`.
+
+Queries:
+- **Last used per type** (run for expense, income, transfer): the newest
+  row's `account_id`, `to_account_id`, `category_id`, `LIMIT 1`.
+- **Category usage per type** (expense, income): `COUNT(*)` and
+  `MAX(created_at)` per category, `GROUP BY +category_id`. The plus sign
+  stops SQLite from walking the whole `ix_tx_category_date` index, so it
+  uses `ix_tx_date` for the date range.
+- **Recent entries** (all types): the newest 50 rows. Dart removes
+  repeats and keeps 6.
+
+Dart then leaves out archived or deleted accounts and categories and the
+4 loan categories.
+
+Timings with 20,000 rows (test mode, in-memory database; the test
+prints p50 / p95 and fails only if p50 is above 250ms):
+- Save through `QuickAddNotifier.save()`: p50 about 3.6ms, p95 about
+  6ms (target under 100ms).
+- Quick Add open data (`quickAddDataProvider`): p50 about 35–38ms, p95
+  about 47ms.
+`test/core/database/query_plan_test.dart` checks the Quick Add queries
+use `ix_tx_date`.
+
 ## Change the schema (migration steps)
 The version is `schemaVersion` in `lib/core/database/app_database.dart`.
 Keep it a plain number. Never edit an old schema dump.

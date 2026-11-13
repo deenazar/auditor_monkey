@@ -13,6 +13,7 @@ class StatementLine {
     required this.balanceAfter,
     this.categoryName,
     this.categoryIcon,
+    this.categoryColourGroup,
     this.counterpartName,
   });
 
@@ -25,6 +26,11 @@ class StatementLine {
 
   /// Lucide icon name (kebab case) of the category.
   final String? categoryIcon;
+
+  /// Colour group name of the category (`essentials`, `food`, ... `other`,
+  /// `income`). Always one of the known names; an unknown stored value
+  /// becomes `other`. Null for transfers.
+  final String? categoryColourGroup;
 
   /// Transfers only: the other account's name. "To X" when [isOutgoing],
   /// otherwise "From X".

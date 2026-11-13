@@ -506,3 +506,113 @@ Newest at the bottom.
   delete UI exists.
 - Archived accounts in net worth: done on the Accounts screen; confirm
   on the dashboard in session 6.
+
+## 2026-11-12: Session 4 low-risk decisions (Quick Add plan section 7)
+Part of the session 4 plan (`docs/plans/session-4-quick-add.md`),
+approved by the owner on 2026-11-12.
+- Decision:
+  1. "Last used" and "recent / frequent" come from SQL queries on live
+     transactions. No prefs, no new table, no new package, no schema
+     change.
+  2. Quick Add queries look at entries dated in the last 90 days
+     (future dates included), ordered by entry time (`created_at`).
+     Loan-linked entries are left out.
+  3. Archived accounts and categories are not offered in Quick Add.
+  4. The sheet always opens on Expense. Amount, date and note are shared
+     by the tabs; account and category picks are kept per tab.
+  5. Defaults: last-used account / category per type, with fallbacks to
+     the first account or category. Transfer needs 2 offered accounts;
+     otherwise the tab is disabled with a hint.
+  6. Categories: up to 6 suggested (last used, then most used), then
+     the rest in sort order, in one scrolling row plus an "All" sheet
+     grouped by colour group.
+  7. Recent strip: up to 6 distinct recent entries of all types. A tap
+     fills the form (keeps the form's date) and does not save by itself.
+  8. The number pad is always on screen. Input that would need rounding
+     (more than 2 decimals, above the max) is refused with a hint, never
+     rounded. Paste by long press on the amount.
+  9. Quick Add date rule: up to 31 days after today; "Today" and
+     "Yesterday" chips plus a date picker. The repository keeps the
+     1900-2100 rule.
+  10. After save the sheet closes and a toast shows for 4s with Undo
+      (soft delete via the existing repository). No "add another" mode.
+      Closing the sheet drops the draft without asking.
+  11. Today's date is read from the clock on each open.
+  12. Category colour groups use existing tokens at 20% tint:
+      essentials `accountScb`, food `accountHand`, transport
+      `accountOutside`, home `sun`, lifestyle `accountSbi`, health
+      `primaryLight`, family `lime`, finance `accountPf`, other
+      `iconInactive`, income `primary`. Statement rows use the group
+      tint (closes the session 2 / 3 open item).
+  13. DESIGN.md additions: `numPadKeyHeight` 56, `chipHeight` 44,
+      `chipIconCircle` 28, motion `toastDuration` 4000ms; rules for
+      choice chips, segmented tabs, number pad keys, refused input and
+      the toast (plan section 9).
+  14. Quick Add speed targets (save < 100ms, open data < 100ms with
+      20,000 rows): the test prints and records the real median and p95,
+      and fails only if the median is above 250ms (owner answer, so slow
+      CI machines do not fail at random). Other timing tests stay
+      "record only".
+- Options considered: shared_preferences for last-used values; a new
+  "recent" table; auto-save on recent tap; "add another" mode; offering
+  archived rows; timing as record only.
+- Reason: Derived values cannot go out of sync and need no migration or
+  package. Fewer taps for the common case, no accidental entries, and
+  every choice is easy to change later.
+- Decided by: team (project-manager plan).
+
+## 2026-11-12: Loan categories hidden in Quick Add
+- Decision: The 4 seeded loan categories (Loan Given, Loan Repayment,
+  Loan Received, Loan Repayment Received) are not offered in Quick Add
+  until the loan screens exist. How they count in totals does not
+  change. Lending meanwhile can be a transfer to "Outside".
+- Options considered: (a) hide; (b) show, counted as spending / income;
+  (c) show and leave loan categories out of every total.
+- Reason: Quick Add cannot link an entry to a loan, so such entries would
+  count as normal spending and need a data fix later.
+- Decided by: owner (session 4 plan Q1).
+
+## 2026-11-12: Undo in the saved toast
+- Decision: Keep Undo in the 4s saved toast (soft delete via the existing
+  repository). It is not a delete screen.
+- Reason: The only way to fix a mistake before the transactions list
+  (session 5).
+- Decided by: owner.
+
+## 2026-11-12: Session 4 build choices (Quick Add)
+- Decision:
+  1. Saved entries go through an app-wide `quickAddSavedProvider`. The
+     shell shows the toast with Undo from it, so the toast shows even if
+     the sheet is swiped away while the save is running. A route check
+     stops a second pop of the sheet.
+  2. The toast and date picker themes use elevation 0 (flat rule).
+     Material cannot apply the `shadowFloat` token to a dialog, so the
+     date picker has no shadow and the scrim separates it.
+  3. The amount hint line always keeps its space, so nothing jumps when
+     a hint shows or goes.
+  4. The amount rolls (`RollingAmount`, `durationSlow`) only when a
+     recent entry is applied, never while typing.
+  5. New size tokens: `categoryLabelMaxWidth` 160, `recentLabelMaxWidth`
+     120, `notePillMaxWidth` 200, `typeTabInset` 2, `quickAddErrorHeight`
+     280, `quickAddSheetHeightFraction` 0.92. Added to DESIGN.md.
+  6. Reduce motion uses zero durations (instant), per the existing
+     project rule (`AppMotion.resolve`).
+  7. The app theme is built once (`AppTheme.light()` returns one cached
+     `ThemeData`), so rebuilds do not start a theme animation.
+  8. Category usage groups by `+category_id`, so SQLite uses `ix_tx_date`
+     for the 90-day range. Measured on 20,000 rows: save p50 about
+     3.6ms, open data p50 about 35–38ms; the gate is p50 under 250ms.
+- Options considered: toast owned by the sheet; a dialog shadow
+  workaround; a hint line that collapses; rolling on every key.
+- Reason: The toast and Undo must not be lost; flat design rule; no
+  layout jumps; rolling digits while typing is distracting.
+- Decided by: team (senior-dev, junior-dev, qa-reviewer).
+
+## 2026-11-12: Open after session 4
+- Quick Add open time on a real phone (profile mode, target under
+  300ms) is not measured yet: there is no device in CI or the cloud
+  session. The owner should check it on a phone.
+- The bottom sheet theme still uses elevation 16 with `shadowInk`
+  instead of a flat or `shadowFloat` style. Align it later.
+- DESIGN.md's toast rule still lists `shadowFloat`; the built toast is
+  flat (elevation 0). Update DESIGN.md or the toast to match.

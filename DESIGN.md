@@ -69,6 +69,23 @@ must use these names and values; change them here first.
 
 The colour picker offers 9 colours. `sun` (`#FDD85C`) is the same yellow as Axis, so it is left out of the picker. It stays a valid token for stored values.
 
+### Category colour groups
+Tint = the token at 20% opacity behind an `ink` icon. The stored value
+is the group name, so a colour can change in one place.
+
+| Group | Token |
+|-------|-------|
+| essentials | `accountScb` |
+| food | `accountHand` |
+| transport | `accountOutside` |
+| home | `sun` |
+| lifestyle | `accountSbi` |
+| health | `primaryLight` |
+| family | `lime` |
+| finance | `accountPf` |
+| other | `iconInactive` |
+| income | `primary` |
+
 ### Chart series order
 `primary`, `lime`, `sun`, then account colours in the order above.
 
@@ -148,6 +165,15 @@ aligned with the date or amount right aligned.
 | `skeletonCardHeight` | 120 | Loading skeleton: balance card |
 | `chartBarWidth` | 6 | Bar width in the income-vs-expense chart (pill bars) |
 | `chartGridLine` | 1 | Chart grid line (`divider`) |
+| `numPadKeyHeight` | 56 | Quick Add number pad key (gap `space2`) |
+| `chipHeight` | 44 | Category chips, recent chips, detail pills, tab segments (= the 44 tap target) |
+| `chipIconCircle` | 28 | Tinted icon circle inside a chip (icon `iconChip` 16) |
+| `quickAddSheetHeightFraction` | 0.92 | Share of the available height the Quick Add sheet uses |
+| `categoryLabelMaxWidth` | 160 | Longest category name in a chip before it is cut with an ellipsis |
+| `recentLabelMaxWidth` | 120 | Longest recent-entry label before it is cut with an ellipsis |
+| `notePillMaxWidth` | 200 | Longest note preview in the note pill before it is cut |
+| `typeTabInset` | 2 | Inset of the sliding pill inside the Expense / Income / Transfer track |
+| `quickAddErrorHeight` | 280 | Height of the Quick Add load-error panel in the scrolling middle |
 
 ## Component rules
 | Component | Rule |
@@ -157,6 +183,11 @@ aligned with the date or amount right aligned.
 | Primary button | `primary` pill, `ink` label in `bodyStrong`, `buttonHeight`. Disabled: `divider` fill, `inkMuted` label |
 | Selectable tile | Not selected: `tile` fill. Selected: `navIndicator` fill and a `primaryDeep` check icon. No border (flat rule) |
 | Loading ring | `progressRing` size, `progressStroke`, colour `primaryDeep` on white (`primary` is only 1.9:1, below the 3:1 rule for graphics); `ink` on mint |
+| Choice chip | Not selected: `tile` fill, `ink` label (`body`), icon circle in the group tint. Selected: `primaryDeep` fill, `onDark` label, icon circle `background` with `ink` icon. `radiusPill`, `chipHeight`. Change `durationFast`, `curveEnter` |
+| Segmented tabs | `tile` pill track, `chipHeight`; selected segment `primaryDeep` fill + `onDark` `bodyStrong`; others `ink` `body`; disabled `iconInactive`. Indicator slides `durationFast` `curveEnter`; reduce motion: fade |
+| Number pad key | `tile` fill, `radiusField`, `numPadKeyHeight`, `headline` `ink` digits, icons 24 `ink`. Pressed: `navIndicator` fill + `pressScale`, `durationFast` |
+| Refused input | Amount nudges `space2` sideways and back, `durationMedium`, `curveEnter`; hint `caption` in `danger`. Reduce motion: hint fade only |
+| Toast | `primaryDeep` fill, `onDark` `body` text, action `bodyStrong` `onDark`, `radiusCard`, `shadowFloat`, margin `space6`, above the nav bar, stays `toastDuration`. In: `space4` slide up + fade `durationMedium` `curveEnter`; out: fade `durationFast` `curveExit`. Reduce motion: fade only |
 | Wizard step change | 24pt (`space6`) slide plus fade, `durationMedium`, `curveEnter` in and `curveExit` out. Reduce motion: fade only |
 
 ## Elevation and shadows
@@ -189,6 +220,7 @@ aligned with the date or amount right aligned.
 | `durationMedium` | 250ms | Sheets, page transitions, list insert/delete |
 | `durationSlow` | 300ms | Number roll, card carousel settle |
 | `durationChart` | 400ms | Charts drawing in and morphing |
+| `toastDuration` | 4000ms | How long the saved toast (with Undo) stays |
 | `loadingIndicatorDelay` | 300ms | Start screen ring waits this long before it shows (no flash on fast starts) |
 | `curveEnter` | `Curves.easeOutCubic` | Anything appearing or moving in |
 | `curveExit` | `Curves.easeInCubic` | Anything leaving |

@@ -7,8 +7,9 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/theme/category_colours.dart';
 import '../../../../shared/widgets/amount_text.dart';
-import '../../../../shared/widgets/category_icon.dart';
+import '../../../../shared/widgets/category_icon_circle.dart';
 import '../../../transactions/domain/statement_line.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 
@@ -106,17 +107,27 @@ class _Leading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final IconData icon = line.isTransfer
-        ? LucideIcons.arrowLeftRight
-        : categoryIconFor(line.categoryIcon ?? '');
-    return DecoratedBox(
-      decoration: const BoxDecoration(
+    if (!line.isTransfer) {
+      // Categories: the group tint behind the category icon (DESIGN.md
+      // "Category colour groups"). Unknown groups show the `other` tint.
+      return CategoryIconCircle(
+        iconName: line.categoryIcon ?? '',
+        colourGroup: line.categoryColourGroup ?? categoryGroupOther,
+      );
+    }
+    // Transfers have no category: the mint pill with the transfer arrow.
+    return const DecoratedBox(
+      decoration: BoxDecoration(
         color: AppColors.navIndicator,
         shape: BoxShape.circle,
       ),
       child: SizedBox.square(
         dimension: AppSizes.iconCircle,
-        child: Icon(icon, size: AppSizes.iconInline, color: AppColors.ink),
+        child: Icon(
+          LucideIcons.arrowLeftRight,
+          size: AppSizes.iconInline,
+          color: AppColors.ink,
+        ),
       ),
     );
   }
