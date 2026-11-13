@@ -2,6 +2,196 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-13: mini_checklist look and feel (PR: link added after opening)
+
+### Added
+- Home in mini_checklist's layout: an illustrated sky that follows the
+  time of day (dawn, day, dusk, night) with drifting clouds, twinkling
+  stars, hills and a sun or moon; the big date; glass buttons; the
+  week's spending as glass bars; stat chips (Today spent, Month left or
+  Budget left, Savings %); and a sliding panel with a 9-day strip and
+  the latest entries (tap a day to see only that day).
+- The Auditor Monkey, drawn natively in Mimi's SVG style (glasses,
+  clipboard, bow tie) with Mimi's moods, reactions and touch zones:
+  breathing, blinking, tail swish, head tilt, jump, hop, shake, nod,
+  dance, spin, wave, ear twitch, purr with hearts, dizzy stars, star
+  bursts and a speech bubble. It hops and speaks when you save in Quick
+  Add, worries when the month goes over plan, smiles when under, and
+  sleeps late at night.
+- `Glass` (blur 14 + saturate 1.4 + 1px white inner border, grouped
+  backdrop), `GlassIconButton`, `PressScale` (springy press),
+  `Keyframes` (CSS keyframes port), `SkyScene`.
+- Fonts Unbounded, DM Sans and DM Mono (OFL, licences bundled and on
+  the Licenses page).
+
+### Changed
+- All design tokens now follow mini_checklist (`panel`, `card`, `line`,
+  `fill`, `coral` accent, `teal`, `lime`, `sun`, `red`), radii 26 / 18 /
+  12, springy motion curves. Every screen (setup wizard, Accounts and
+  statement, Quick Add, empty and error states, demo-data sheet, bottom
+  bar, Quick Add button, buttons) picks this up through the tokens.
+- Illustrations recoloured to the new palette.
+- DESIGN.md replaced with the new system.
+- Goldens regenerated.
+
+### Removed
+- The 3D mascot (`flutter_3d_controller`, `assets/3d/monkey.glb`,
+  `tool/make_placeholder_glb.py`, `visibility_detector`) and the Outfit
+  font.
+
+## 2026-11-13: Design polish (PR: #11)
+
+### Added
+- Motion tokens from DESIGN.md in `AppMotion`, and a staggered entrance
+  for cards and list rows (`StaggeredEntrance`).
+- Balance roll-up: balances and net worth roll from 0 the first time
+  they show in each app launch, then roll from the old to the new value
+  when they change.
+- Saved toast in Quick Add now shows a drawn success check
+  (`SuccessCheck`).
+- 11 original SVG illustrations in `assets/illustrations/` (empty
+  states, error, wizard, mascot poster), drawn by the new
+  `AppIllustration` widget. Decorative only (no semantics).
+- 3D Auditor Monkey mascot on Home and in the setup wizard
+  (`MascotView`). Moods: idle, happy, worried, celebrating, sleeping.
+  A tap plays `happy` once. Loads after the first frame, unmounts when
+  off-screen or the app is in the background, and shows a still poster
+  when the 3D view is not available.
+- Placeholder model `assets/3d/monkey.glb` (70KB) with the five named
+  animations, made by `tool/make_placeholder_glb.py`.
+- Demo data (debug and profile builds only): 3 months of Indian
+  personal finance entries in a separate database file, one-tap clear,
+  and a "Demo data" ribbon while it is on.
+- New goldens and updated ones, listed with pictures in
+  `docs/plans/design-polish-goldens.md`.
+- Packages: flutter_3d_controller, flutter_svg, visibility_detector.
+
+### Changed
+- Quick Add sheet opens with a spring; the number pad works from the
+  first frame.
+- Tab switch is a fade-through (old tab fades out, new tab fades and
+  scales in).
+- Pages pushed inside a tab (for example the statement) use a
+  shared-axis slide and fade.
+- Empty and error states use illustrations instead of large icons.
+  `accounts_empty.png` golden replaced by
+  `accounts_empty_illustration.png`.
+- All new motion respects reduce motion (final state at once).
+- No schema change.
+
+### Security
+- Android network security config: plain HTTP is allowed only to
+  `127.0.0.1` and `localhost` (the mascot's local file server);
+  everything else stays HTTPS only. `INTERNET` permission added.
+- Demo data code runs only when `kReleaseMode` is false, so release
+  builds do not include it, and demo entries never mix with real data.
+
+### Fixed
+- Logs keep short row ids that are all digits (about 1 in 100 ids were
+  masked as `[number]`); this also fixes a randomly failing logging test.
+
+## 2026-11-12: Session 4, Quick Add (PR: -)
+
+### Added
+- Quick Add sheet behind the centre +: tabs Expense / Income / Transfer,
+  number pad on screen at once, amount with live Indian grouping,
+  category chips (up to 6 suggested first, then the rest) and an "All"
+  sheet grouped by colour group, account picker with balances, From /
+  swap / To for transfers, "Today" / "Yesterday" chips plus a date
+  picker (up to 31 days ahead), note sheet, Save.
+- Last-used account and category per type are picked by default. An
+  expense with the right defaults takes 3 steps: open, type amount,
+  save.
+- "RECENT" strip: up to 6 distinct recent entries; a tap fills the form
+  (Save still needed).
+- Saved toast above the nav bar with Undo (4s), shown even if the sheet
+  was closed while saving.
+- States: loading, typing, amount refused, transfer disabled (one
+  account), saving, save error, no categories, load error.
+- Read-only Quick Add queries (last used per type, category usage,
+  recent entries) in `transactions_quick_add_queries.dart` and
+  `QuickAddRepository`. No schema change.
+- Category colour groups: each group uses an existing colour token at
+  20% tint (DESIGN.md). Statement rows now use the group tint.
+- New DESIGN.md tokens in code: `numPadKeyHeight`, `chipHeight`,
+  `chipIconCircle`, `quickAddSheetHeightFraction`,
+  `categoryLabelMaxWidth`, `recentLabelMaxWidth`, `notePillMaxWidth`,
+  `typeTabInset`, `quickAddErrorHeight`, motion `toastDuration`. Rules
+  for choice chips, segmented tabs, number pad keys, refused input and
+  the toast. Toast and date picker themes from tokens.
+- Tests: amount parsing and refusal cases (no rounding, no doubles),
+  defaults, category order, recent de-duplication, validation, queries,
+  notifier (double save saves once), money correctness (expense, income,
+  both sides of a transfer, spending totals unchanged by transfers,
+  Undo), logs, performance on 20,000 rows, widget tests and 19 new
+  goldens.
+
+### Changed
+- `statementPageSql` also returns the category colour group.
+- Loan categories are not offered in Quick Add (owner decision); how
+  totals count them did not change.
+
+### Fixed
+- The app theme is now built once, so rebuilds no longer start a theme
+  animation.
+
+### Security
+- Quick Add logs show only the type, timings, counts and failure codes;
+  never amounts, notes, names, dates or clipboard text (tested).
+
+## 2026-11-12: Session 3, accounts and setup wizard (PR: [#9](https://github.com/deenazar/auditor_monkey/pull/9))
+
+### Added
+- Setup wizard on first launch (`/setup`): welcome, pick accounts (7
+  presets plus your own), opening balances (card accounts get an
+  "I owe" toggle), review with starting net worth. "Create accounts"
+  saves all accounts in one go, all or nothing.
+- Start screen (`/start`): loading ring after 300ms; on a database
+  error a safe message and "Try again" (re-opens the database, never
+  wipes data).
+- Accounts tab: net worth (rolls on change), card carousel in each
+  account's colour with spring snap, and an "All accounts" list.
+  Loading, empty and error states.
+- Account statement (`/accounts/:accountId`): balance card, 6-month
+  income-vs-expense pill bar chart, entries newest first with the
+  running balance after each one, opening balance as the last row.
+  Pages of 50, next page at 80% scroll, live refresh.
+- "Edit account" sheet on the statement and "Add account" on the
+  Accounts screen (name, type, colour, opening balance). No archive or
+  delete UI.
+- The 7 preset accounts have fixed, hard-coded ids; custom accounts get
+  random ids.
+- New queries: statement page with running balance in SQL, monthly
+  income / expense per account, "has live account", one account's
+  balance, max sort order. `createAll`, `addAccount`, `editAccount` in
+  `AccountsRepository`.
+- Shared widgets: `PageHeader`, `AmountText`, `PrimaryButton`,
+  `AppTextField`, `EmptyState`, `ErrorState`, `SkeletonBlock`,
+  `StepDots`, `RollingAmount`, `StatTile`, category icons, money input
+  formatter.
+- New DESIGN.md tokens in code (`AppSizes`, `AppMotion`): component
+  sizes (card, side-tab, peek, button, field, icon circle, colour dot,
+  swatch, chart, step dots, icon sizes, progress ring, field line,
+  chart bar and grid line) and the spring stiffness / damping values.
+- Golden tests (20 PNGs under `test/**/goldens/`), with Outfit, Lucide
+  and a test-only Roboto ₹ fallback loaded in
+  `test/flutter_test_config.dart`. CI uploads `**/failures/*.png` as an
+  artifact when tests fail.
+- Acceptance test: balances match the sum of transactions after the
+  database is closed and reopened.
+- Package: fl_chart 1.3.1 (pinned).
+
+### Changed
+- App start now goes `/start` → `/setup` (no accounts) or the normal
+  tabs. `test/app/app_test.dart` uses an in-memory database.
+- `accountBalancesProvider` and `netWorthProvider` no longer retry, so
+  error states show.
+
+### Security
+- Logs from the wizard, statement and account edits show no account
+  names or amounts (tested).
+- The start screen never shows the raw error; it is logged instead.
+
 ## 2026-11-12: Session 2, data model and Drift database (PR: https://github.com/deenazar/auditor_monkey/pull/7)
 
 ### Added

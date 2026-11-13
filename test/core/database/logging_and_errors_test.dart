@@ -1,6 +1,7 @@
 import 'package:auditor_monkey/core/database/repository_support.dart';
 import 'package:auditor_monkey/core/logging/log_level.dart';
 import 'package:auditor_monkey/core/logging/log_record.dart';
+import 'package:auditor_monkey/core/utils/id_generator.dart';
 import 'package:auditor_monkey/core/utils/validation_failure.dart';
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/categories/domain/category.dart';
@@ -62,6 +63,16 @@ void main() {
       expect(text, contains('restore ok id=${shortId(t.id)}'));
       // Full ids are never logged.
       expect(text, isNot(contains(a.id)));
+    });
+
+    test('short ids made only of digits are logged, not masked', () async {
+      final TestEnv digits = TestEnv(ids: _DigitIds());
+      addTearDown(digits.close);
+      final Account a = await digits.accounts.create(
+        accountDraft(name: 'Wallet', opening: 100),
+      );
+      expect(shortId(a.id), '12345678');
+      expect(digits.sink.allText, contains('create ok id=12345678'));
     });
 
     test('rejected input is a warning with the code only', () async {
@@ -183,4 +194,14 @@ void main() {
       expect(AccountType.values.byName('pf'), AccountType.pf);
     });
   });
+}
+
+/// Makes valid UUID v4 text whose first 8 characters are all digits
+/// (about 1 in 100 random ids look like this).
+class _DigitIds extends IdGenerator {
+  int _next = 0;
+
+  @override
+  String newId() =>
+      '12345678-0000-4000-8000-${(_next++).toString().padLeft(12, '0')}';
 }

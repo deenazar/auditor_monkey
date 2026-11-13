@@ -40,3 +40,12 @@ jobs:
 
       - name: Test
         run: flutter test
+
+      - name: Upload golden failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-failures
+          path: "**/failures/*.png"
+          if-no-files-found: ignore
+          retention-days: 7

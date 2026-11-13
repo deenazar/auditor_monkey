@@ -12,6 +12,7 @@ class InsightsScreen extends StatelessWidget {
       eyebrow: 'Your Spending',
       title: 'Insights',
       message: 'Charts will show up here.',
+      illustration: 'empty_insights',
     );
   }
 }

@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/theme/app_motion.dart';
-import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/placeholder_view.dart';
+import '../../../shared/theme/app_sizes.dart';
+import '../application/quick_add_notifier.dart';
+import '../application/quick_add_state.dart';
+import 'quick_add_body.dart';
+import 'quick_add_keys.dart';
 
-/// Empty placeholder for the Quick Add sheet (built in a later session).
-class QuickAddSheet extends StatelessWidget {
+/// The Quick Add bottom sheet: frame, hardware keys and close on success.
+///
+/// [show] returns the saved entry (for the toast) or `null` when the sheet
+/// was closed without saving. Closing drops the draft without asking.
+class QuickAddSheet extends ConsumerStatefulWidget {
   const QuickAddSheet({super.key});
 
-  /// Opens the sheet: [AppMotion.durationMedium], [AppMotion.curveEnter].
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
+  /// Opens with the [AppMotion.sheetSpring] curve (about 350ms, slight
+  /// overshoot); the sheet is usable from its first frame. Closes in
+  /// [AppMotion.durationMedium] with [AppMotion.curveExit]. Zero durations
+  /// with reduce motion.
+  static Future<SavedEntry?> show(BuildContext context) {
+    return showModalBottomSheet<SavedEntry>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       sheetAnimationStyle: AnimationStyle(
-        duration: AppMotion.resolve(context, AppMotion.durationMedium),
+        duration: AppMotion.resolve(context, AppMotion.durationSheetOpen),
         reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),
-        curve: AppMotion.curveEnter,
+        curve: AppMotion.sheetSpringCurve,
         reverseCurve: AppMotion.curveExit,
       ),
       builder: (BuildContext context) => const QuickAddSheet(),
@@ -25,15 +35,40 @@ class QuickAddSheet extends StatelessWidget {
   }
 
   @override
+  ConsumerState<QuickAddSheet> createState() => _QuickAddSheetState();
+}
+
+class _QuickAddSheetState extends ConsumerState<QuickAddSheet> {
+  bool _closing = false;
+
+  void _onStatus(SaveStatus? previous, SaveStatus next) {
+    if (next != SaveStatus.done || _closing) return;
+    _closing = true;
+    // Already closing (for example a swipe-down during the save): the toast
+    // comes from the shell, and a second pop would close the page below.
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    Navigator.of(context).pop(ref.read(quickAddProvider).saved);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.6,
-      child: const Padding(
-        padding: EdgeInsets.only(top: AppSpacing.space2),
-        child: PlaceholderView(
-          eyebrow: 'New entry',
-          title: 'Quick Add',
-          message: 'Expense, income and transfer will go here.',
+    ref.listen<SaveStatus>(
+      quickAddProvider.select((QuickAddState s) => s.status),
+      _onStatus,
+    );
+    final bool saving = ref.watch(
+      quickAddProvider.select((QuickAddState s) => s.isSaving),
+    );
+    // Android back (and a tap outside) is held while the save runs.
+    return PopScope(
+      canPop: !saving,
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (FocusNode node, KeyEvent event) =>
+            handleQuickAddKey(event, ref.read(quickAddProvider.notifier)),
+        child: const FractionallySizedBox(
+          heightFactor: AppSizes.quickAddSheetHeightFraction,
+          child: QuickAddBody(),
         ),
       ),
     );
