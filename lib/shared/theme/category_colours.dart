@@ -14,11 +14,11 @@ const Map<String, Color> _groupColours = <String, Color>{
   'transport': AppColors.accountOutside,
   'home': AppColors.sun,
   'lifestyle': AppColors.accountSbi,
-  'health': AppColors.primaryLight,
-  'family': AppColors.lime,
+  'health': AppColors.teal,
+  'family': AppColors.violet,
   'finance': AppColors.accountPf,
   'other': AppColors.iconInactive,
-  'income': AppColors.primary,
+  'income': AppColors.lime,
 };
 
 /// The group colour (solid) for a stored group name, e.g. `food`.

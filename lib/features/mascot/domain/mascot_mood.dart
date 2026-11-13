@@ -1,20 +1,41 @@
-/// The mascot's mood; each maps to one animation clip in the model.
+/// The monkey's base mood, set by the screen that shows it.
 enum MascotMood {
-  /// Calm loop.
+  /// Calm: open eyes, small smile.
   idle,
 
-  /// Happy one-shot.
+  /// Under budget: big grin, rosy cheeks.
   happy,
 
-  /// Worried loop.
+  /// Over budget: raised brows, wobbly mouth, a sweat drop.
   worried,
 
-  /// Celebration one-shot.
+  /// A one-off celebration: dances once, happy eyes.
   celebrating,
 
-  /// Sleeping loop.
-  sleeping;
+  /// Night and nothing happening: eyes shut, nodding, "zzz".
+  sleeping,
+}
 
-  /// The clip name inside `monkey.glb` (lower-case).
-  String get clipName => name;
+/// One-shot reactions (mimi-world.js `react(kind)`).
+enum MascotReaction {
+  /// An entry was added: hop, happy.
+  add,
+
+  /// An entry was deleted: head shake.
+  del,
+
+  /// A goal reached: two dances and a star burst.
+  win,
+
+  /// Something went wrong / over budget: nod, worried.
+  sad,
+
+  /// Hello: waves a paw.
+  hello,
+
+  /// A spin.
+  spin,
+
+  /// A happy jump.
+  check,
 }

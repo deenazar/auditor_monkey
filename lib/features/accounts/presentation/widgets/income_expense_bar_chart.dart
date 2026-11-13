@@ -143,8 +143,8 @@ class _IncomeExpenseBarChartState extends State<IncomeExpenseBarChart> {
             x: i,
             barsSpace: AppSpacing.space1,
             barRods: <BarChartRodData>[
-              _rod(shown(months[i].income), AppColors.primary),
-              _rod(shown(months[i].expense), AppColors.sun),
+              _rod(shown(months[i].income), AppColors.teal),
+              _rod(shown(months[i].expense), AppColors.coral),
             ],
           ),
       ],
@@ -167,9 +167,9 @@ class _Legend extends StatelessWidget {
     return const Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        _LegendItem(colour: AppColors.primary, label: 'Income'),
+        _LegendItem(colour: AppColors.teal, label: 'Income'),
         SizedBox(width: AppSpacing.space6),
-        _LegendItem(colour: AppColors.sun, label: 'Expense'),
+        _LegendItem(colour: AppColors.coral, label: 'Expense'),
       ],
     );
   }

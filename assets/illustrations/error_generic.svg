@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200" fill="none">
 
-<path d="M120 44 A56 56 0 0 0 120 156 L108 136 L118 118 L104 98 L116 76 L106 60 Z" fill="#FDD85C" stroke="#1E3B31" stroke-width="2.5" stroke-linejoin="round"/>
-<path d="M120 44 A56 56 0 0 1 120 156 L132 136 L122 118 L136 98 L124 76 L134 60 Z" fill="#FDD85C" stroke="#1E3B31" stroke-width="2.5" stroke-linejoin="round" transform="translate(14 -8)"/>
-<path d="M44 66 L32 56 M44 100 L26 100 M204 62 L216 52 M200 132 L216 140" stroke="#1E3B31" stroke-width="3" stroke-linecap="round"/>
-<circle cx="34" cy="150" r="5" fill="#70D0B2"/>
-<circle cx="206" cy="38" r="5" fill="#E4E782"/>
+<path d="M120 44 A56 56 0 0 0 120 156 L108 136 L118 118 L104 98 L116 76 L106 60 Z" fill="#FFC24D" stroke="#10202A" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M120 44 A56 56 0 0 1 120 156 L132 136 L122 118 L136 98 L124 76 L134 60 Z" fill="#FFC24D" stroke="#10202A" stroke-width="2.5" stroke-linejoin="round" transform="translate(14 -8)"/>
+<path d="M44 66 L32 56 M44 100 L26 100 M204 62 L216 52 M200 132 L216 140" stroke="#10202A" stroke-width="3" stroke-linecap="round"/>
+<circle cx="34" cy="150" r="5" fill="#FF6B4A"/>
+<circle cx="206" cy="38" r="5" fill="#FFD86E"/>
 </svg>

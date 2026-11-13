@@ -11,11 +11,11 @@ void main() {
     expect(categoryGroupColour('transport'), AppColors.accountOutside);
     expect(categoryGroupColour('home'), AppColors.sun);
     expect(categoryGroupColour('lifestyle'), AppColors.accountSbi);
-    expect(categoryGroupColour('health'), AppColors.primaryLight);
-    expect(categoryGroupColour('family'), AppColors.lime);
+    expect(categoryGroupColour('health'), AppColors.teal);
+    expect(categoryGroupColour('family'), AppColors.violet);
     expect(categoryGroupColour('finance'), AppColors.accountPf);
     expect(categoryGroupColour('other'), AppColors.iconInactive);
-    expect(categoryGroupColour('income'), AppColors.primary);
+    expect(categoryGroupColour('income'), AppColors.lime);
   });
 
   test('every CategoryColourGroup value is mapped and listed in order', () {

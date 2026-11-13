@@ -1,5 +1,5 @@
 // Golden app with the test-only ₹ fallback font on EVERY text, including
-// text with explicit styles (AppTextStyles). Outfit has no ₹; on a phone the
+// text with explicit styles (AppTextStyles). The app fonts have no ₹; on a phone the
 // system font draws it. Wrapping the whole app in a DefaultTextStyle lets
 // the fallback reach routes and sheets too. Built on golden.dart.
 import 'package:flutter/material.dart';
