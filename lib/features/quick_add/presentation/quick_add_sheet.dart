@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/theme/app_motion.dart';
 import '../../../shared/theme/app_sizes.dart';
+import '../../../shared/widgets/token_sheet.dart';
 import '../application/quick_add_notifier.dart';
 import '../application/quick_add_state.dart';
 import 'quick_add_body.dart';
@@ -18,10 +19,8 @@ class QuickAddSheet extends ConsumerStatefulWidget {
   /// Opens the sheet: [AppMotion.durationMedium], [AppMotion.curveEnter];
   /// closes with [AppMotion.curveExit]. Zero durations with reduce motion.
   static Future<SavedEntry?> show(BuildContext context) {
-    return showModalBottomSheet<SavedEntry>(
+    return showTokenSheet<SavedEntry>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       sheetAnimationStyle: AnimationStyle(
         duration: AppMotion.resolve(context, AppMotion.durationMedium),
         reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),

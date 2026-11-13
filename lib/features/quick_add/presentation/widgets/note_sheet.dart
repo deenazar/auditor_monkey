@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/token_sheet.dart';
 import 'choice_pill.dart';
 
 /// The note pill in the details row: "Add note" or the first words of the
@@ -74,12 +74,8 @@ class NoteSheet extends StatefulWidget {
     BuildContext context, {
     required String initialNote,
   }) {
-    return showModalBottomSheet<String>(
+    return showTokenSheet<String>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
       builder: (BuildContext sheetContext) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,

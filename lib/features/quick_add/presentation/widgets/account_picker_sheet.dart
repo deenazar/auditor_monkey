@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/widgets/token_sheet.dart';
 import '../../../accounts/presentation/widgets/account_colours.dart';
 import 'quick_add_view_models.dart';
 
@@ -35,12 +36,8 @@ class AccountPickerSheet extends StatelessWidget {
     required String? selectedId,
     String? disabledId,
   }) {
-    return showModalBottomSheet<String>(
+    return showTokenSheet<String>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
       sheetAnimationStyle: AnimationStyle(
         duration: AppMotion.resolve(context, AppMotion.durationMedium),
         reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),

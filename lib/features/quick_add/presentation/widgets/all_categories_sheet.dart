@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_motion.dart';
-import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/category_colours.dart';
+import '../../../../shared/widgets/token_sheet.dart';
 import 'category_chip.dart';
 import 'quick_add_view_models.dart';
 
@@ -27,12 +26,8 @@ class AllCategoriesSheet extends StatelessWidget {
     required List<CategoryChipData> categories,
     required String? selectedId,
   }) {
-    return showModalBottomSheet<String>(
+    return showTokenSheet<String>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
       sheetAnimationStyle: AnimationStyle(
         duration: AppMotion.resolve(context, AppMotion.durationMedium),
         reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),

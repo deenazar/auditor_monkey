@@ -612,7 +612,26 @@ approved by the owner on 2026-11-12.
 - Quick Add open time on a real phone (profile mode, target under
   300ms) is not measured yet: there is no device in CI or the cloud
   session. The owner should check it on a phone.
-- The bottom sheet theme still uses elevation 16 with `shadowInk`
-  instead of a flat or `shadowFloat` style. Align it later.
+- ~~The bottom sheet theme still uses elevation 16 with `shadowInk`
+  instead of a flat or `shadowFloat` style.~~ **Closed for the Quick
+  Add sheets** (see "Quick Add sheets use the shadowFloat token" below).
+  The account form sheet (session 3) still uses the theme default.
 - DESIGN.md's toast rule still lists `shadowFloat`; the built toast is
   flat (elevation 0). Update DESIGN.md or the toast to match.
+
+## 2026-11-13: Quick Add sheets use the shadowFloat token
+- Decision: The 4 Quick Add sheets (main sheet, All categories, account
+  picker, note) now draw DESIGN.md `shadowFloat` (`0 4 16
+  rgba(30,59,49,0.12)`) instead of the raw Material shadow (elevation 16
+  with `shadowInk`). A shared `showTokenSheet` / `SheetSurface`
+  (`lib/shared/widgets/token_sheet.dart`) makes the Material sheet
+  transparent with elevation 0 and draws the white `radiusCard` top
+  corners and the token shadow itself. A widget test checks the token.
+  The 3 sheet goldens were regenerated (account picker, all
+  categories, note); the shape and colours did not change.
+- Options considered: a global theme change (would also change the
+  session 3 account form sheet); keeping Material elevation.
+- Reason: Material's `elevation` only takes a number, so a token can
+  only be used by drawing the shadow ourselves. Scoped to Quick Add as
+  asked.
+- Decided by: owner (asked), implemented by team.

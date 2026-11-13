@@ -44,6 +44,10 @@ One entry per pull request, grouped as Added / Changed / Fixed / Security.
   totals count them did not change.
 
 ### Fixed
+
+- Quick Add sheets (main, All categories, account picker, note) use
+  the DESIGN.md `shadowFloat` token instead of the raw Material
+  elevation shadow.
 - The app theme is now built once, so rebuilds no longer start a theme
   animation.
 
