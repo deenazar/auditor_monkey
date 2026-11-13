@@ -56,6 +56,7 @@ class NumPadKey extends StatelessWidget {
       onTap: active ? _tapWithHaptic : null,
       onLongPress: enabled && onLongPress != null ? _longPressWithHaptic : null,
       child: PressSurface(
+        haptic: false,
         enabled: enabled,
         onTap: onTap == null ? null : _tapWithHaptic,
         onLongPress: onLongPress == null ? null : _longPressWithHaptic,

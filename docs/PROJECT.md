@@ -106,7 +106,8 @@ design assumptions. The reference image is
 Summary: light mint design. White background, mint `#70D0B2` hero and
 cards, lime and yellow accents, dark-green `#1E3B31` text, Outfit font,
 flat rounded cards, Lucide outline icons, Quick Add + in the centre of
-the bottom bar. Use the DESIGN.md token names in code; if code and
+the bottom bar. A Motion & 3D layer (tilt, parallax, blobs, confetti,
+2.5D mascot) sits on top without changing the base. Use the DESIGN.md token names in code; if code and
 DESIGN.md disagree, DESIGN.md wins.
 
 ## Folder structure

@@ -780,3 +780,30 @@ approved by the owner on 2026-11-12.
   their id, and the test "logs operations by name and short id" failed
   at random.
 - Decided by: team (lead).
+
+## 2026-11-13: Back to the original design, with a Motion & 3D layer (owner)
+- Decision: Undo the mini_checklist restyle (revert of PR #12) and keep
+  the reference design + DESIGN.md base (PRs #4/#5 and later approved
+  additions) unchanged. Add depth and motion as a separate layer
+  (`lib/shared/wow/`, `app_depth.dart`, DESIGN.md "Motion & 3D").
+- Mascot: a 2.5D painter (depth shading, rim light, perspective lean,
+  parallax layers) instead of the `.glb` in a WebView.
+  - Options: keep the `.glb` WebView (placeholder model, WebView memory,
+    no guaranteed 60 fps on iPhone, cannot follow the finger smoothly,
+    blank in tests); Rive/Lottie (new toolchain and assets); 2.5D
+    painter (one painter, no allocations per frame, works in tests and
+    with reduce motion).
+  - Reason: the owner allowed "2.5D or .glb if it performs well"; the
+    painter is the one we can prove smooth.
+- Home: built in the reference layout now (it was a placeholder). Bell
+  icon left out until notifications exist; greeting says "Hello there"
+  until a profile exists.
+- "Over plan" without budgets means spending above income this month;
+  savings goal is 20% of income (one confetti per open of Home, only
+  after a save there, so it never fires on every launch).
+- Swipe-to-delete on Home uses the existing soft delete and restore
+  (Undo); no new data rules.
+- Layered shadows only on lifting cards (summary card, account cards,
+  previews); tiles and rows stay flat as the base says.
+- Decided by: owner (direction), lead (build choices).
+

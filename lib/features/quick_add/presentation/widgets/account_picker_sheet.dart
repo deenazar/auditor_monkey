@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/wow/haptics.dart';
 import '../../../accounts/presentation/widgets/account_colours.dart';
 import 'quick_add_view_models.dart';
 
@@ -132,7 +133,12 @@ class _AccountRow extends StatelessWidget {
       onTap: disabled ? null : onTap,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: disabled ? null : onTap,
+        onTap: disabled
+            ? null
+            : () {
+                AppHaptics.tap();
+                onTap();
+              },
         child: AnimatedContainer(
           duration: AppMotion.resolve(context, AppMotion.durationFast),
           curve: AppMotion.curveEnter,

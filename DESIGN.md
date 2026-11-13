@@ -251,7 +251,7 @@ Rules:
 - Nothing blocks the user while it animates.
 - When the phone's "reduce motion" is on: no movement, no scale, no
   stagger, no spring (fades only or instant). Numbers show the final
-  value at once. The 3D mascot shows its still poster image.
+  value at once. The mascot stays still (moods still change).
 - 60fps rule:
   - Animate only opacity and transform (translate, scale, rotate).
   - Wrap each animated subtree in a `RepaintBoundary`.
@@ -293,7 +293,7 @@ Rules:
 - **Empty and error states**: illustration (see Illustrations) above
   the `title` and `body` text, centred, replacing the `iconLarge` icon
   where an illustration exists. The block enters with the card entrance.
-- **Home** and the **setup wizard** show the 3D mascot (see Mascot).
+- **Home** and the **setup wizard** show the 2.5D mascot (see Mascot).
 - Cards and list groups on a screen use the card entrance with stagger
   (Motion patterns).
 
@@ -324,33 +324,128 @@ Original flat vector SVGs, drawn with `flutter_svg`.
 | `wizard_done` | Wizard: finished |
 | `mascot_poster` | Still 2D poster of the mascot (see Mascot) |
 
-## Mascot (3D Auditor Monkey)
+## Mascot (Auditor Monkey)
+The mascot is the **2.5D Auditor Monkey** (see "Motion & 3D"), drawn in
+code in the `mascot_poster` palette: `primaryDeep` fur, `lime` face and
+belly, `primary` inner ears, `ink` features, plus round glasses, a `sun`
+clipboard and bow tie.
+
 | Rule | Value |
 |------|-------|
-| Where | Home and the setup wizard only |
-| Size | 160pt square on Home, 180pt in the wizard |
+| Where | Home (hero, 92pt), setup wizard (welcome 168pt, review 180pt) |
 | States | `idle`, `happy`, `worried`, `celebrating`, `sleeping` (each screen picks its state) |
-| Tap | Plays `happy` once, then back to the screen's state; light haptic |
-| Semantics | Label "Auditor Monkey, tap to say hi", button role |
-| Package | `flutter_3d_controller` (see DECISIONS.md) |
-| Lazy load | The 3D view starts only after the screen's first frame and only when on-screen (`visibility_detector`) |
-| Pause | Rendering paused (or the view unmounted) when off-screen or the app is in the background |
-| Poster | `assets/illustrations/mascot_poster.svg` shows while loading, on any error, in tests and with reduce motion |
+| Tap | Reacts by zone (head, belly, ears, tail), double tap dances, stroke purrs; light haptic |
+| Semantics | Button with the label "Auditor Monkey. Tap the head, belly, ears or tail, or stroke it. Double-tap for a dance." |
+| Poster | `mascot_poster.svg` stays as the still 2D drawing (illustrations gallery) |
+| 3D model | The `.glb` / WebView viewer is removed (see DECISIONS.md, 2026-11-13). A real model can come back later if it holds 60 fps on iPhone |
 
-### Model requirements (owner's real model)
-| Item | Requirement |
-|------|-------------|
-| File | `assets/3d/monkey.glb` |
-| Format | glTF 2.0 binary (.glb), all textures embedded |
-| File size | Max 3 MB (a CI test fails above it) |
-| Textures | Max 1024×1024, PNG or JPEG. KTX2 / Draco not required; Draco allowed |
-| Triangles | Up to about 15k |
-| Axes and units | Y-up, metres; model faces +Z (towards the camera); feet at y=0; centred on x/z; about 1 unit tall |
-| Rig | One skinned or node-animated rig |
-| Animation clips | Names exactly lower-case: `idle` (loop), `happy` (one-shot, 1-2s), `worried` (loop), `celebrating` (one-shot, 2-3s), `sleeping` (loop) |
-| Extra / missing clips | Extra clips are ignored; a missing clip falls back to `idle` |
-| Cameras / lights | Not needed in the file |
-| Swap | Replace the file and rebuild. No code change |
+## Motion & 3D
+A premium layer **on top of** the base design above. It adds depth and
+motion only: no base colour, font, size or layout changes. Tokens live in
+`app_depth.dart`, extra colours in the "Motion & 3D layer" part of
+`app_colors.dart`, shadows in `app_shadows.dart`, widgets in
+`lib/shared/wow/`.
+
+### Tokens
+| Token | Value | Use |
+|-------|-------|-----|
+| `perspective` | 0.0012 | Matrix4 entry (3,2) for every 3D transform |
+| `tiltMax` | 8° | Card tilt under the finger |
+| `pressScale` (depth) | 0.97 | Card press-in while tilted |
+| `springy` | `Cubic(0.2, 1.6, 0.4, 1)` | Spring back after press / tilt; buttons, keys, chips, nav |
+| `bouncy` | `Cubic(0.2, 1.3, 0.4, 1)` | Pop-ins, mascot reactions, previews |
+| `press` | 200ms | Press scale time |
+| `tiltSettle` | 450ms | Tilt follow / spring back |
+| `parallaxBack` / `parallaxMid` | 0.35 / 0.18 | Share of the scroll a header layer moves |
+| `flipDegrees` / `flip` | 70° / 420ms | `FlipSwitcher` page flip |
+| `stepTurnDegrees` | 28° | Wizard step turn (around the centre) |
+| `blobLoop` | 14s | Header blob drift loop |
+| `sceneRestAfter` | 15s | Endless loops (blobs, mascot) rest after the last touch |
+| `shimmer` / `shimmerMax` | 1.4s / 10s | Skeleton sheen sweep; stops after 10s |
+| `confetti` / `confettiPieces` | 1.8s / 60 | Goal confetti |
+| `previewFrom` / `preview` | 0.86 / 320ms | Long-press preview scale-in |
+| `chartDraw` | 900ms | Area chart drawing in |
+
+| Colour | Value | Use |
+|--------|-------|-----|
+| `shadowContact` / `shadowKey` / `shadowAmbient` | ink 16% / 10% / 6% | Layered shadows |
+| `blobMintLight` / `blobMintDeep` | `#9FE3CC` / `#4FBF9C` | Header blobs |
+| `blobLime` / `blobSun` | lime 70% / sun 50% | Header blobs |
+| `sheen` | white 35% | Tilt highlight, shimmer |
+| `previewScrim` | ink 35% | Long-press preview backdrop (with 10pt blur) |
+| `mascotFurLight` / `mascotFurShade` | `#6E9A8C` / `#33554A` | Mascot fur gradient around `primaryDeep` |
+| `mascotFaceShade` | `#CDD15F` | Mascot face gradient around `lime` |
+| `mascotTongue` | `#E07A6E` | Mascot open mouth |
+| `confetti` | primary, lime, sun, primaryDeep, accountHand, accountOutside | Confetti pieces |
+
+| Shadow | Value | Use |
+|--------|-------|-----|
+| `shadowLayered` | 0 1 2 (16%) + 0 6 14 (10%) + 0 18 36 −6 (6%) | Cards that lift: summary card, account cards |
+| `shadowLifted` | 0 2 4 + 0 12 24 + 0 28 48 −8 | Pressed cards, long-press preview |
+
+The base rule "cards are flat" still holds for tiles, rows and fields;
+only the cards listed above lift.
+
+### Building blocks (`lib/shared/wow/`)
+| Widget | What it does |
+|--------|--------------|
+| `Tilt3D` | Perspective tilt towards the finger (up to `tiltMax`), press-in, moving sheen, spring back, light haptic |
+| `SpringPress` / `PressSurface` / `PrimaryButton` | Springy press (`springy`), haptic on every tap |
+| `Parallax` + `ScrollOffset` | Header layers move at `parallaxMid` / `parallaxBack` of the scroll and fade out |
+| `FlipSwitcher` | 3D page flip between children (Y axis) |
+| `AnimatedBlobs` | `primary` fill with drifting mint / lime / sun blobs and a slow light sweep; one painter |
+| `Shimmer` | Sheen sweep over `SkeletonBlock` loading blocks |
+| `Confetti` | 60 palette pieces burst, tumble in 3D and fall; removes itself |
+| `LongPressPreview` | Long press: blur + scrim, the preview springs in; release / tap closes |
+| `DepthPopIn` | One-shot entrance: tips forward 22° and grows from 0.9 (illustrations) |
+| `AppHaptics` | `tap` (keys, chips, tabs), `press` (buttons, cards), `success` (saved, goal, preview), `warning` (swipe threshold, refused tab, over plan) |
+
+### Mascot in 2.5D
+- One `CustomPainter`, 160×176 view box: radial fur gradient
+  (`mascotFurLight` → `primaryDeep` → `mascotFurShade`), `lime` face
+  gradient, `primary` rim light on head and body, a blurred contact
+  shadow under the head and a ground shadow, glints on glasses and eyes,
+  a soft `primaryLight` glow behind.
+- Depth: the whole figure leans in perspective towards the finger
+  (rotateY up to ±0.22 rad, rotateX ±0.14 rad). Layers shift by depth:
+  tail −4pt, head +3pt, face +2.5pt more (parallax), so it reads as 3D.
+- Follows touches: anywhere on Home and the wizard hero, the eyes and the
+  lean follow the finger, easing back 2.5s after it lifts.
+- Loops (from the CSS-keyframe port in `keyframes.dart`): breathing
+  3.4s, head tilt 7s, tail swish 2.8s, blink 5.2s, glow float 8s, "zzz"
+  3s while asleep. One-shots: jump, hop, shake, nod, dance ×2, spin,
+  wave, ear twitch, purr, dizzy stars, star burst.
+- Money events on Home: Quick Add save → hop + "Logged ₹…" (success
+  haptic); month goes over plan (spending above income) → worried face,
+  nod, warning haptic; back under → wave; savings goal (20% of income)
+  reached after a save → dance, confetti, "Savings goal hit!"; pull to
+  refresh → spin; swipe-delete → head shake. Idle 23:00–5:00 → asleep.
+
+### Per screen
+| Screen | Motion & 3D |
+|--------|-------------|
+| Home | `AnimatedBlobs` hero with parallax (text `parallaxMid`, chart `parallaxBack`, fades over 220pt); net worth rolls; area chart draws in (white line, `primaryLight` fill, end dot); mascot bottom-right; lime summary card tilts, `shadowLayered`, rolls; "Savings goal reached" card (`success_goal`) pops in and tilts; rows enter staggered, swipe left to delete (red, trash icon, `warning` haptic at 35%) with Undo, long-press preview; pull-to-refresh (`primaryDeep` ring on white) |
+| Setup wizard | Welcome hero = `AnimatedBlobs` + 168pt mascot that waves hello and follows the finger; steps turn in 3D (`stepTurnDegrees`) while they slide and fade; review mascot celebrates; finishing set-up bursts confetti |
+| Accounts | Carousel cards tilt (`Tilt3D`), lift on `shadowLayered`, and fly into the statement's balance card (`Hero`); list rows long-press to preview the card; pull-to-refresh |
+| Statement | Receives the card `Hero`; chart bars draw in (base rule) |
+| Quick Add | Haptic on every key, chip, pill, tab and account pick; springy presses; `warning` haptic on a refused tab; `success` haptic on save; mascot hops on Home |
+| Empty / error / success states | Illustrations pop in with `DepthPopIn`; new `success_goal` illustration |
+| Loading | `SkeletonBlock` shimmers (max 10s) |
+| Bottom bar | Haptic on tab tap; Quick Add springs and gives a `press` haptic |
+| Settings | There is no settings screen yet; it will use the same blocks |
+
+### Rules
+- **Reduce motion**: no tilt, parallax, flip, blobs, shimmer, confetti,
+  pop-ins, chart draw or mascot movement. Things show their final state
+  at once; transitions fade. Haptics, moods and speech still work.
+- **60 fps on iPhone**: animate only transforms and opacity; each
+  animated layer sits in its own `RepaintBoundary`; painters repaint
+  through a `Listenable` (no widget rebuild per frame) and reuse their
+  `Paint`s; endless loops rest after `sceneRestAfter`, shimmer after
+  `shimmerMax`, and pause off-screen (`TickerMode`). No blur on scroll
+  (blur only in the long-press preview).
+- Money logic, data and schema are untouched; swipe-to-delete uses the
+  existing soft delete and restore.
 
 ## Demo data
 | Rule | Value |

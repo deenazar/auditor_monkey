@@ -9,6 +9,7 @@ import '../../../../shared/widgets/staggered_entrance.dart';
 import '../../../transactions/domain/statement_line.dart';
 import '../../application/account_statement_provider.dart';
 import '../../domain/account.dart';
+import 'account_hero.dart';
 import 'account_type_label.dart';
 import 'opening_balance_row.dart';
 import 'statement_balance_card.dart';
@@ -71,10 +72,13 @@ class StatementListView extends StatelessWidget {
                         title: account.name,
                       ),
                       const SizedBox(height: AppSpacing.space6),
-                      StatementBalanceCard(
-                        colourToken: account.colour,
-                        balancePaise: s.balance,
-                        rollKey: 'statement:${account.id}',
+                      Hero(
+                        tag: accountHeroTag(account.id),
+                        child: StatementBalanceCard(
+                          colourToken: account.colour,
+                          balancePaise: s.balance,
+                          rollKey: 'statement:${account.id}',
+                        ),
                       ),
                     ],
                   ),

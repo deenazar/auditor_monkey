@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/theme/app_depth.dart';
 import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_sizes.dart';
+import '../../../../shared/wow/haptics.dart';
 
 /// Builds a tappable surface that reports its pressed state.
 ///
@@ -16,6 +18,7 @@ class PressSurface extends StatefulWidget {
     this.onLongPress,
     this.enabled = true,
     this.pressScale = AppSizes.pressScale,
+    this.haptic = true,
     super.key,
   });
 
@@ -28,6 +31,9 @@ class PressSurface extends StatefulWidget {
 
   /// Scale while pressed (`pressScale` for keys and chips).
   final double pressScale;
+
+  /// Selection haptic on every tap (Motion & 3D layer).
+  final bool haptic;
 
   @override
   State<PressSurface> createState() => _PressSurfaceState();
@@ -53,12 +59,17 @@ class _PressSurfaceState extends State<PressSurface> {
       onTapDown: _active ? (_) => _setPressed(true) : null,
       onTapUp: _active ? (_) => _setPressed(false) : null,
       onTapCancel: _active ? () => _setPressed(false) : null,
-      onTap: _active ? widget.onTap : null,
+      onTap: _active && widget.onTap != null
+          ? () {
+              if (widget.haptic) AppHaptics.tap();
+              widget.onTap!();
+            }
+          : null,
       onLongPress: _active ? widget.onLongPress : null,
       child: AnimatedScale(
         scale: pressed && !reduce ? widget.pressScale : 1,
-        duration: AppMotion.resolve(context, AppMotion.durationFast),
-        curve: AppMotion.curveEnter,
+        duration: AppMotion.resolve(context, AppDepth.press),
+        curve: AppDepth.springy,
         child: surface,
       ),
     );

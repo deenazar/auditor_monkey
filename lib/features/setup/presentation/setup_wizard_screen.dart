@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/wow/confetti.dart';
 import '../../accounts/presentation/widgets/account_form_sheet.dart';
 import '../../accounts/presentation/widgets/account_form_values.dart';
 import '../../accounts/presentation/widgets/show_account_form_sheet.dart';
@@ -80,8 +81,11 @@ class SetupWizardScreen extends ConsumerWidget {
         onBack: () {
           notifier.back();
         },
-        onSave: () {
-          notifier.save();
+        onSave: () async {
+          final bool done = await notifier.save();
+          // Goal reached: the books are set up. Confetti and a success
+          // haptic (the overlay outlives the route change).
+          if (done && context.mounted) Confetti.burst(context);
         },
       ),
     };

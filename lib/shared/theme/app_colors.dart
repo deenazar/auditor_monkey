@@ -55,4 +55,48 @@ abstract final class AppColors {
 
   /// Shadow color for [AppShadows.shadowFloat]: ink at 12% opacity.
   static const Color shadowInk = Color(0x1F1E3B31);
+
+  // ---- Motion & 3D layer (DESIGN.md "Motion & 3D"); base unchanged ----
+
+  /// Layered shadow tones: ink at 6%, 10% and 16%.
+  static const Color shadowAmbient = Color(0x0F1E3B31);
+  static const Color shadowKey = Color(0x1A1E3B31);
+  static const Color shadowContact = Color(0x291E3B31);
+
+  /// Hero blobs: lighter and deeper mint, lime and sun glows.
+  static const Color blobMintLight = Color(0xFF9FE3CC);
+  static const Color blobMintDeep = Color(0xFF4FBF9C);
+  static const Color blobLime = Color(0xB3E4E782);
+  static const Color blobSun = Color(0x80FDD85C);
+
+  /// Specular sheen on tilted cards and shimmer highlight (white 35%).
+  static const Color sheen = Color(0x59FFFFFF);
+
+  /// Long-press preview backdrop (ink 35%).
+  static const Color previewScrim = Color(0x591E3B31);
+
+  /// Swipe-to-delete row background.
+  static const Color swipeDelete = danger;
+
+  /// Auditor Monkey (2.5D): deep-green fur with highlight and shade, lime
+  /// face with shade, mint ears and rim light (mascot_poster palette).
+  static const Color mascotFurLight = Color(0xFF6E9A8C);
+  static const Color mascotFur = primaryDeep;
+  static const Color mascotFurShade = Color(0xFF33554A);
+  static const Color mascotFace = lime;
+  static const Color mascotFaceShade = Color(0xFFCDD15F);
+  static const Color mascotOutline = ink;
+  static const Color mascotLens = Color(0x40FFFFFF);
+  static const Color mascotTongue = Color(0xFFE07A6E);
+  static const Color mascotSweat = accountOutside;
+
+  /// Confetti, in palette order.
+  static const List<Color> confetti = <Color>[
+    primary,
+    lime,
+    sun,
+    primaryDeep,
+    accountHand,
+    accountOutside,
+  ];
 }

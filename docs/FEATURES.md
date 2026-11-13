@@ -342,6 +342,36 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-13
 - **PR link**: -
 
+## Motion & 3D layer (before roadmap session 5)
+- **What it does**: Keeps the original reference design and adds depth
+  and motion on top. Rules: DESIGN.md "Motion & 3D".
+- **Home**: mint hero with drifting blobs and parallax, net worth that
+  rolls, a spending chart that draws in, the 2.5D Auditor Monkey; the
+  lime card (saved % and spent this month) tilts when touched;
+  Spendings bars and a Savings ring; "Savings goal reached" card at 20%
+  saved; recent transactions: swipe left to delete (Undo in the toast),
+  long-press to preview; pull down to refresh.
+- **Monkey**: follows your finger, reacts to taps (head, belly, ears,
+  tail, stroke, double tap, many taps), hops on a save, worries when
+  spending is above income this month, dances with confetti when the
+  savings goal is hit, sleeps 23:00–5:00.
+- **Setup wizard**: blob hero with the waving monkey, steps turn in 3D,
+  confetti when accounts are created.
+- **Accounts**: cards tilt and fly into the statement; long-press a row
+  to preview its card; pull to refresh.
+- **Quick Add**: haptic on every key, chip and tab; springy presses;
+  success haptic on save.
+- **Everywhere**: illustrations pop in, loading blocks shimmer, buttons
+  spring. With reduce motion everything is still; haptics, moods and
+  speech remain.
+- **Data**: no schema or money-rule change; delete uses the existing
+  soft delete and restore.
+- **Tests**: wow toolkit (tilt, haptics, confetti, shimmer limit, blob
+  rest, parallax, flip), Home (layout, reduce motion, long-press
+  preview, swipe delete + Undo on a real database), mascot, Home
+  summary maths; goldens for Home (data, over plan, empty) and updated
+  wizard / accounts / illustrations goldens.
+
 ## 3. Accounts
 - **What it does**: Shows live balances and each account's statement;
   lets the owner fix or add an account.

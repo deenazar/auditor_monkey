@@ -22,6 +22,7 @@ const List<String> _names = <String>[
   'wizard_balances',
   'wizard_done',
   'mascot_poster',
+  'success_goal',
 ];
 
 void main() {

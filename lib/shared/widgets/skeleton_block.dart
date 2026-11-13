@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
+import '../wow/shimmer.dart';
 
 /// A static `tile` block that stands in for content while it loads.
 ///
-/// No shimmer: it does not move, so it never distracts and needs no reduce
-/// motion path. Screens fade the whole skeleton in with an AnimatedOpacity.
+/// A soft white shimmer sweeps across it (Motion & 3D layer; at most 10 s,
+/// none with reduce motion). Screens fade the whole skeleton in.
 /// Hidden from screen readers; the screen should announce loading itself.
 class SkeletonBlock extends StatelessWidget {
   const SkeletonBlock({
@@ -27,12 +28,14 @@ class SkeletonBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExcludeSemantics(
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.tile,
-          borderRadius: borderRadius,
+      child: Shimmer(
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: AppColors.tile,
+            borderRadius: borderRadius,
+          ),
         ),
       ),
     );

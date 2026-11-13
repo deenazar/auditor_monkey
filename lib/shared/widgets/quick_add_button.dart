@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_depth.dart';
 import '../theme/app_motion.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_sizes.dart';
+import '../wow/haptics.dart';
 
 /// The centre Quick Add button: 56pt primary circle, ink plus icon,
 /// `shadowFloat`. Shrinks slightly while pressed.
@@ -36,14 +38,17 @@ class _QuickAddButtonState extends State<QuickAddButton> {
       onTap: widget.onPressed,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: widget.onPressed,
+        onTap: () {
+          AppHaptics.press();
+          widget.onPressed();
+        },
         onTapDown: (_) => _setPressed(true),
         onTapUp: (_) => _setPressed(false),
         onTapCancel: () => _setPressed(false),
         child: AnimatedScale(
           scale: _pressed && !reduce ? AppSizes.pressScale : 1,
-          duration: AppMotion.resolve(context, AppMotion.durationFast),
-          curve: AppMotion.curveEnter,
+          duration: AppMotion.resolve(context, AppDepth.press),
+          curve: AppDepth.springy,
           child: Container(
             width: QuickAddButton.size,
             height: QuickAddButton.size,

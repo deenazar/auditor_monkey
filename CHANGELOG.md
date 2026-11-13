@@ -2,6 +2,38 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-13: Original design back + Motion & 3D layer (PR: link added after opening)
+
+### Changed
+- The mini_checklist restyle (PR #12) is undone: the reference design
+  and the DESIGN.md base from PRs #4/#5 (mint, Outfit, flat cards) are
+  back on every screen.
+- Home is now built in the reference layout: mint hero (greeting, net
+  worth, area chart), lime summary card overlapping it, Spendings /
+  Savings stat tiles, "Recent transactions".
+- The mascot is a 2.5D Auditor Monkey drawn in code (depth shading, rim
+  light, perspective lean) instead of the 3D `.glb` WebView.
+
+### Added
+- Motion & 3D layer (DESIGN.md "Motion & 3D", `lib/shared/wow/`):
+  perspective tilt on cards, parallax header, 3D wizard step turns,
+  layered shadows, living blob gradients, number roll-ups, charts that
+  draw in, confetti on goals, shimmer loading, card Hero into the
+  statement, haptics on every tap, swipe-to-delete with Undo on Home,
+  pull-to-refresh (Home, Accounts), long-press previews (Home rows,
+  account rows), springy buttons, and the monkey following your finger.
+- Mascot reacts to money events: save → hop and "Logged ₹…"; over plan
+  → worried; back under → wave; savings goal (20%) → dance + confetti;
+  idle late at night → asleep.
+- "Savings goal reached" card on Home with a new `success_goal`
+  illustration; illustrations pop in with a 3D tip.
+- Setup wizard: living blob hero with the waving monkey; confetti when
+  set-up finishes.
+
+### Removed
+- `flutter_3d_controller`, `visibility_detector`, `assets/3d/monkey.glb`
+  and its generator script (2.5D mascot replaces them).
+
 ## 2026-11-13: Design polish (PR: #11)
 
 ### Added

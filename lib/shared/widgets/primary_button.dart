@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_depth.dart';
 import '../theme/app_motion.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../wow/haptics.dart';
 
 /// The main pill button: `primary` fill, `ink` label, `buttonHeight` tall.
 ///
@@ -49,7 +51,9 @@ class _PrimaryButtonState extends State<PrimaryButton> {
   }
 
   void _handleTap() {
-    if (_tappable) widget.onPressed?.call();
+    if (!_tappable) return;
+    AppHaptics.press();
+    widget.onPressed?.call();
   }
 
   @override
@@ -103,8 +107,8 @@ class _PrimaryButtonState extends State<PrimaryButton> {
         onTap: _handleTap,
         child: AnimatedScale(
           scale: pressed && !reduce ? AppSizes.pressScale : 1,
-          duration: AppMotion.resolve(context, AppMotion.durationFast),
-          curve: AppMotion.curveEnter,
+          duration: AppMotion.resolve(context, AppDepth.press),
+          curve: AppDepth.springy,
           child: AnimatedContainer(
             duration: AppMotion.resolve(context, AppMotion.durationFast),
             curve: AppMotion.curveEnter,

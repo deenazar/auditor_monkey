@@ -6,6 +6,7 @@ import '../theme/app_motion.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
+import '../wow/haptics.dart';
 import 'quick_add_button.dart';
 
 /// Bottom bar: white, no labels, icons only. Five slots in order:
@@ -64,7 +65,10 @@ class AppBottomNav extends StatelessWidget {
         icon: icon,
         indicatorKey: ValueKey<String>('nav-indicator-${label.toLowerCase()}'),
         selected: index == currentIndex,
-        onTap: () => onSelect(index),
+        onTap: () {
+          AppHaptics.tap();
+          onSelect(index);
+        },
       ),
     );
   }
