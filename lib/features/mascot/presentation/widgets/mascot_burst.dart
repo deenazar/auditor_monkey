@@ -20,7 +20,7 @@ abstract final class MascotBurst {
       final double r = 26 + random.nextDouble() * 34;
       return _Particle(
         Offset(math.cos(a) * r, math.sin(a) * r),
-        AppColors.burst[i % AppColors.burst.length],
+        AppColors.confetti[i % AppColors.confetti.length],
       );
     });
     _show(

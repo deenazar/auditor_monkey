@@ -1,9 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
+
+import '../../../../shared/theme/app_depth.dart';
 
 import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_spacing.dart';
 
-/// Animates between wizard steps: the new step slides in 24pt from the
+/// Animates between wizard steps: the new step turns in 3D (around its
+/// centre, up to `stepTurnDegrees`) and slides in 24pt from the
 /// side it comes from while it fades in (`durationMedium`, `curveEnter`);
 /// the old step fades out and slides the other way (`curveExit`). Going
 /// forward comes from the right, going back from the left.
@@ -67,9 +72,21 @@ class _WizardStepTransitionState extends State<WizardStepTransition> {
             final double dx = entering
                 ? direction * travel
                 : -direction * travel;
+            final double turn =
+                (1 - animation.value) *
+                AppDepth.stepTurnDegrees *
+                math.pi /
+                180 *
+                (entering ? direction : -direction);
             final Widget moved = Transform.translate(
               offset: Offset(dx, 0),
-              child: inner,
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, AppDepth.perspective)
+                  ..rotateY(-turn),
+                child: inner,
+              ),
             );
             return entering ? moved : IgnorePointer(child: moved);
           },

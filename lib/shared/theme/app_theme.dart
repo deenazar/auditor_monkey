@@ -5,7 +5,7 @@ import 'app_radius.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
-/// The one app theme (mini_checklist look). Light only in Phase 1.
+/// The one app theme. Light only in Phase 1.
 abstract final class AppTheme {
   /// The theme, built once. Some sub-themes hold `WidgetStateProperty`
   /// closures that are not equal across builds, so a fresh `ThemeData` on
@@ -17,10 +17,10 @@ abstract final class AppTheme {
   static ThemeData _build() {
     const ColorScheme scheme = ColorScheme.light(
       primary: AppColors.primary,
-      // White on coral, as in mini_checklist (bold/large labels only).
-      onPrimary: AppColors.onDark,
-      secondary: AppColors.teal,
-      onSecondary: AppColors.onDark,
+      // White on primary fails contrast (1.85:1), so text on mint is ink.
+      onPrimary: AppColors.ink,
+      secondary: AppColors.lime,
+      onSecondary: AppColors.ink,
       tertiary: AppColors.sun,
       onTertiary: AppColors.ink,
       error: AppColors.danger,
@@ -30,11 +30,11 @@ abstract final class AppTheme {
       onSurfaceVariant: AppColors.inkMuted,
       outline: AppColors.divider,
       outlineVariant: AppColors.divider,
-      surfaceContainerLowest: AppColors.card,
-      surfaceContainerLow: AppColors.card,
-      surfaceContainer: AppColors.panel,
-      surfaceContainerHigh: AppColors.fill,
-      surfaceContainerHighest: AppColors.fill,
+      surfaceContainerLowest: AppColors.background,
+      surfaceContainerLow: AppColors.tile,
+      surfaceContainer: AppColors.tile,
+      surfaceContainerHigh: AppColors.canvas,
+      surfaceContainerHighest: AppColors.canvas,
     );
 
     const TextTheme textTheme = TextTheme(
@@ -65,13 +65,8 @@ abstract final class AppTheme {
         space: 1,
       ),
       splashFactory: InkRipple.splashFactory,
-      textSelectionTheme: const TextSelectionThemeData(
-        cursorColor: AppColors.coral,
-        selectionColor: AppColors.primaryLight,
-        selectionHandleColor: AppColors.coral,
-      ),
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.panel,
+        backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.sheet),
         elevation: 16,
@@ -85,7 +80,7 @@ abstract final class AppTheme {
     );
   }
 
-  /// Toast (DESIGN.md): `primaryDeep` (ink) fill, `onDark` text, floating
+  /// Toast (DESIGN.md sec. 9): `primaryDeep` fill, `onDark` text, floating
   /// above the nav bar with `space6` margin. Material's own slide is kept;
   /// the Quick Add toast wraps its content for the fade.
   static SnackBarThemeData _snackBar() => SnackBarThemeData(

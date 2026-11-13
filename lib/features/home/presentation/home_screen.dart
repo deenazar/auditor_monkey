@@ -1,19 +1,21 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router.dart';
 import '../../../core/logging/logger_provider.dart';
 import '../../../core/money/money.dart';
 import '../../../core/utils/clock.dart';
-import '../../../core/utils/date_keys.dart';
 import '../../../core/utils/date_labels.dart';
-import '../../../shared/scene/sky_phase.dart';
-import '../../../shared/scene/sky_scene.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_text_styles.dart';
+import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
+import '../../../shared/widgets/skeleton_block.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
+import '../../../shared/wow/confetti.dart';
+import '../../../shared/wow/haptics.dart';
+import '../../../shared/wow/parallax.dart';
+import '../../../shared/wow/scene_activity.dart';
 import '../../accounts/application/accounts_providers.dart';
 import '../../accounts/domain/account.dart';
 import '../../categories/application/categories_providers.dart';
@@ -22,20 +24,35 @@ import '../../mascot/application/mascot_events.dart';
 import '../../mascot/domain/mascot_mood.dart';
 import '../../mascot/presentation/mascot_controller.dart';
 import '../../quick_add/application/quick_add_state.dart';
+import '../../transactions/application/transactions_providers.dart';
+import '../../transactions/data/transactions_repository.dart';
 import '../../transactions/domain/transaction_entry.dart';
 import '../application/home_providers.dart';
 import '../domain/home_summary.dart';
-import 'widgets/home_entry_row.dart';
-import 'widgets/home_panel.dart';
-import 'widgets/home_stage.dart';
+import 'widgets/goal_banner.dart';
+import 'widgets/home_hero.dart';
+import 'widgets/home_stat_tiles.dart';
+import 'widgets/recent_row.dart';
+import 'widgets/summary_card.dart';
 
-/// Home, in mini_checklist's layout: an illustrated sky on top (date,
-/// glass buttons, the Auditor Monkey beside the week's spending bars, stat
-/// chips) and a panel that slides over it with a date strip and the latest
-/// entries. The monkey hops when an entry is added, worries when the month
-/// goes over plan, smiles when under, and sleeps late at night.
+/// Home in the reference layout (DESIGN.md "Screen patterns"): the mint
+/// hero (greeting, net worth, area chart, Auditor Monkey) → the lime
+/// summary card overlapping its bottom edge → stat tiles → "Recent
+/// transactions".
+///
+/// Motion & 3D: living blob header with parallax, rolling numbers, the
+/// chart drawing in, a tilting summary card, swipe-to-delete rows with
+/// Undo, long-press previews, pull-to-refresh, and the monkey following
+/// your finger and reacting to money events (save → hop, over plan →
+/// worried, savings goal reached → confetti).
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  /// Savings share that counts as the month's goal (confetti once).
+  static const int savingsGoalPercent = 20;
+
+  /// Rows in "Recent transactions".
+  static const int recentCount = 12;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -44,76 +61,137 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final MascotController _monkey = MascotController();
   final SceneActivity _activity = SceneActivity();
-  final ValueNotifier<double> _collapse = ValueNotifier<double>(0);
-  String? _selected;
-  Timer? _skyTimer;
-  DateTime _now = DateTime.now();
-
-  @override
-  void initState() {
-    super.initState();
-    _now = _readNow();
-    // The sky follows the clock; check every five minutes.
-    _skyTimer = Timer.periodic(const Duration(minutes: 5), (_) {
-      if (mounted) setState(() => _now = _readNow());
-    });
-  }
-
-  DateTime _readNow() =>
-      DateTime.fromMillisecondsSinceEpoch(ref.read(clockProvider).nowMs());
+  final ScrollOffset _scroll = ScrollOffset();
+  final GlobalKey _summaryKey = GlobalKey();
+  MascotMood? _lastMood;
+  bool _goalCelebrated = false;
+  bool _savedSinceOpen = false;
 
   @override
   void dispose() {
-    _skyTimer?.cancel();
     _monkey.dispose();
     _activity.dispose();
-    _collapse.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
-  void _pick(String date) {
-    final String? next = _selected == date ? null : date;
-    ref.read(loggerProvider).debug('home', 'day picked');
-    setState(() => _selected = next);
-    _monkey.look(const Offset(1, 0.3));
-  }
-
-  void _poke() {
-    _activity.poke();
-    _monkey.poke();
+  bool get _sleepy {
+    final int h = DateTime.fromMillisecondsSinceEpoch(
+      ref.read(clockProvider).nowMs(),
+    ).hour;
+    return h >= 23 || h < 5;
   }
 
   void _onSaved(SavedForMascot? previous, SavedForMascot? next) {
     if (next == null || next.serial == previous?.serial) return;
+    _savedSinceOpen = true;
     final SavedEntry e = next.entry;
     final String amount = formatPaise(e.amount);
-    _poke();
+    _activity.poke();
     _monkey.react(
       MascotReaction.add,
       text: switch (e.type) {
         TransactionType.expense => 'Logged $amount ✍️',
         TransactionType.income => 'Nice! $amount in 💰',
-        TransactionType.transfer => 'Moved $amount ⇄',
+        TransactionType.transfer => 'Moved $amount',
       },
     );
   }
 
-  void _onMoodChange(MascotMood? before, MascotMood after) {
-    if (before == null || before == after) return;
-    if (after == MascotMood.worried) {
-      _monkey.react(MascotReaction.sad, text: 'Uh-oh, over the plan 😟');
-    } else if (before == MascotMood.worried) {
-      _monkey.react(MascotReaction.hello, text: 'Back on track 🎉');
+  void _onSummary(HomeSummary s) {
+    final MascotMood mood = s.mood(0);
+    final MascotMood? before = _lastMood;
+    _lastMood = mood;
+    final int? saved = s.savingsPercent;
+    final bool goal = saved != null && saved >= HomeScreen.savingsGoalPercent;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (before != null && before != mood) {
+        if (mood == MascotMood.worried) {
+          AppHaptics.warning();
+          _monkey.react(MascotReaction.sad, text: 'Uh-oh, over the plan 😟');
+        } else if (before == MascotMood.worried) {
+          _monkey.react(MascotReaction.hello, text: 'Back on track!');
+        }
+      }
+      // Goal: savings at or above the goal, reached after a save here.
+      if (goal && _savedSinceOpen && !_goalCelebrated) {
+        _goalCelebrated = true;
+        _monkey.react(MascotReaction.win, text: 'Savings goal hit! 🎉');
+        Confetti.burst(context, origin: _summaryCentre());
+      }
+    });
+  }
+
+  Offset? _summaryCentre() {
+    final RenderObject? box = _summaryKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return null;
+    return box.localToGlobal(box.size.center(Offset.zero));
+  }
+
+  Future<void> _refresh() async {
+    ref.read(loggerProvider).info('home', 'pull to refresh');
+    _monkey.react(MascotReaction.spin);
+    ref.invalidate(homeSummaryProvider);
+    try {
+      await ref.read(homeSummaryProvider.future);
+    } catch (_) {
+      // The error state shows itself.
     }
   }
 
-  MascotMood? _lastMood;
+  Future<void> _delete(TransactionEntry e) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final TransactionsRepository repo = ref.read(
+      transactionsRepositoryProvider,
+    );
+    ref.read(loggerProvider).info('home', 'entry deleted by swipe');
+    _monkey.react(MascotReaction.del);
+    try {
+      await repo.softDelete(e.id);
+    } catch (error) {
+      ref
+          .read(loggerProvider)
+          .error('home', 'swipe delete failed', error: error);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not delete. Try again.')),
+      );
+      return;
+    }
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Entry removed'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () async {
+              ref.read(loggerProvider).info('home', 'swipe delete undone');
+              try {
+                await repo.restore(e.id);
+              } catch (error) {
+                ref
+                    .read(loggerProvider)
+                    .error('home', 'undo failed', error: error);
+              }
+            },
+          ),
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
     ref.listen<SavedForMascot?>(mascotEventsProvider, _onSaved);
+    ref.listen<AsyncValue<HomeSummary>>(homeSummaryProvider, (
+      AsyncValue<HomeSummary>? _,
+      AsyncValue<HomeSummary> next,
+    ) {
+      final HomeSummary? s = next.value;
+      if (s != null) _onSummary(s);
+    });
     final AsyncValue<HomeSummary> summaryAsync = ref.watch(homeSummaryProvider);
-    final int budgetTotal = ref.watch(monthBudgetTotalProvider).value ?? 0;
+    final int? netWorth = ref.watch(netWorthProvider).value;
     final List<Category> categories = <Category>[
       ...?ref.watch(expenseCategoriesProvider).value,
       ...?ref.watch(incomeCategoriesProvider).value,
@@ -122,120 +200,180 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref.watch(accountsProvider).value ?? const <Account>[];
 
     if (summaryAsync.hasError && !summaryAsync.hasValue) {
-      return ColoredBox(
-        color: AppColors.panel,
-        child: ErrorState(
-          title: 'Could not load Home',
-          message: 'Your data is safe. Try again.',
-          onRetry: () => ref.invalidate(homeSummaryProvider),
-        ),
+      return ErrorState(
+        title: 'Could not load Home',
+        message: 'Your data is safe. Try again.',
+        onRetry: () => ref.invalidate(homeSummaryProvider),
       );
     }
-    final HomeSummary summary = summaryAsync.value ?? _emptySummary();
-    final MascotMood mood = summaryAsync.hasValue
-        ? summary.mood(budgetTotal)
-        : MascotMood.idle;
-    if (summaryAsync.hasValue) {
-      final MascotMood? before = _lastMood;
-      _lastMood = mood;
-      if (before != mood) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => mounted ? _onMoodChange(before, mood) : null,
-        );
-      }
-    }
-    final SkyPhase phase = SkyPhase.at(_now);
-    final List<HomeEntryView> rows = _rows(summary, categories, accounts);
+    final HomeSummary? summary = summaryAsync.value;
+    final MascotMood mood = summary?.mood(0) ?? MascotMood.idle;
+    final List<RecentRowView> rows = summary == null
+        ? const <RecentRowView>[]
+        : _rows(summary, categories, accounts);
 
     return Listener(
-      onPointerDown: (_) => _poke(),
       behavior: HitTestBehavior.translucent,
-      child: ColoredBox(
-        color: AppColors.panel,
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints c) {
-            final double padTop = MediaQuery.paddingOf(context).top;
-            final double stageH =
-                padTop + (c.maxHeight * 0.42).clamp(250.0, 360.0);
-            final double initial = ((c.maxHeight - stageH + 22) / c.maxHeight)
-                .clamp(0.2, 0.9);
-            final double max = ((c.maxHeight - padTop - 64) / c.maxHeight)
-                .clamp(initial, 1.0);
-            return Stack(
-              children: <Widget>[
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  height: stageH,
-                  child: HomeStage(
-                    summary: summary,
-                    budgetTotal: budgetTotal,
-                    selected: _selected,
-                    phase: phase,
-                    sleepyHour: isSleepyHour(_now),
-                    mood: mood,
-                    monkey: _monkey,
-                    activity: _activity,
-                    collapse: _collapse,
-                    onPick: _pick,
-                    onClearPick: () => setState(() => _selected = null),
-                    onAccounts: () => context.go(AppRoutes.accounts),
+      onPointerDown: (PointerDownEvent e) {
+        _activity.poke();
+        _monkey.follow(e.position);
+      },
+      onPointerMove: (PointerMoveEvent e) => _monkey.follow(e.position),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _scroll.onScroll,
+        child: RefreshIndicator(
+          onRefresh: _refresh,
+          color: AppColors.primaryDeep,
+          backgroundColor: AppColors.background,
+          edgeOffset: MediaQuery.paddingOf(context).top,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            slivers: <Widget>[
+              SliverToBoxAdapter(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: HomeHero.overlap + 24,
+                      ),
+                      child: HomeHero(
+                        netWorth: netWorth,
+                        chart: <int>[
+                          for (final DaySpend d
+                              in summary?.days ?? const <DaySpend>[])
+                            d.spent,
+                        ],
+                        mood: mood,
+                        sleepyHour: _sleepy,
+                        monkey: _monkey,
+                        activity: _activity,
+                        scroll: _scroll,
+                      ),
+                    ),
+                    Positioned(
+                      left: AppSpacing.screenPadding + AppSpacing.space4,
+                      right: AppSpacing.screenPadding + AppSpacing.space4,
+                      bottom: 0,
+                      child: StaggeredEntrance(
+                        index: 0,
+                        child: summary == null
+                            ? const SkeletonBlock(height: 92)
+                            : SummaryCard(
+                                key: _summaryKey,
+                                savingsPercent: summary.savingsPercent,
+                                monthSpent: summary.monthSpent,
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (summary != null)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screenPadding,
+                    AppSpacing.space6,
+                    AppSpacing.screenPadding,
+                    0,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: StaggeredEntrance(
+                      index: 1,
+                      child: HomeStatTiles(
+                        days: <int>[
+                          for (final DaySpend d in summary.week) d.spent,
+                        ],
+                        savingsPercent: summary.savingsPercent,
+                      ),
+                    ),
                   ),
                 ),
-                NotificationListener<DraggableScrollableNotification>(
-                  onNotification: (DraggableScrollableNotification n) {
-                    _collapse.value = max <= initial
-                        ? 0
-                        : ((n.extent - initial) / (max - initial)).clamp(
-                            0.0,
-                            1.0,
-                          );
-                    return false;
-                  },
-                  child: DraggableScrollableSheet(
-                    initialChildSize: initial,
-                    minChildSize: initial,
-                    maxChildSize: max,
-                    snap: true,
-                    builder: (BuildContext context, ScrollController scroll) =>
-                        MediaQuery.removePadding(
-                          context: context,
-                          removeTop: true,
-                          child: HomePanel(
-                            scroll: scroll,
-                            summary: summary,
-                            budgetTotal: budgetTotal,
-                            selected: _selected,
-                            rows: rows,
-                            onPick: _pick,
-                          ),
+              if ((summary?.savingsPercent ?? 0) >=
+                  HomeScreen.savingsGoalPercent)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screenPadding,
+                    AppSpacing.space6,
+                    AppSpacing.screenPadding,
+                    0,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: GoalBanner(
+                      percent: summary!.savingsPercent!,
+                      goal: HomeScreen.savingsGoalPercent,
+                    ),
+                  ),
+                ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenPadding,
+                  AppSpacing.space8,
+                  AppSpacing.screenPadding,
+                  AppSpacing.space3,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Semantics(
+                    header: true,
+                    child: const Text(
+                      'Recent transactions',
+                      style: AppTextStyles.title,
+                    ),
+                  ),
+                ),
+              ),
+              if (summary == null)
+                SliverList.list(
+                  children: <Widget>[
+                    for (int i = 0; i < 3; i++)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.screenPadding,
+                          vertical: AppSpacing.space2,
                         ),
+                        child: SkeletonBlock(height: 52),
+                      ),
+                  ],
+                )
+              else if (rows.isEmpty)
+                const SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 320,
+                    child: EmptyState(
+                      illustration: 'empty_home',
+                      title: 'No transactions yet',
+                      message: 'Tap + to add your first entry.',
+                    ),
                   ),
+                )
+              else
+                SliverList.builder(
+                  itemCount: rows.length,
+                  itemBuilder: (BuildContext context, int i) =>
+                      StaggeredEntrance(
+                        key: ValueKey<String>('row-${rows[i].entry.id}'),
+                        index: i + 1,
+                        child: RecentRow(
+                          view: rows[i],
+                          onDelete: () => _delete(rows[i].entry),
+                        ),
+                      ),
                 ),
-              ],
-            );
-          },
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: MediaQuery.paddingOf(context).bottom + 24,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  HomeSummary _emptySummary() {
-    final String today = dateKey(_now);
-    return HomeSummary(
-      today: today,
-      days: <DaySpend>[
-        for (int i = HomeSummary.stripDays - 1; i >= 0; i--)
-          DaySpend(date: addDays(today, -i), spent: 0),
-      ],
-      monthSpent: 0,
-      monthIncome: 0,
-      recent: const <TransactionEntry>[],
-    );
-  }
-
-  List<HomeEntryView> _rows(
+  List<RecentRowView> _rows(
     HomeSummary summary,
     List<Category> categories,
     List<Account> accounts,
@@ -246,50 +384,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final Map<String, String> accs = <String, String>{
       for (final Account a in accounts) a.id: a.name,
     };
-    final String? day = _selected;
-    final Iterable<TransactionEntry> entries = day == null
-        ? summary.recent.take(HomePanel.recentCount)
-        : summary.recent.where((TransactionEntry e) => e.date == day);
-    return <HomeEntryView>[
-      for (final TransactionEntry e in entries)
-        _view(e, cats, accs, summary.today, showDate: day == null),
+    return <RecentRowView>[
+      for (final TransactionEntry e in summary.recent.take(
+        HomeScreen.recentCount,
+      ))
+        _view(e, cats, accs, summary.today),
     ];
   }
 
-  HomeEntryView _view(
+  RecentRowView _view(
     TransactionEntry e,
     Map<String, Category> cats,
     Map<String, String> accs,
-    String today, {
-    required bool showDate,
-  }) {
+    String today,
+  ) {
     final String account = accs[e.accountId] ?? 'Account';
     final String when = e.date == today
         ? 'Today'
         : shortDateLabel(e.date, todayKey: today);
     final String note = (e.note ?? '').trim();
     if (e.type == TransactionType.transfer) {
-      final String to = accs[e.toAccountId] ?? 'Account';
-      return HomeEntryView(
+      return RecentRowView(
         entry: e,
-        title: '$account › $to',
-        meta: <String>[
-          if (showDate) when,
-          if (note.isNotEmpty) note else 'Transfer',
-        ].join(' · '),
+        title: '$account to ${accs[e.toAccountId] ?? 'Account'}',
+        account: 'Transfer',
+        date: when,
         iconName: '',
         colourGroup: 'other',
       );
     }
     final Category? cat = cats[e.categoryId];
-    return HomeEntryView(
+    return RecentRowView(
       entry: e,
       title: cat?.name ?? (note.isNotEmpty ? note : 'Entry'),
-      meta: <String>[
-        if (showDate) when,
-        account,
-        if (note.isNotEmpty) note,
-      ].join(' · '),
+      account: account,
+      date: when,
       iconName: cat?.icon ?? '',
       colourGroup: e.type == TransactionType.income
           ? 'income'

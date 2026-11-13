@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../../../core/logging/logger_provider.dart';
 import '../../../core/utils/validation_failure.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_radius.dart';
+import '../../../shared/theme/app_shadows.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -14,12 +17,15 @@ import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/rolling_amount.dart';
 import '../../../shared/widgets/staggered_entrance.dart';
 import '../../../shared/widgets/step_dots.dart';
+import '../../../shared/wow/long_press_preview.dart';
+import '../../../shared/wow/tilt_3d.dart';
 import '../application/accounts_providers.dart';
 import '../domain/account.dart';
 import 'widgets/account_card.dart';
 import 'widgets/account_carousel.dart';
 import 'widgets/account_form_sheet.dart';
 import 'widgets/account_form_values.dart';
+import 'widgets/account_hero.dart';
 import 'widgets/account_list_row.dart';
 import 'widgets/accounts_loading_view.dart';
 import 'widgets/show_account_form_sheet.dart';
@@ -38,6 +44,19 @@ class AccountsScreen extends ConsumerStatefulWidget {
 class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   final AccountCarouselController _carousel = AccountCarouselController();
   int _page = 0;
+
+  /// Pull-to-refresh: re-reads balances (they are live anyway; this also
+  /// reassures after an import or sync).
+  Future<void> _refresh() async {
+    ref.read(loggerProvider).info('accounts', 'pull to refresh');
+    ref.invalidate(accountBalancesProvider);
+    ref.invalidate(netWorthProvider);
+    try {
+      await ref.read(accountBalancesProvider.future);
+    } catch (_) {
+      // The error body shows itself.
+    }
+  }
 
   void _openStatement(Account account) {
     context.push(AppRoutes.accountStatement(account.id));
@@ -87,6 +106,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                   onPageChanged: (int page) => setState(() => _page = page),
                   onOpen: _openStatement,
                   onAdd: _addAccount,
+                  onRefresh: _refresh,
                 ),
         ),
       ),
@@ -102,8 +122,10 @@ class _DataBody extends StatelessWidget {
     required this.onPageChanged,
     required this.onOpen,
     required this.onAdd,
+    required this.onRefresh,
   });
 
+  final Future<void> Function() onRefresh;
   final List<AccountBalance> list;
   final int page;
   final AccountCarouselController carousel;
@@ -123,102 +145,138 @@ class _DataBody extends StatelessWidget {
         .map((AccountBalance b) => b.account.name)
         .toList(growable: false);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.space6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            child: PageHeader(eyebrow: 'Your Wallet', title: 'Accounts'),
-          ),
-          const SizedBox(height: AppSpacing.space6),
-          _NetWorth(fallback: _sum(list)),
-          const SizedBox(height: AppSpacing.space6),
-          // The carousel is full-bleed: no side padding around it.
-          if (live.isNotEmpty)
-            StaggeredEntrance(
-              index: 1,
-              child: AccountCarousel(
-                controller: carousel,
-                itemCount: live.length,
-                onPageChanged: onPageChanged,
-                itemBuilder: (BuildContext context, int index) {
-                  final Account a = live[index].account;
-                  return AccountCard(
-                    name: a.name,
-                    type: a.type,
-                    colourToken: a.colour,
-                    balancePaise: live[index].balance,
-                    openingPaise: a.openingBalance,
-                    rollKey: 'account:${a.id}',
-                    onTap: () => onOpen(a),
-                  );
-                },
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      color: AppColors.primaryDeep,
+      backgroundColor: AppColors.background,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.space6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
               ),
+              child: PageHeader(eyebrow: 'Your Wallet', title: 'Accounts'),
             ),
-          if (live.length > 1) ...<Widget>[
-            const SizedBox(height: AppSpacing.space3),
-            Center(
-              child: StepDots(
-                count: live.length,
-                current: page.clamp(0, live.length - 1),
-                semanticsLabel:
-                    'Card ${page.clamp(0, live.length - 1) + 1} '
-                    'of ${live.length}',
+            const SizedBox(height: AppSpacing.space6),
+            _NetWorth(fallback: _sum(list)),
+            const SizedBox(height: AppSpacing.space6),
+            // The carousel is full-bleed: no side padding around it.
+            if (live.isNotEmpty)
+              StaggeredEntrance(
+                index: 1,
+                child: AccountCarousel(
+                  controller: carousel,
+                  itemCount: live.length,
+                  onPageChanged: onPageChanged,
+                  itemBuilder: (BuildContext context, int index) {
+                    final Account a = live[index].account;
+                    // Motion & 3D: tilts under the finger, lifts on layered
+                    // shadows, and flies into the statement (Hero).
+                    return Tilt3D(
+                      borderRadius: AppRadius.card,
+                      child: Hero(
+                        tag: accountHeroTag(a.id),
+                        child: DecoratedBox(
+                          decoration: const BoxDecoration(
+                            borderRadius: AppRadius.card,
+                            boxShadow: AppShadows.shadowLayered,
+                          ),
+                          child: AccountCard(
+                            name: a.name,
+                            type: a.type,
+                            colourToken: a.colour,
+                            balancePaise: live[index].balance,
+                            openingPaise: a.openingBalance,
+                            rollKey: 'account:${a.id}',
+                            onTap: () => onOpen(a),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            if (live.length > 1) ...<Widget>[
+              const SizedBox(height: AppSpacing.space3),
+              Center(
+                child: StepDots(
+                  count: live.length,
+                  current: page.clamp(0, live.length - 1),
+                  semanticsLabel:
+                      'Card ${page.clamp(0, live.length - 1) + 1} '
+                      'of ${live.length}',
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.sectionGap),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Center(
+                    child: PrimaryButton(
+                      label: 'Add account',
+                      fullWidth: false,
+                      onPressed: () => onAdd(names),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sectionGap),
+                  const Text('All accounts', style: AppTextStyles.title),
+                  const SizedBox(height: AppSpacing.space3),
+                  for (int i = 0; i < live.length; i++)
+                    StaggeredEntrance(
+                      index: 2 + i,
+                      child: _row(live[i], () => onOpen(live[i].account)),
+                    ),
+                  if (archived.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: AppSpacing.space5),
+                    Text(
+                      'ARCHIVED',
+                      style: AppTextStyles.overline.copyWith(
+                        color: AppColors.inkMuted,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.space3),
+                    for (final AccountBalance b in archived)
+                      _row(b, () => onOpen(b.account)),
+                  ],
+                ],
               ),
             ),
           ],
-          const SizedBox(height: AppSpacing.sectionGap),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenPadding,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Center(
-                  child: PrimaryButton(
-                    label: 'Add account',
-                    fullWidth: false,
-                    onPressed: () => onAdd(names),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sectionGap),
-                const Text('All accounts', style: AppTextStyles.title),
-                const SizedBox(height: AppSpacing.space3),
-                for (int i = 0; i < live.length; i++)
-                  StaggeredEntrance(
-                    index: 2 + i,
-                    child: _row(live[i], () => onOpen(live[i].account)),
-                  ),
-                if (archived.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: AppSpacing.space5),
-                  Text(
-                    'ARCHIVED',
-                    style: AppTextStyles.overline.copyWith(
-                      color: AppColors.inkMuted,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.space3),
-                  for (final AccountBalance b in archived)
-                    _row(b, () => onOpen(b.account)),
-                ],
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
+  /// A row; long-press peeks at the account's card (Motion & 3D).
   Widget _row(AccountBalance b, VoidCallback onTap) => Padding(
     padding: const EdgeInsets.only(bottom: AppSpacing.listRowGap),
-    child: AccountListRow(
-      name: b.account.name,
-      colourToken: b.account.colour,
-      balancePaise: b.balance,
-      onTap: onTap,
+    child: LongPressPreview(
+      semanticHint: 'Long press to preview the card',
+      preview: (_) => AccountCard(
+        name: b.account.name,
+        type: b.account.type,
+        colourToken: b.account.colour,
+        balancePaise: b.balance,
+        openingPaise: b.account.openingBalance,
+        archived: b.account.archived,
+      ),
+      child: AccountListRow(
+        name: b.account.name,
+        colourToken: b.account.colour,
+        balancePaise: b.balance,
+        onTap: onTap,
+      ),
     ),
   );
 

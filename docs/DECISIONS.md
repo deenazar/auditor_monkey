@@ -781,31 +781,29 @@ approved by the owner on 2026-11-12.
   at random.
 - Decided by: team (lead).
 
-## 2026-11-13: Port mini_checklist's visual system natively (owner)
-- Decision: Replace the mint design with mini_checklist's system
-  (tokens from `web/styles.css`, the sky and Mimi from
-  `web/mimi-world.*`), built natively: `CustomPainter` for the sky and
-  the monkey, `Ticker`s for loops, a `Keyframes` helper that ports CSS
-  keyframes 1:1. Drop the 3D mascot and its WebView package.
-- Options considered: a WebView with the original HTML (rejected by the
-  owner, and heavy); `flutter_svg` + transforms per part (SVG parts
-  cannot be animated individually without splitting files, and parses
-  on every change); Rive / Lottie (new tool and assets, not a port).
-- Reason: Owner's request. One painter keeps the monkey at 60 fps with
-  no allocations per frame; loops rest after 15s like mini_checklist's
-  battery rule; reduce motion turns all movement off.
-- Glass: `BackdropFilter` blur 14 + saturate 1.4 with a 1px white inner
-  border as asked. mini_checklist turns blur off over its moving sky for
-  battery; we keep the blur but share one backdrop per stage
-  (`BackdropGroup` + `BackdropFilter.grouped`).
-- Fonts: the WOFF2 files from `web/vendor/fonts` converted to TTF with
-  fontTools (Flutter does not load WOFF2). Same Latin subset; ₹ comes
-  from the system font, as before.
-- Contrast: white on coral (2.8:1) and the coral "today" number are
-  kept for the look, as in mini_checklist; used only for bold labels and
-  with semantics. `success` darkened to `#33801A` and `accentText` to
-  `#C2410C` so small text stays AA.
-- "Month left" with no budgets uses income minus spending, so Home is
-  useful before budgets exist (budgets come in roadmap session 5).
-- Decided by: owner (look), lead (build choices).
+## 2026-11-13: Back to the original design, with a Motion & 3D layer (owner)
+- Decision: Undo the mini_checklist restyle (revert of PR #12) and keep
+  the reference design + DESIGN.md base (PRs #4/#5 and later approved
+  additions) unchanged. Add depth and motion as a separate layer
+  (`lib/shared/wow/`, `app_depth.dart`, DESIGN.md "Motion & 3D").
+- Mascot: a 2.5D painter (depth shading, rim light, perspective lean,
+  parallax layers) instead of the `.glb` in a WebView.
+  - Options: keep the `.glb` WebView (placeholder model, WebView memory,
+    no guaranteed 60 fps on iPhone, cannot follow the finger smoothly,
+    blank in tests); Rive/Lottie (new toolchain and assets); 2.5D
+    painter (one painter, no allocations per frame, works in tests and
+    with reduce motion).
+  - Reason: the owner allowed "2.5D or .glb if it performs well"; the
+    painter is the one we can prove smooth.
+- Home: built in the reference layout now (it was a placeholder). Bell
+  icon left out until notifications exist; greeting says "Hello there"
+  until a profile exists.
+- "Over plan" without budgets means spending above income this month;
+  savings goal is 20% of income (one confetti per open of Home, only
+  after a save there, so it never fires on every launch).
+- Swipe-to-delete on Home uses the existing soft delete and restore
+  (Undo); no new data rules.
+- Layered shadows only on lifting cards (summary card, account cards,
+  previews); tiles and rows stay flat as the base says.
+- Decided by: owner (direction), lead (build choices).
 

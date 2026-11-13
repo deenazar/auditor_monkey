@@ -6,9 +6,10 @@ import '../theme/app_motion.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
+import '../wow/haptics.dart';
 import 'quick_add_button.dart';
 
-/// Bottom bar: `card` white with a `line` top border, no labels, icons only. Five slots in order:
+/// Bottom bar: white, no labels, icons only. Five slots in order:
 /// Home, Insights, Quick Add (centre), Transactions, Accounts.
 ///
 /// [currentIndex] and [onSelect] use tab indexes 0..3 (the four branches),
@@ -31,7 +32,7 @@ class AppBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.card,
+      color: AppColors.background,
       child: DecoratedBox(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.divider)),
@@ -64,7 +65,10 @@ class AppBottomNav extends StatelessWidget {
         icon: icon,
         indicatorKey: ValueKey<String>('nav-indicator-${label.toLowerCase()}'),
         selected: index == currentIndex,
-        onTap: () => onSelect(index),
+        onTap: () {
+          AppHaptics.tap();
+          onSelect(index);
+        },
       ),
     );
   }
@@ -116,9 +120,9 @@ class _NavSlot extends StatelessWidget {
                         : AppSizes.navIndicatorStartScale,
                     duration: AppMotion.resolve(
                       context,
-                      AppMotion.durationPress,
+                      AppMotion.durationFast,
                     ),
-                    curve: AppMotion.springy,
+                    curve: AppMotion.curveEnter,
                     child: DecoratedBox(
                       key: indicatorKey,
                       decoration: const BoxDecoration(

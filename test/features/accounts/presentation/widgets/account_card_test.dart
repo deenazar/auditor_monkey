@@ -87,7 +87,9 @@ void main() {
     expect(name.style?.fontSize, AppTextStyles.bodyStrong.fontSize);
   });
 
-  testWidgets('PF card: the side-tab is ink', (WidgetTester tester) async {
+  testWidgets('PF card: the side-tab is ink, not primaryDeep', (
+    WidgetTester tester,
+  ) async {
     await pumpCompact(
       tester,
       _card(name: 'PF', type: AccountType.pf, colour: 'accountPf'),
@@ -99,6 +101,10 @@ void main() {
       ),
     );
     expect(boxes.map((ColoredBox b) => b.color), contains(AppColors.ink));
+    expect(
+      boxes.map((ColoredBox b) => b.color),
+      isNot(contains(AppColors.primaryDeep)),
+    );
     expect(_cardMaterial(tester).color, AppColors.accountPf);
   });
 

@@ -1,7 +1,7 @@
 import 'package:flutter/animation.dart';
 
 import '../../../shared/scene/keyframes.dart';
-import '../../../shared/theme/app_motion.dart';
+import '../../../shared/theme/app_depth.dart';
 
 /// mimi-world.css keyframes for the figure, ported 1:1. Translations are
 /// fractions of the figure height (CSS `%` on `.mw-figure`), angles are
@@ -39,15 +39,15 @@ class FigureMotion {
       (0.30, -0.24),
       (0.58, 0),
       (0.78, -0.05),
-    ], curve: AppMotion.bouncy),
+    ], curve: AppDepth.bouncy),
     scaleX: Keyframes(
       <Stop>[(0.30, 0.95), (0.58, 1.08), (0.78, 1)],
-      curve: AppMotion.bouncy,
+      curve: AppDepth.bouncy,
       rest: 1,
     ),
     scaleY: Keyframes(
       <Stop>[(0.30, 1.07), (0.58, 0.92), (0.78, 1)],
-      curve: AppMotion.bouncy,
+      curve: AppDepth.bouncy,
       rest: 1,
     ),
   );
@@ -55,15 +55,15 @@ class FigureMotion {
   /// mwHop .6s cubic-bezier(.2,1.3,.4,1).
   static final FigureMotion hop = FigureMotion(
     seconds: 0.6,
-    dy: Keyframes(<Stop>[(0.40, -0.10), (0.70, 0)], curve: AppMotion.bouncy),
+    dy: Keyframes(<Stop>[(0.40, -0.10), (0.70, 0)], curve: AppDepth.bouncy),
     scaleX: Keyframes(
       <Stop>[(0.40, 0.97), (0.70, 1.04)],
-      curve: AppMotion.bouncy,
+      curve: AppDepth.bouncy,
       rest: 1,
     ),
     scaleY: Keyframes(
       <Stop>[(0.40, 1.04), (0.70, 0.96)],
-      curve: AppMotion.bouncy,
+      curve: AppDepth.bouncy,
       rest: 1,
     ),
   );

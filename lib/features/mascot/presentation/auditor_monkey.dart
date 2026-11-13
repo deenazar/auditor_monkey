@@ -6,9 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../../shared/scene/keyframes.dart';
-import '../../../shared/scene/sky_phase.dart';
-import '../../../shared/theme/app_motion.dart';
-import '../../../shared/theme/sky_palette.dart';
+import '../../../shared/theme/app_depth.dart';
 import '../domain/mascot_mood.dart';
 import 'mascot_controller.dart';
 import 'mascot_motion.dart';
@@ -22,7 +20,7 @@ import 'widgets/speech_bubble.dart';
 ///
 /// - Endless loops: breathing, head tilt, tail swish, blinking, the halo
 ///   floating, "zzz" while asleep. They run on one ticker and rest
-///   [AppMotion.sceneRestAfter] after the last touch or reaction.
+///   [AppDepth.sceneRestAfter] after the last touch or reaction.
 /// - Moods: [mood] is the base mood; reactions add a short happy or sad
 ///   face on top. An [idle] monkey sleeps in the sleepy hours unless
 ///   touched in the last 25 s.
@@ -36,7 +34,6 @@ class AuditorMonkey extends StatefulWidget {
     this.controller,
     this.size = 160,
     this.sleepyHour = false,
-    this.phase = SkyPhase.day,
     this.halo = true,
     this.showBubble = true,
     this.interactive = true,
@@ -49,13 +46,10 @@ class AuditorMonkey extends StatefulWidget {
   /// Width; the height follows the 160:176 view box.
   final double size;
 
-  /// True in the sleepy hours (see [isSleepyHour]).
+  /// True in the sleepy hours (23:00–5:00), when an idle monkey sleeps.
   final bool sleepyHour;
 
-  /// Sun or moon colours for the halo.
-  final SkyPhase phase;
-
-  /// Draws the sun / moon halo and ground shadow.
+  /// Draws the soft mint glow behind the monkey.
   final bool halo;
 
   /// Shows the speech bubble itself (false when the screen shows it).
@@ -76,7 +70,6 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
   final _Repaint _repaint = _Repaint();
   late final MonkeyPainter _painter = MonkeyPainter(
     pose: _pose,
-    sky: () => (SkyColors.of(widget.phase), widget.phase == SkyPhase.night),
     repaint: _repaint,
   );
   late MascotController _controller = widget.controller ?? MascotController();
@@ -169,6 +162,7 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
       _lookTimer,
       _typeTimer,
       _dizzyTimer,
+      _followTimer,
     ]) {
       t?.cancel();
     }
@@ -182,7 +176,12 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
   // ---- Ticker and rest ----
 
   bool get _busy =>
-      _motion != null || _twitch != 0 || _purring || _dizzy || _talking;
+      _motion != null ||
+      _twitch != 0 ||
+      _purring ||
+      _dizzy ||
+      _talking ||
+      (_depth - _depthTarget).distance > 0.01;
 
   void _syncTicker() {
     final bool run = !_reduce && (_now - _lastActive < _restSeconds || _busy);
@@ -195,7 +194,7 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
   }
 
   static final double _restSeconds =
-      AppMotion.sceneRestAfter.inMilliseconds / 1000;
+      AppDepth.sceneRestAfter.inMilliseconds / 1000;
 
   void _onTick(Duration elapsed) {
     _now = _base + elapsed.inMicroseconds / 1e6;
@@ -310,6 +309,34 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
     _refresh();
   }
 
+  // 2.5D lean: eased towards [_depthTarget] every frame.
+  Offset _depth = Offset.zero;
+  Offset _depthTarget = Offset.zero;
+  Timer? _followTimer;
+
+  @override
+  void follow(Offset global) {
+    if (!mounted || _reduce) return;
+    final RenderObject? box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final Offset centre = box.localToGlobal(box.size.center(Offset.zero));
+    final Offset v = global - centre;
+    final double reach = math.max(box.size.width * 1.6, 1);
+    _depthTarget = Offset(
+      (v.dx / reach).clamp(-1.0, 1.0),
+      (v.dy / reach).clamp(-1.0, 1.0),
+    );
+    final double d = math.max(1, v.distance);
+    _look = Offset(v.dx / d * 3.2, v.dy / d * 3);
+    _followTimer?.cancel();
+    _followTimer = Timer(const Duration(milliseconds: 2500), () {
+      _depthTarget = Offset.zero;
+      _look = Offset.zero;
+      _refresh();
+    });
+    poke();
+  }
+
   @override
   void look(Offset direction) {
     final double d = math.max(1, direction.distance);
@@ -341,6 +368,7 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
     final double t = _now;
     final bool still = _reduce;
     final bool asleep = _asleep;
+    _depth = still ? Offset.zero : Offset.lerp(_depth, _depthTarget, 0.14)!;
     p
       ..seconds = t
       ..halo = widget.halo
@@ -417,6 +445,7 @@ class _AuditorMonkeyState extends State<AuditorMonkey>
       ..earLeft = earL
       ..earRight = earR
       ..look = _look
+      ..depth = _depth
       ..purr = _purring && !still
           ? Offset(0.6 * pulse(t, 0.11), -0.4 * pulse(t, 0.11))
           : Offset.zero;

@@ -29,6 +29,9 @@ class MonkeyPose {
   /// mwBlink: open-eye vertical scale (1 open, 0.08 shut).
   double blink = 1;
 
+  /// 2.5D lean towards the finger, -1..1 on each axis.
+  Offset depth = Offset.zero;
+
   /// mw-look: pupils offset (view-box units).
   Offset look = Offset.zero;
 
@@ -62,6 +65,6 @@ class MonkeyPose {
   /// Dizzy stars circling the head (0..1 fade).
   double dizzy = 0;
 
-  /// Sun or moon behind the monkey and the ground shadow.
+  /// Soft mint glow behind the monkey.
   bool halo = true;
 }

@@ -25,6 +25,9 @@ class MascotController {
   /// Turns the eyes towards [direction] (any length) for 3.5 s.
   void look(Offset direction) => _host?.look(direction);
 
+  /// Leans towards and looks at a finger at [global] (screen position).
+  void follow(Offset global) => _host?.follow(global);
+
   /// Wakes the monkey and its loops (call on any touch nearby).
   void poke() => _host?.poke();
 
@@ -39,6 +42,7 @@ abstract interface class MascotHost {
   void say(String text, Duration duration);
   void react(MascotReaction reaction, String? text);
   void look(Offset direction);
+  void follow(Offset global);
   void poke();
   void type();
 

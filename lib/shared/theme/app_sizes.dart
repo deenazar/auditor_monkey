@@ -35,7 +35,7 @@ abstract final class AppSizes {
   static const double quickAddSize = 56;
 
   /// Scale of a pressed button.
-  static const double pressScale = 0.92;
+  static const double pressScale = 0.94;
 
   /// Account carousel card height.
   static const double accountCardHeight = 200;

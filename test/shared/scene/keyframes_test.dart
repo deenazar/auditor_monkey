@@ -1,5 +1,4 @@
 import 'package:auditor_monkey/shared/scene/keyframes.dart';
-import 'package:auditor_monkey/shared/scene/sky_phase.dart';
 import 'package:flutter/animation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -29,19 +28,5 @@ void main() {
     expect(pulse(0, 4), closeTo(0, 1e-9));
     expect(pulse(2, 4), closeTo(1, 1e-9));
     expect(pulse(4, 4), closeTo(0, 1e-9));
-  });
-
-  test('sky phases follow mini_checklist hours', () {
-    expect(SkyPhase.forHour(4.9), SkyPhase.night);
-    expect(SkyPhase.forHour(5), SkyPhase.dawn);
-    expect(SkyPhase.forHour(7.4), SkyPhase.dawn);
-    expect(SkyPhase.forHour(7.5), SkyPhase.day);
-    expect(SkyPhase.forHour(16.9), SkyPhase.day);
-    expect(SkyPhase.forHour(17), SkyPhase.dusk);
-    expect(SkyPhase.forHour(20), SkyPhase.night);
-    expect(SkyPhase.at(DateTime(2026, 11, 12, 6, 45)), SkyPhase.dawn);
-    expect(isSleepyHour(DateTime(2026, 11, 12, 23)), isTrue);
-    expect(isSleepyHour(DateTime(2026, 11, 12, 4, 59)), isTrue);
-    expect(isSleepyHour(DateTime(2026, 11, 12, 5)), isFalse);
   });
 }

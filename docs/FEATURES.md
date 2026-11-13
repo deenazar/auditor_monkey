@@ -342,34 +342,35 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-13
 - **PR link**: -
 
-## mini_checklist look and feel (before roadmap session 5)
-- **What it does**: Gives the whole app mini_checklist's look: a sky
-  that follows the time of day, frosted glass, coral accent, Unbounded /
-  DM Sans / DM Mono fonts, and springy motion. Design rules: DESIGN.md.
-- **Home**:
-  - Top: the date, glass buttons (Recent, Open accounts, Demo data in
-    debug builds), the Auditor Monkey beside the last 7 days of spending
-    as bars (today is the warm bar), and three chips: Today spent, Month
-    left (Budget left when budgets exist), Savings %.
-  - Panel: slides up over the sky. A 9-day strip (dot = spending, red
-    dot = a busy day), a list head with this month's progress, and the
-    20 latest entries. Tap a day (strip or bar) to see that day; tap it
-    again or "Recent" to go back.
-  - Monkey: hops and says "Logged ₹…" after a Quick Add save; worried
-    when the month is over plan (budget, or income when there is no
-    budget), happy when under, asleep from 23:00 to 5:00 when idle. Tap
-    its head, belly, ears or tail; stroke it; double-tap; tap fast six
-    times.
-- **Other screens**: same data and flows, new colours, fonts, cards and
-  presses (setup wizard, Accounts, statement, Quick Add, empty and error
-  states). The wizard shows the new 2D monkey.
-- **Reduce motion**: the sky and monkey stay still; bars show at once;
-  moods and speech still change.
-- **Data**: read-only; no schema or money-rule change. Home uses the
-  existing repository totals (transfers never count as spending).
-- **Tests**: Home summary maths, formatting, keyframes, sky phases,
-  monkey widget (speech, reactions, touch, reduce motion, rest), Home
-  screen, goldens for dawn, day, night and late night.
+## Motion & 3D layer (before roadmap session 5)
+- **What it does**: Keeps the original reference design and adds depth
+  and motion on top. Rules: DESIGN.md "Motion & 3D".
+- **Home**: mint hero with drifting blobs and parallax, net worth that
+  rolls, a spending chart that draws in, the 2.5D Auditor Monkey; the
+  lime card (saved % and spent this month) tilts when touched;
+  Spendings bars and a Savings ring; "Savings goal reached" card at 20%
+  saved; recent transactions: swipe left to delete (Undo in the toast),
+  long-press to preview; pull down to refresh.
+- **Monkey**: follows your finger, reacts to taps (head, belly, ears,
+  tail, stroke, double tap, many taps), hops on a save, worries when
+  spending is above income this month, dances with confetti when the
+  savings goal is hit, sleeps 23:00–5:00.
+- **Setup wizard**: blob hero with the waving monkey, steps turn in 3D,
+  confetti when accounts are created.
+- **Accounts**: cards tilt and fly into the statement; long-press a row
+  to preview its card; pull to refresh.
+- **Quick Add**: haptic on every key, chip and tab; springy presses;
+  success haptic on save.
+- **Everywhere**: illustrations pop in, loading blocks shimmer, buttons
+  spring. With reduce motion everything is still; haptics, moods and
+  speech remain.
+- **Data**: no schema or money-rule change; delete uses the existing
+  soft delete and restore.
+- **Tests**: wow toolkit (tilt, haptics, confetti, shimmer limit, blob
+  rest, parallax, flip), Home (layout, reduce motion, long-press
+  preview, swipe delete + Undo on a real database), mascot, Home
+  summary maths; goldens for Home (data, over plan, empty) and updated
+  wizard / accounts / illustrations goldens.
 
 ## 3. Accounts
 - **What it does**: Shows live balances and each account's statement;

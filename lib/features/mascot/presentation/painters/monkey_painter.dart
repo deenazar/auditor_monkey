@@ -4,40 +4,45 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../../shared/scene/keyframes.dart';
-import '../../../../shared/theme/sky_palette.dart';
+import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_depth.dart';
 import 'monkey_pose.dart';
 
-/// Colours of the monkey artwork (one place, like Mimi's inline SVG).
+/// Colours of the monkey artwork (tokens in [AppColors], mascot section).
 abstract final class MonkeyInk {
-  static const Color outline = Color(0xFF2A2420);
-  static const Color furLight = Color(0xFFC08A5E);
-  static const Color furDark = Color(0xFF8A5634);
-  static const Color face = Color(0xFFF8DDBF);
-  static const Color earInner = Color(0xFFF2B49A);
-  static const Color blush = Color(0xFFFF8FA8);
-  static const Color mouth = Color(0xFFE8556E);
-  static const Color tie = Color(0xFFFF6B4A);
-  static const Color board = Color(0xFFA9683C);
-  static const Color paper = Color(0xFFFFFFFF);
-  static const Color clip = Color(0xFFC9D3D8);
-  static const Color tick = Color(0xFF5DB82E);
-  static const Color lens = Color(0x40FFFFFF);
-  static const Color sweat = Color(0xFF7CC6FF);
-  static const Color star = Color(0xFFFFC24D);
-  static const Color zz = Color(0xFFFFFFFF);
+  static const Color outline = AppColors.mascotOutline;
+  static const Color furLight = AppColors.mascotFurLight;
+  static const Color furDark = AppColors.mascotFur;
+  static const Color furShade = AppColors.mascotFurShade;
+  static const Color face = AppColors.mascotFace;
+  static const Color faceShade = AppColors.mascotFaceShade;
+  static const Color earInner = AppColors.primary;
+  static const Color rim = AppColors.primary;
+  static const Color blush = AppColors.accountHand;
+  static const Color mouth = AppColors.mascotTongue;
+  static const Color tie = AppColors.sun;
+  static const Color board = AppColors.sun;
+  static const Color paper = AppColors.background;
+  static const Color clip = AppColors.divider;
+  static const Color tick = AppColors.primaryDeep;
+  static const Color lens = AppColors.mascotLens;
+  static const Color sweat = AppColors.mascotSweat;
+  static const Color star = AppColors.sun;
+  static const Color zz = AppColors.primaryDeep;
+  static const Color glow = AppColors.primaryLight;
+  static const Color shadow = AppColors.shadowContact;
 }
 
-/// Draws the Auditor Monkey in Mimi's flat SVG style: thick dark outline,
-/// soft fur gradient, round glasses and a clipboard. Works in a 160 x 176
-/// view box (Mimi's), scaled to fit. All motion comes from [pose].
+/// Draws the Auditor Monkey in 2.5D: the reference palette (deep-green
+/// fur, lime face, mint ears), with depth shading (gradient fur, mint rim
+/// light, contact shadows, specular glints) and a perspective lean
+/// towards the finger ([MonkeyPose.depth]); near layers (face) move more
+/// than far ones (tail) for parallax. 160 x 176 view box, scaled to fit.
 class MonkeyPainter extends CustomPainter {
-  MonkeyPainter({required this.pose, required this.sky, super.repaint});
+  MonkeyPainter({required this.pose, super.repaint});
 
   /// Filled by the widget every frame.
   final MonkeyPose pose;
-
-  /// Halo colours (sun by day, moon at night) and whether it is night.
-  final ValueGetter<(SkyColors, bool)> sky;
 
   static const double viewW = 160;
   static const double viewH = 176;
@@ -50,6 +55,7 @@ class MonkeyPainter extends CustomPainter {
     ..strokeCap = StrokeCap.round
     ..strokeJoin = StrokeJoin.round;
   Shader? _fur;
+  Shader? _face;
   final Path _path = Path();
 
   static final Path _tailPath = Path()
@@ -80,13 +86,35 @@ class MonkeyPainter extends CustomPainter {
     );
     canvas.scale(scale);
     _fur ??= const RadialGradient(
-      center: Alignment(-0.2, -0.4),
-      radius: 0.9,
-      colors: <Color>[MonkeyInk.furLight, MonkeyInk.furDark],
+      center: Alignment(-0.35, -0.55),
+      radius: 1.0,
+      colors: <Color>[
+        MonkeyInk.furLight,
+        MonkeyInk.furDark,
+        MonkeyInk.furShade,
+      ],
+      stops: <double>[0, 0.55, 1],
     ).createShader(const Rect.fromLTWH(0, 0, viewW, viewH));
+    _face ??= const RadialGradient(
+      center: Alignment(-0.3, -0.5),
+      radius: 0.9,
+      colors: <Color>[MonkeyInk.face, MonkeyInk.faceShade],
+    ).createShader(const Rect.fromLTWH(30, 30, 100, 80));
 
     if (pose.halo) _paintHalo(canvas);
     _paintGroundShadow(canvas);
+
+    // 2.5D lean towards the finger, around the figure's centre.
+    final Offset d = pose.depth;
+    canvas.translate(viewW / 2, viewH * 0.55);
+    canvas.transform(
+      (Matrix4.identity()
+            ..setEntry(3, 2, AppDepth.perspective * 1.6)
+            ..rotateY(d.dx * 0.22)
+            ..rotateX(-d.dy * 0.14))
+          .storage,
+    );
+    canvas.translate(-viewW / 2, -viewH * 0.55);
 
     // Whole figure: reactions (jump, hop, shake, dance, spin) from the
     // bottom centre, like `.mw-figure{transform-origin:50% 100%}`.
@@ -110,51 +138,28 @@ class MonkeyPainter extends CustomPainter {
   // ---- Sky bits ----
 
   void _paintHalo(Canvas canvas) {
-    final (SkyColors c, bool night) = sky();
-    // `.mw-halo`: 74% wide circle, top -6%, floating 6px every 8 s.
-    const double r = viewW * 0.74 / 2;
+    // A soft mint glow behind the monkey, floating gently (8 s).
     final Offset centre = Offset(
       viewW / 2,
-      -viewH * 0.06 + r - 6 * pulse(pose.seconds, 8),
+      viewH * 0.42 - 4 * pulse(pose.seconds, 8),
     );
     _fill
-      ..shader = null
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30)
-      ..color = c.orbGlow;
-    canvas.drawCircle(centre, r + 20, _fill);
-    _fill
-      ..maskFilter = null
-      ..color = c.orb.withValues(alpha: 0.10);
-    canvas.drawCircle(centre, r + 26, _fill);
-    _fill.color = c.orb.withValues(alpha: 0.25);
-    canvas.drawCircle(centre, r + 12, _fill);
-    _fill.color = c.orb.withValues(alpha: 0.95);
-    canvas.drawCircle(centre, r, _fill);
-    if (night) {
-      // The moon's shaded edge (`inset -14px -6px 0 #D9D3BD`).
-      canvas.save();
-      canvas.clipPath(
-        Path()..addOval(Rect.fromCircle(center: centre, radius: r)),
-      );
-      _path
-        ..reset()
-        ..fillType = PathFillType.evenOdd
-        ..addOval(Rect.fromCircle(center: centre, radius: r))
-        ..addOval(
-          Rect.fromCircle(center: centre.translate(-14, -6), radius: r),
-        );
-      _fill.color = SkyColors.moonShade;
-      canvas.drawPath(_path, _fill);
-      _path.fillType = PathFillType.nonZero;
-      canvas.restore();
-    }
+      ..shader = RadialGradient(
+        colors: <Color>[
+          MonkeyInk.glow.withValues(alpha: 0.75),
+          MonkeyInk.glow.withValues(alpha: 0),
+        ],
+      ).createShader(Rect.fromCircle(center: centre, radius: viewW * 0.55))
+      ..maskFilter = null;
+    canvas.drawCircle(centre, viewW * 0.55, _fill);
+    _fill.shader = null;
   }
 
   void _paintGroundShadow(Canvas canvas) {
     _fill
       ..shader = null
-      ..color = SkyColors.groundShadow
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+      ..color = MonkeyInk.shadow
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     final double shrink = (pose.figureDy / -40).clamp(0.0, 0.4);
     canvas.drawOval(
       Rect.fromCenter(
@@ -185,6 +190,28 @@ class MonkeyPainter extends CustomPainter {
     _fill.shader = null;
   }
 
+  /// Mint rim light along the upper-right edge of an oval, for depth.
+  void _rim(
+    Canvas canvas,
+    Offset c,
+    double rx,
+    double ry,
+    double start,
+    double sweep,
+  ) {
+    _stroke
+      ..shader = null
+      ..color = MonkeyInk.rim.withValues(alpha: 0.85)
+      ..strokeWidth = 2.4;
+    canvas.drawArc(
+      Rect.fromCenter(center: c, width: rx * 2, height: ry * 2),
+      start,
+      sweep,
+      false,
+      _stroke,
+    );
+  }
+
   void _solid(Canvas canvas, Path path, Color colour) {
     _fill
       ..shader = null
@@ -200,6 +227,7 @@ class MonkeyPainter extends CustomPainter {
 
   void _paintTail(Canvas canvas) {
     canvas.save();
+    canvas.translate(-4 * pose.depth.dx, -2 * pose.depth.dy);
     canvas.translate(116, 146);
     canvas.rotate(pose.tailRotation);
     canvas.translate(-116, -146);
@@ -227,7 +255,12 @@ class MonkeyPainter extends CustomPainter {
 
     _furFill(canvas, _oval(80, 130, 42, 36));
     _outline(canvas, _path);
-    _solid(canvas, _oval(80, 138, 26, 22), MonkeyInk.face);
+    _rim(canvas, const Offset(80, 130), 39, 33, -0.8, 1.3);
+    _fill
+      ..color = MonkeyInk.face
+      ..shader = _face;
+    canvas.drawPath(_oval(80, 138, 26, 22), _fill);
+    _fill.shader = null;
 
     // Feet.
     _furFill(canvas, _oval(62, 162, 13, 8));
@@ -341,6 +374,20 @@ class MonkeyPainter extends CustomPainter {
     canvas.rotate(pose.headRotation);
     canvas.translate(-80, -104);
 
+    // Contact shadow of the head on the body (ambient occlusion).
+    _fill
+      ..shader = null
+      ..color = MonkeyInk.shadow
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(80, 104), width: 70, height: 14),
+      _fill,
+    );
+    _fill.maskFilter = null;
+
+    // Near layer: the head moves a little more than the body.
+    canvas.translate(3 * pose.depth.dx, 2 * pose.depth.dy);
+
     _paintEar(canvas, 34, 64, pose.earLeft, const Offset(44, 64));
     _paintEar(canvas, 126, 64, pose.earRight, const Offset(116, 64));
 
@@ -356,6 +403,10 @@ class MonkeyPainter extends CustomPainter {
     _furFill(canvas, _path);
     _outline(canvas, _path, 2.5);
     _outline(canvas, _oval(80, 62, 46, 40));
+    _rim(canvas, const Offset(80, 62), 43, 37, -0.9, 1.5);
+
+    // Nearest layer: the face slides a bit more again (parallax).
+    canvas.translate(2.5 * pose.depth.dx, 1.5 * pose.depth.dy);
 
     // Face mask: two eye circles and a muzzle (Mimi's patch, in peach).
     _path
@@ -365,7 +416,11 @@ class MonkeyPainter extends CustomPainter {
       ..addOval(
         Rect.fromCenter(center: const Offset(80, 82), width: 66, height: 40),
       );
-    _solid(canvas, _path, MonkeyInk.face);
+    _fill
+      ..color = MonkeyInk.face
+      ..shader = _face;
+    canvas.drawPath(_path, _fill);
+    _fill.shader = null;
 
     // Cheeks.
     _fill.color = MonkeyInk.blush.withValues(alpha: pose.blush);
@@ -615,6 +670,5 @@ class MonkeyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(MonkeyPainter oldDelegate) =>
-      oldDelegate.pose != pose || oldDelegate.sky != sky;
+  bool shouldRepaint(MonkeyPainter oldDelegate) => oldDelegate.pose != pose;
 }

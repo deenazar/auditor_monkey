@@ -17,7 +17,7 @@ import '../../../transactions/domain/transaction_entry.dart';
 /// in front. Money is never a `double` in this widget.
 ///
 /// - Empty: `₹0` in `inkMuted`.
-/// - Expense: `ink`. Income: a `+` and the digits in `success` green.
+/// - Expense: `ink`. Income: a `+` and the digits in `accentText`.
 ///   Transfer: a ⇄ icon and the digits in `inkMuted`.
 /// - [refuseTick] changes when the input is refused: the amount nudges
 ///   `space2` sideways and back (`durationMedium`). With reduce motion the
@@ -165,7 +165,7 @@ class _AmountDisplayState extends State<AmountDisplay>
     if (widget.text.isEmpty) return AppColors.inkMuted;
     return switch (widget.type) {
       TransactionType.expense => AppColors.ink,
-      TransactionType.income => AppColors.success,
+      TransactionType.income => AppColors.accentText,
       TransactionType.transfer => AppColors.inkMuted,
     };
   }

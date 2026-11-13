@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_depth.dart';
 import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -34,11 +35,11 @@ class _SpeechBubbleState extends State<SpeechBubble> {
             label: show ? value : null,
             child: AnimatedOpacity(
               opacity: show ? 1 : 0,
-              duration: AppMotion.resolve(context, AppMotion.durationPress),
+              duration: AppMotion.resolve(context, AppDepth.press),
               child: AnimatedSlide(
                 offset: show ? Offset.zero : const Offset(0, 0.15),
-                duration: AppMotion.resolve(context, AppMotion.durationPress),
-                curve: AppMotion.bouncy,
+                duration: AppMotion.resolve(context, AppDepth.press),
+                curve: AppDepth.bouncy,
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 210),
                   padding: const EdgeInsets.symmetric(
@@ -46,7 +47,7 @@ class _SpeechBubbleState extends State<SpeechBubble> {
                     vertical: 6,
                   ),
                   decoration: const BoxDecoration(
-                    color: AppColors.card,
+                    color: AppColors.background,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(14),
                       topRight: Radius.circular(14),
@@ -59,7 +60,7 @@ class _SpeechBubbleState extends State<SpeechBubble> {
                     _last,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodyStrong.copyWith(fontSize: 12),
+                    style: AppTextStyles.bodyStrong.copyWith(fontSize: 13),
                   ),
                 ),
               ),

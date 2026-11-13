@@ -2,42 +2,37 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-13: mini_checklist look and feel (PR: link added after opening)
-
-### Added
-- Home in mini_checklist's layout: an illustrated sky that follows the
-  time of day (dawn, day, dusk, night) with drifting clouds, twinkling
-  stars, hills and a sun or moon; the big date; glass buttons; the
-  week's spending as glass bars; stat chips (Today spent, Month left or
-  Budget left, Savings %); and a sliding panel with a 9-day strip and
-  the latest entries (tap a day to see only that day).
-- The Auditor Monkey, drawn natively in Mimi's SVG style (glasses,
-  clipboard, bow tie) with Mimi's moods, reactions and touch zones:
-  breathing, blinking, tail swish, head tilt, jump, hop, shake, nod,
-  dance, spin, wave, ear twitch, purr with hearts, dizzy stars, star
-  bursts and a speech bubble. It hops and speaks when you save in Quick
-  Add, worries when the month goes over plan, smiles when under, and
-  sleeps late at night.
-- `Glass` (blur 14 + saturate 1.4 + 1px white inner border, grouped
-  backdrop), `GlassIconButton`, `PressScale` (springy press),
-  `Keyframes` (CSS keyframes port), `SkyScene`.
-- Fonts Unbounded, DM Sans and DM Mono (OFL, licences bundled and on
-  the Licenses page).
+## 2026-11-13: Original design back + Motion & 3D layer (PR: link added after opening)
 
 ### Changed
-- All design tokens now follow mini_checklist (`panel`, `card`, `line`,
-  `fill`, `coral` accent, `teal`, `lime`, `sun`, `red`), radii 26 / 18 /
-  12, springy motion curves. Every screen (setup wizard, Accounts and
-  statement, Quick Add, empty and error states, demo-data sheet, bottom
-  bar, Quick Add button, buttons) picks this up through the tokens.
-- Illustrations recoloured to the new palette.
-- DESIGN.md replaced with the new system.
-- Goldens regenerated.
+- The mini_checklist restyle (PR #12) is undone: the reference design
+  and the DESIGN.md base from PRs #4/#5 (mint, Outfit, flat cards) are
+  back on every screen.
+- Home is now built in the reference layout: mint hero (greeting, net
+  worth, area chart), lime summary card overlapping it, Spendings /
+  Savings stat tiles, "Recent transactions".
+- The mascot is a 2.5D Auditor Monkey drawn in code (depth shading, rim
+  light, perspective lean) instead of the 3D `.glb` WebView.
+
+### Added
+- Motion & 3D layer (DESIGN.md "Motion & 3D", `lib/shared/wow/`):
+  perspective tilt on cards, parallax header, 3D wizard step turns,
+  layered shadows, living blob gradients, number roll-ups, charts that
+  draw in, confetti on goals, shimmer loading, card Hero into the
+  statement, haptics on every tap, swipe-to-delete with Undo on Home,
+  pull-to-refresh (Home, Accounts), long-press previews (Home rows,
+  account rows), springy buttons, and the monkey following your finger.
+- Mascot reacts to money events: save → hop and "Logged ₹…"; over plan
+  → worried; back under → wave; savings goal (20%) → dance + confetti;
+  idle late at night → asleep.
+- "Savings goal reached" card on Home with a new `success_goal`
+  illustration; illustrations pop in with a 3D tip.
+- Setup wizard: living blob hero with the waving monkey; confetti when
+  set-up finishes.
 
 ### Removed
-- The 3D mascot (`flutter_3d_controller`, `assets/3d/monkey.glb`,
-  `tool/make_placeholder_glb.py`, `visibility_detector`) and the Outfit
-  font.
+- `flutter_3d_controller`, `visibility_detector`, `assets/3d/monkey.glb`
+  and its generator script (2.5D mascot replaces them).
 
 ## 2026-11-13: Design polish (PR: #11)
 

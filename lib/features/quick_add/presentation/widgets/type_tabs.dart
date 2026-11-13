@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/wow/haptics.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 
 /// Expense / Income / Transfer segmented control (DESIGN.md "Segmented tabs").
@@ -75,11 +76,15 @@ class _TypeTabsState extends State<TypeTabs> {
     final bool disabled =
         type == TransactionType.transfer && !widget.transferEnabled;
     if (disabled) {
+      AppHaptics.warning();
       setState(() => _showHint = true);
       widget.onDisabledTap?.call();
       return;
     }
-    if (type != widget.selected) widget.onChanged(type);
+    if (type != widget.selected) {
+      AppHaptics.tap();
+      widget.onChanged(type);
+    }
   }
 
   @override

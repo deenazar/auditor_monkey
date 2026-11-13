@@ -46,36 +46,6 @@ abstract final class AppMotion {
   static const Curve curveExit = Curves.easeInCubic;
   static final Curve curveSpring = SpringCurve();
 
-  /// mini_checklist's springy curve, cubic-bezier(.2,1.6,.4,1): taps,
-  /// toggles, chips. Overshoots, so only use it on scale and position.
-  static const Curve springy = Cubic(0.2, 1.6, 0.4, 1);
-
-  /// cubic-bezier(.2,1.3,.4,1): reactions and entrances (softer bounce).
-  static const Curve bouncy = Cubic(0.2, 1.3, 0.4, 1);
-
-  /// cubic-bezier(.2,1.2,.3,1): bars growing, scene entrance.
-  static const Curve grow = Cubic(0.2, 1.2, 0.3, 1);
-
-  /// cubic-bezier(.2,1.1,.3,1): sheets sliding up.
-  static const Curve sheet = Cubic(0.2, 1.1, 0.3, 1);
-
-  /// Press feedback on a tap (`.g:active{transform:scale(.9)}`), 200 ms.
-  static const Duration durationPress = Duration(milliseconds: 200);
-
-  /// Sheet slide (`.sheet{transition:transform .45s}`).
-  static const Duration durationSheet = Duration(milliseconds: 450);
-
-  /// Sky colour change between phases (`transition:background 1.2s`).
-  static const Duration durationSky = Duration(milliseconds: 1200);
-
-  /// Week bars grow (`.mw-bar .tr i{transition:height .9s}`) with a 50 ms
-  /// stagger per bar.
-  static const Duration durationBars = Duration(milliseconds: 900);
-  static const Duration durationBarStagger = Duration(milliseconds: 50);
-
-  /// The header's endless loops rest this long after the last touch.
-  static const Duration sceneRestAfter = Duration(seconds: 15);
-
   /// How long the saved toast (with Undo) stays.
   static const Duration toastDuration = Duration(milliseconds: 4000);
 
@@ -102,11 +72,14 @@ abstract final class AppMotion {
   static final SpringDescription sheetSpring =
       SpringDescription.withDampingRatio(mass: 1, stiffness: 380, ratio: 0.82);
 
-  /// How long the Quick Add sheet slide runs ([durationSheet]).
-  static const Duration durationSheetOpen = durationSheet;
+  /// How long the Quick Add sheet spring runs (it settles within this).
+  static const Duration durationSheetOpen = Duration(milliseconds: 350);
 
-  /// The sheet open curve: mini_checklist's [sheet] cubic.
-  static const Curve sheetSpringCurve = sheet;
+  /// [sheetSpring] as a curve over [durationSheetOpen] (tiny overshoot).
+  static final Curve sheetSpringCurve = SpringCurve.fromDescription(
+    sheetSpring,
+    seconds: 0.35,
+  );
 
   /// Incoming tab content scale start (to 1).
   static const double tabFadeScaleFrom = 0.98;

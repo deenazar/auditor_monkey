@@ -10,9 +10,9 @@ import '../features/quick_add/application/quick_add_state.dart';
 import '../features/quick_add/application/quick_add_undo.dart';
 import '../features/quick_add/presentation/quick_add_sheet.dart';
 import '../features/quick_add/presentation/quick_add_toast_host.dart';
-import '../shared/theme/app_colors.dart';
 import '../shared/widgets/app_bottom_nav.dart';
 import '../shared/widgets/demo_ribbon.dart';
+import '../shared/wow/haptics.dart';
 
 /// Screen frame around the four tabs: the tab content plus the bottom bar.
 class AppShell extends ConsumerWidget {
@@ -60,6 +60,7 @@ class AppShell extends ConsumerWidget {
     ) {
       if (saved == null) return;
       ref.read(mascotEventsProvider.notifier).saved(saved);
+      AppHaptics.success();
       showSavedToast(context, saved, undo: ref.read(quickAddUndoProvider));
       ref.read(quickAddSavedProvider.notifier).clear();
     });
@@ -68,7 +69,6 @@ class AppShell extends ConsumerWidget {
     // The tree shape never changes, so tab state survives a demo toggle.
     final bool demoOn = ref.watch(demoModeActiveProvider);
     return Scaffold(
-      backgroundColor: AppColors.panel,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[

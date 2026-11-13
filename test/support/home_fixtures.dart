@@ -164,6 +164,7 @@ List<Override> homeOverrides(HomeSummary summary, {int budget = 0}) =>
       accountsProvider.overrideWith(
         (Ref ref) => Stream<List<Account>>.value(homeAccounts),
       ),
+      netWorthProvider.overrideWith((Ref ref) => Stream<int>.value(12684300)),
     ];
 
 /// A first-day Home: nothing spent, no entries.

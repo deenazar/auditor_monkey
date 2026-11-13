@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_depth.dart';
 import '../theme/app_motion.dart';
 import '../theme/app_radius.dart';
-import '../theme/app_shadows.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../wow/haptics.dart';
 
-/// The main pill button (mini_checklist `.addbtn`): `coral` fill, white
-/// Unbounded label, coral glow, `buttonHeight` tall.
+/// The main pill button: `primary` fill, `ink` label, `buttonHeight` tall.
 ///
-/// - Pressed: springs to `pressScale` (no scale with reduce motion).
+/// - Pressed: scales to `pressScale` and turns `primaryDeep` (no scale with
+///   reduce motion).
 /// - Disabled (`onPressed` is null): `divider` fill, `inkMuted` label.
 /// - Loading: a small ring replaces the label and taps are ignored. The
 ///   button keeps its colour so it does not look disabled.
@@ -50,7 +51,9 @@ class _PrimaryButtonState extends State<PrimaryButton> {
   }
 
   void _handleTap() {
-    if (_tappable) widget.onPressed?.call();
+    if (!_tappable) return;
+    AppHaptics.press();
+    widget.onPressed?.call();
   }
 
   @override
@@ -59,8 +62,16 @@ class _PrimaryButtonState extends State<PrimaryButton> {
     final bool disabled = widget.onPressed == null;
     final bool pressed = _pressed && _tappable;
 
-    final Color fill = disabled ? AppColors.divider : AppColors.primary;
-    final Color labelColour = disabled ? AppColors.inkMuted : AppColors.onDark;
+    final Color fill = disabled
+        ? AppColors.divider
+        : pressed
+        ? AppColors.primaryDeep
+        : AppColors.primary;
+    final Color labelColour = disabled
+        ? AppColors.inkMuted
+        : pressed
+        ? AppColors.onDark
+        : AppColors.ink;
 
     final Widget content = widget.loading
         ? const SizedBox(
@@ -68,7 +79,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
             height: AppSizes.progressRing,
             child: CircularProgressIndicator(
               strokeWidth: AppSizes.progressStroke,
-              color: AppColors.onDark,
+              color: AppColors.ink,
               semanticsLabel: 'Loading',
             ),
           )
@@ -77,10 +88,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
             child: Text(
               widget.label,
               maxLines: 1,
-              style: AppTextStyles.button.copyWith(
-                fontSize: 14,
-                color: labelColour,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: labelColour),
             ),
           );
 
@@ -99,8 +107,8 @@ class _PrimaryButtonState extends State<PrimaryButton> {
         onTap: _handleTap,
         child: AnimatedScale(
           scale: pressed && !reduce ? AppSizes.pressScale : 1,
-          duration: AppMotion.resolve(context, AppMotion.durationPress),
-          curve: AppMotion.springy,
+          duration: AppMotion.resolve(context, AppDepth.press),
+          curve: AppDepth.springy,
           child: AnimatedContainer(
             duration: AppMotion.resolve(context, AppMotion.durationFast),
             curve: AppMotion.curveEnter,
@@ -111,9 +119,6 @@ class _PrimaryButtonState extends State<PrimaryButton> {
             decoration: BoxDecoration(
               color: fill,
               borderRadius: AppRadius.pill,
-              boxShadow: disabled
-                  ? AppShadows.elevationNone
-                  : AppShadows.shadowCoral,
             ),
             child: content,
           ),
