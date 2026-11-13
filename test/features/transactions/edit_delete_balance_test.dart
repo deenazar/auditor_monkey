@@ -362,37 +362,40 @@ void main() {
     });
   });
 
-  test('undo of a delete linked to a CLOSED loan is refused (DATABASE.md rule)', () async {
-    final loan = await env.loans.create(loanDraft());
-    final TransactionEntry e = await add(
-      TransactionDraft(
-        type: TransactionType.expense,
-        amount: 2000,
-        date: day,
-        accountId: a.id,
-        categoryId: groceries,
-        loanId: loan.id,
-      ),
-    );
-    await env.transactions.softDelete(e.id);
-    await env.loans.update(
-      loan.id,
-      const LoanDraft(
-        direction: LoanDirection.lent,
-        person: 'Ravi',
-        principal: 100000,
-        startDate: '2026-10-01',
-        closed: true,
-      ),
-    );
-    await expectLater(
-      env.transactions.restore(e.id),
-      throwsA(isA<ValidationFailure>()),
-    );
-    // Still deleted: the balance does not include it.
-    expect(await env.transactions.getById(e.id), isNull);
-    await verify(balA: openA, balB: openB);
-  });
+  test(
+    'undo of a delete linked to a CLOSED loan is refused (DATABASE.md rule)',
+    () async {
+      final loan = await env.loans.create(loanDraft());
+      final TransactionEntry e = await add(
+        TransactionDraft(
+          type: TransactionType.expense,
+          amount: 2000,
+          date: day,
+          accountId: a.id,
+          categoryId: groceries,
+          loanId: loan.id,
+        ),
+      );
+      await env.transactions.softDelete(e.id);
+      await env.loans.update(
+        loan.id,
+        const LoanDraft(
+          direction: LoanDirection.lent,
+          person: 'Ravi',
+          principal: 100000,
+          startDate: '2026-10-01',
+          closed: true,
+        ),
+      );
+      await expectLater(
+        env.transactions.restore(e.id),
+        throwsA(isA<ValidationFailure>()),
+      );
+      // Still deleted: the balance does not include it.
+      expect(await env.transactions.getById(e.id), isNull);
+      await verify(balA: openA, balB: openB);
+    },
+  );
 
   group('deleted entries vanish from the list views', () {
     test('list, day totals and month summary', () async {
