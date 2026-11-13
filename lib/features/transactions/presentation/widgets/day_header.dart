@@ -31,49 +31,40 @@ class DayHeader extends StatelessWidget {
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(4, AppSpacing.space4, 4, 6),
-        child: Row(
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSpacing.space2,
+          runSpacing: AppSpacing.space1,
           children: <Widget>[
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.sectionTitle.copyWith(fontSize: 14),
-              ),
+            Text(
+              label,
+              style: AppTextStyles.sectionTitle.copyWith(fontSize: 14),
             ),
-            if (total.expense > 0 || total.income > 0) ...<Widget>[
-              const SizedBox(width: AppSpacing.space2),
-              // Totals shrink to fit (large text) instead of pushing the label.
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      if (total.expense > 0)
-                        Text(
-                          '-${formatPaise(total.expense)}',
-                          maxLines: 1,
-                          style: AppTextStyles.amountSmall.copyWith(
-                            color: AppColors.ink,
-                          ),
-                        ),
-                      if (total.expense > 0 && total.income > 0)
-                        const SizedBox(width: AppSpacing.space2),
-                      if (total.income > 0)
-                        Text(
-                          '+${formatPaise(total.income)}',
-                          maxLines: 1,
-                          style: AppTextStyles.amountSmall.copyWith(
-                            color: AppColors.success,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+            // Totals sit beside the label when they fit, on a second line
+            // under it when they do not (never shrunk).
+            if (total.expense > 0 || total.income > 0)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (total.expense > 0)
+                    Text(
+                      '-${formatPaise(total.expense)}',
+                      style: AppTextStyles.amountSmall.copyWith(
+                        color: AppColors.ink,
+                      ),
+                    ),
+                  if (total.expense > 0 && total.income > 0)
+                    const SizedBox(width: AppSpacing.space2),
+                  if (total.income > 0)
+                    Text(
+                      '+${formatPaise(total.income)}',
+                      style: AppTextStyles.amountSmall.copyWith(
+                        color: AppColors.success,
+                      ),
+                    ),
+                ],
               ),
-            ],
           ],
         ),
       ),

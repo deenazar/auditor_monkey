@@ -50,6 +50,10 @@ class _SwipeRowState extends State<SwipeRow> with TickerProviderStateMixin {
     duration: AppMotion.durationMedium,
     value: 1,
   );
+  late final Animation<Offset> _slideOut = Tween<Offset>(
+    begin: const Offset(-0.35, 0),
+    end: Offset.zero,
+  ).animate(_collapse);
   double _from = 0;
   bool _armed = false;
   bool _busy = false;
@@ -128,10 +132,12 @@ class _SwipeRowState extends State<SwipeRow> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return SizeTransition(
-      sizeFactor: _collapse,
-      child: FadeTransition(
-        opacity: _collapse,
+    // Delete: the row fades and slides out (opacity and transform only, no
+    // layout change). The list reload then removes it.
+    return FadeTransition(
+      opacity: _collapse,
+      child: SlideTransition(
+        position: _slideOut,
         child: ClipRRect(
           borderRadius: AppRadius.card,
           child: Stack(

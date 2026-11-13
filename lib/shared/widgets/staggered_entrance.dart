@@ -14,8 +14,13 @@ class StaggeredEntrance extends StatefulWidget {
   const StaggeredEntrance({
     required this.index,
     required this.child,
+    this.animate = true,
     super.key,
   });
+
+  /// False shows the child at once (the same widget type stays in the tree,
+  /// so a child keeps its state when the entrance is switched off).
+  final bool animate;
 
   /// Position in the list or group (0 based).
   final int index;
@@ -38,6 +43,7 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
+    if (!widget.animate) return;
     if (AppMotion.reduceMotion(context)) return;
     final delayMs =
         math.min(widget.index, AppMotion.staggerMaxItems - 1) *

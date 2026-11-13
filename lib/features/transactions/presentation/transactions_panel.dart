@@ -69,6 +69,7 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
   TransactionsListState? _memoState;
   List<_Line> _lines = const <_Line>[];
   bool _staggerDone = false;
+  bool _staggerQueued = false;
 
   String _month = '';
   bool _reportQueued = false;
@@ -84,10 +85,18 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
       }
     }
     _lines = lines;
-    // Stagger only the first rows, once, when the list first shows.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _staggerDone = true;
-    });
+    // Keys of days no longer loaded (filter changes, reloads) are dropped.
+    final Set<String> dates = <String>{
+      for (final DayGroup g in state.groups) g.date,
+    };
+    _dayKeys.removeWhere((String date, GlobalKey _) => !dates.contains(date));
+    // The first rows get the entrance, once, when real rows first show.
+    if (!_staggerDone && !_staggerQueued && state.items.isNotEmpty) {
+      _staggerQueued = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _staggerDone = true;
+      });
+    }
     _queueMonthReport();
   }
 
@@ -120,7 +129,14 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
         best = entry.key;
       }
     }
-    if (best == null) return;
+    // Nothing above the top: at the very start the first day is the topmost.
+    if (best == null) {
+      final bool atStart =
+          !widget.scroll.hasClients || widget.scroll.offset <= 0;
+      final DayGroup? first = _lines.isEmpty ? null : _lines.first.group;
+      if (!atStart || first == null) return;
+      best = first.date;
+    }
     final String month = best.substring(0, 7);
     if (month != _month) {
       _month = month;
@@ -348,10 +364,14 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
                           ),
                         ),
                       );
-                      if (!_staggerDone && i < TransactionsPanel.staggerRows) {
-                        return StaggeredEntrance(index: i, child: row);
-                      }
-                      return row;
+                      // Same wrapper type for every row, so switching the
+                      // entrance off never remounts a row.
+                      return StaggeredEntrance(
+                        index: i,
+                        animate:
+                            !_staggerDone && i < TransactionsPanel.staggerRows,
+                        child: row,
+                      );
                     },
                   ),
                 ),

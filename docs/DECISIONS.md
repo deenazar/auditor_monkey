@@ -845,12 +845,13 @@ approved by the owner on 2026-11-12.
 ## 2026-11-13: Undo restore rules
 - Decision: Undo of a delete restores the entry if its account is live
   or archived. It is refused (with a message) if the account was deleted
-  meanwhile. An entry linked to a closed loan is restored and keeps its
-  link.
-- Options considered: refuse for archived accounts too; refuse for
-  closed loans.
-- Reason: Archived accounts and closed loans still hold history; a
-  deleted account must not get live rows again.
+  meanwhile, or if it is linked to a loan that is closed (the existing
+  DATABASE.md rule: a closed loan takes no new links, restore included).
+- Options considered: refuse for archived accounts too; allow restore
+  into a closed loan (QA suggested it; it changes a money rule, so it is
+  left to the owner).
+- Reason: Archived accounts still hold history; a deleted account must
+  not get live rows again; closed-loan rules stay as set in session 2.
 - Decided by: team (session 5).
 
 ## 2026-11-13: Edit reuses the Quick Add sheet

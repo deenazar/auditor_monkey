@@ -50,12 +50,17 @@ TransactionEntry _entry({
   String? toAccountId,
   String? categoryId,
   String? note,
-  int createdAt = 1000,
+  int? createdAt,
 }) {
+  // Realistic stamps: created during the morning of the entry's day, and
+  // some edited two hours later.
+  final int created =
+      createdAt ??
+      DateTime(2026, 11, 12, 9, 30).millisecondsSinceEpoch + n * 1800000;
   return TransactionEntry(
     id: '5555555$n-5555-4555-8555-55555555555$n',
-    createdAt: createdAt + n,
-    updatedAt: createdAt + n,
+    createdAt: created,
+    updatedAt: n.isEven ? created : created + 7200000,
     deletedAt: null,
     syncStatus: SyncStatus.synced,
     type: type,

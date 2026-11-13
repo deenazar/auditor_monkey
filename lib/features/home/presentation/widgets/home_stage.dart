@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../shared/scene/sky_phase.dart';
 import '../../../../shared/scene/sky_scene.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/sky_palette.dart';
 import '../../../../shared/widgets/glass_icon_button.dart';
@@ -183,9 +184,7 @@ class _DateBlock extends StatelessWidget {
   final String date;
   final bool isToday;
 
-  static const List<Shadow> _shadow = <Shadow>[
-    Shadow(color: Color(0x59000000), blurRadius: 12, offset: Offset(0, 2)),
-  ];
+  static const List<Shadow> _shadow = AppShadows.textOnSky;
 
   @override
   Widget build(BuildContext context) {

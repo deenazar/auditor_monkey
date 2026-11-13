@@ -511,8 +511,8 @@ Details are filled in further when each feature is planned and built.
     entry keeps its type; an archived account or category already on the
     entry is still offered.
   - Undo restore is refused if the account was deleted meanwhile (an
-    archived account is fine). Undo of an entry linked to a closed loan
-    works.
+    archived account is fine) or if the entry is linked to a loan that
+    was closed meanwhile (DATABASE.md rule; reopen the loan first).
 - **Data stored**: Transactions (no schema change). Saved filters in
   `saved_filters.json` in the app support folder (facets only).
 - **Validations**: Same as Quick Add when editing; the repository checks

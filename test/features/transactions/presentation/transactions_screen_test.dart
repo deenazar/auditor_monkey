@@ -261,4 +261,42 @@ void main() {
     expect(find.text('Could not load entries'), findsOneWidget);
     expect(find.text('Try again'), findsOneWidget);
   });
+
+  testWidgets('month follows the list down and back up to the top', (
+    WidgetTester tester,
+  ) async {
+    final List<TransactionListItem> items = <TransactionListItem>[
+      for (int i = 1; i <= 40; i++)
+        txExpense(
+          i,
+          100 * i,
+          '2026-11-${(12 - (i - 1) ~/ 5).toString().padLeft(2, '0')}',
+        ),
+      for (int j = 1; j <= 40; j++)
+        txExpense(
+          40 + j,
+          100 * j,
+          '2026-10-${(31 - (j - 1) ~/ 5).toString().padLeft(2, '0')}',
+        ),
+    ];
+    await pumpScreen(
+      tester,
+      const Scaffold(body: TransactionsScreen()),
+      overrides: txOverrides(list: txListState(items, hasMore: true)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('November 2026'), findsOneWidget);
+
+    final Finder list = find.byType(CustomScrollView).first;
+    await tester.fling(list, const Offset(0, -6000), 6000);
+    await tester.pumpAndSettle();
+    expect(find.text('October 2026'), findsOneWidget);
+
+    // Back to the very top: no header is above the list top any more, so the
+    // month must fall back to the first day (November).
+    await tester.fling(list, const Offset(0, 9000), 9000);
+    await tester.pumpAndSettle();
+    expect(find.text('November 2026'), findsOneWidget);
+    expect(find.text('October 2026'), findsNothing);
+  });
 }

@@ -137,8 +137,6 @@ class TransactionsRepository {
               categoryId: t.categoryId,
               loanId: t.loanId,
             ),
-            // The entry already had this loan (even if closed since).
-            keepLoanId: t.loanId,
           );
           await _dao.restore(id, _ctx.clock.nowMs());
         });

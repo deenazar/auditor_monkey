@@ -132,35 +132,31 @@ class _TransferTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Flexible(
-          child: Text(
-            item.accountName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodyStrong,
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6),
-          child: ExcludeSemantics(
-            child: Icon(
-              LucideIcons.arrowRight,
-              size: 14,
-              color: AppColors.inkMuted,
+    // Text (not a Row) so a long pair of names wraps to a second line at
+    // large text sizes instead of truncating.
+    return Text.rich(
+      TextSpan(
+        children: <InlineSpan>[
+          TextSpan(text: item.accountName),
+          const WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: ExcludeSemantics(
+                child: Icon(
+                  LucideIcons.arrowRight,
+                  size: 14,
+                  color: AppColors.inkMuted,
+                ),
+              ),
             ),
           ),
-        ),
-        Flexible(
-          child: Text(
-            item.toAccountName ?? '',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodyStrong,
-          ),
-        ),
-      ],
+          TextSpan(text: item.toAccountName ?? ''),
+        ],
+      ),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: AppTextStyles.bodyStrong,
     );
   }
 }

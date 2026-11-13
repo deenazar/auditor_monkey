@@ -5,26 +5,43 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../core/logging/logger_provider.dart';
+import '../../../core/utils/clock.dart';
 import '../../../core/utils/date_keys.dart';
 import '../../../core/utils/date_labels.dart';
 import '../../../core/utils/today_provider.dart';
+import '../../../shared/scene/sky_phase.dart';
+import '../../../shared/scene/sky_scene.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_radius.dart';
+import '../../../shared/theme/app_shadows.dart';
 import '../../../shared/theme/app_sizes.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
+import '../../../shared/widgets/glass_icon_button.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/skeleton_block.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
 import '../application/transactions_list_providers.dart';
 import '../domain/transaction_entry.dart';
 import '../domain/transaction_list_item.dart';
 import 'transactions_actions.dart';
 import 'widgets/detail_hero.dart';
 
-/// One entry, in full. Edit opens Quick Add in edit mode. Delete asks first,
-/// then goes back to the list, which shows "Entry deleted" with Undo.
+/// Height of the sky above the panel (below the status bar).
+const double _stageHeight = 180;
+
+/// How far the hero card rises into the sky above the panel's top edge.
+const double _heroOverlap = 90;
+
+/// How far the panel's top edge sits above the stage's bottom.
+const double _panelOverlap = 40;
+
+/// One entry, in full. The hero card sits over a compact sky (the same time
+/// of day as the list) and overlaps the panel. Edit opens Quick Add in edit
+/// mode. Delete asks first, then goes back to the list, which shows "Entry
+/// deleted" with Undo.
 class TransactionDetailScreen extends ConsumerStatefulWidget {
   const TransactionDetailScreen({required this.transactionId, super.key});
 
@@ -41,6 +58,26 @@ class _TransactionDetailScreenState
   /// does not flash "not found" before it pops).
   TransactionListItem? _lastShown;
   bool _deleting = false;
+  bool _missingLogged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Logged once, when the entry is found to be missing (not in build).
+    ref.listenManual<AsyncValue<TransactionListItem?>>(
+      transactionDetailProvider(widget.transactionId),
+      (
+        AsyncValue<TransactionListItem?>? previous,
+        AsyncValue<TransactionListItem?> next,
+      ) {
+        if (next.hasValue && next.value == null && !_missingLogged) {
+          _missingLogged = true;
+          ref.read(loggerProvider).info(transactionsLogTag, 'entry not found');
+        }
+      },
+      fireImmediately: true,
+    );
+  }
 
   void _back() {
     if (context.canPop()) {
@@ -92,115 +129,121 @@ class _TransactionDetailScreenState
       transactionDetailProvider(widget.transactionId),
     );
     final String today = ref.watch(todayProvider);
+    final SkyPhase phase = SkyPhase.at(
+      DateTime.fromMillisecondsSinceEpoch(ref.watch(clockProvider).nowMs()),
+    );
     final TransactionListItem? item = async.value;
     if (item != null) _lastShown = item;
     final TransactionListItem? shown = _deleting ? _lastShown : item;
+    final double padTop = MediaQuery.paddingOf(context).top;
+    final double bottom = MediaQuery.paddingOf(context).bottom;
+    final double stageH = padTop + _stageHeight;
 
-    final Widget body;
+    final Widget content;
     if (shown != null) {
-      body = _DetailBody(
-        item: shown,
-        today: today,
-        onEdit: () =>
-            openEditEntry(context, ref.read(loggerProvider), shown.entry),
-        onDelete: () => _delete(shown.entry),
+      content = ListView(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 32 + bottom),
+        children: <Widget>[
+          DetailHero(item: shown),
+          const SizedBox(height: AppSpacing.space4),
+          StaggeredEntrance(
+            index: 1,
+            child: _Facts(
+              rows: <(String, String)>[
+                if (shown.isTransfer) ...<(String, String)>[
+                  ('From', shown.accountName),
+                  ('To', shown.toAccountName ?? ''),
+                ] else ...<(String, String)>[
+                  ('Account', shown.accountName),
+                  ('Category', shown.categoryName ?? ''),
+                ],
+                if ((shown.entry.note ?? '').trim().isNotEmpty)
+                  ('Note', shown.entry.note!.trim()),
+                ('Created', _stamp(shown.entry.createdAt, today)),
+                ('Updated', _stamp(shown.entry.updatedAt, today)),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.space6),
+          StaggeredEntrance(
+            index: 2,
+            child: PrimaryButton(
+              label: 'Edit entry',
+              onPressed: () =>
+                  openEditEntry(context, ref.read(loggerProvider), shown.entry),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.space3),
+          StaggeredEntrance(
+            index: 3,
+            child: _DeleteButton(onTap: () => _delete(shown.entry)),
+          ),
+        ],
       );
-    } else if (async.hasError) {
-      body = ErrorState(
-        title: 'Could not open this entry',
-        message: 'Your data is safe. Try again.',
-        onRetry: () =>
-            ref.invalidate(transactionDetailProvider(widget.transactionId)),
-      );
-    } else if (async.isLoading) {
-      body = const _DetailSkeleton();
     } else {
-      ref.read(loggerProvider).info(transactionsLogTag, 'entry not found');
-      body = EmptyState(
-        illustration: 'empty_transactions',
-        title: 'This entry is gone',
-        message:
-            'It was deleted or never existed. Your other entries are safe.',
-        action: PrimaryButton(
-          label: 'Back to Transactions',
-          fullWidth: false,
-          onPressed: _back,
-        ),
+      final Widget state;
+      if (async.hasError) {
+        state = ErrorState(
+          title: 'Could not open this entry',
+          message: 'Your data is safe. Try again.',
+          onRetry: () =>
+              ref.invalidate(transactionDetailProvider(widget.transactionId)),
+        );
+      } else if (async.isLoading) {
+        state = const _DetailSkeleton();
+      } else {
+        state = EmptyState(
+          illustration: 'empty_transactions',
+          title: 'This entry is gone',
+          message:
+              'It was deleted or never existed. Your other entries are safe.',
+          action: PrimaryButton(
+            label: 'Back to Transactions',
+            fullWidth: false,
+            onPressed: _back,
+          ),
+        );
+      }
+      content = Padding(
+        padding: const EdgeInsets.only(top: _heroOverlap),
+        child: state,
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.panel,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Row(
-                children: <Widget>[
-                  IconButton(
-                    onPressed: _back,
-                    tooltip: 'Back to Transactions',
-                    icon: const Icon(
-                      LucideIcons.arrowLeft,
-                      size: AppSizes.iconInline,
-                      color: AppColors.ink,
-                    ),
-                  ),
-                ],
+      body: Stack(
+        children: <Widget>[
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: stageH,
+            child: _DetailStage(phase: phase, topInset: padTop, onBack: _back),
+          ),
+          // The panel the hero card overlaps.
+          Positioned(
+            left: 0,
+            right: 0,
+            top: stageH - _panelOverlap,
+            bottom: 0,
+            child: const DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.panel,
+                borderRadius: AppRadius.sheet,
+                boxShadow: AppShadows.shadowPanel,
               ),
             ),
-            Expanded(child: body),
-          ],
-        ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: stageH - _heroOverlap,
+            bottom: 0,
+            child: content,
+          ),
+        ],
       ),
-    );
-  }
-}
-
-class _DetailBody extends StatelessWidget {
-  const _DetailBody({
-    required this.item,
-    required this.today,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  final TransactionListItem item;
-  final String today;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final TransactionEntry e = item.entry;
-    final String note = (e.note ?? '').trim();
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      children: <Widget>[
-        DetailHero(item: item),
-        const SizedBox(height: AppSpacing.space4),
-        _Facts(
-          rows: <(String, String)>[
-            if (item.isTransfer) ...<(String, String)>[
-              ('From', item.accountName),
-              ('To', item.toAccountName ?? ''),
-            ] else ...<(String, String)>[
-              ('Account', item.accountName),
-              ('Category', item.categoryName ?? ''),
-            ],
-            if (note.isNotEmpty) ('Note', note),
-            ('Created', _stamp(e.createdAt, today)),
-            ('Updated', _stamp(e.updatedAt, today)),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.space6),
-        PrimaryButton(label: 'Edit entry', onPressed: onEdit),
-        const SizedBox(height: AppSpacing.space3),
-        _DeleteButton(onTap: onDelete),
-      ],
     );
   }
 
@@ -211,6 +254,68 @@ class _DetailBody extends StatelessWidget {
     final String hh = local.hour.toString().padLeft(2, '0');
     final String mm = local.minute.toString().padLeft(2, '0');
     return '$day, $hh:$mm';
+  }
+}
+
+/// The compact sky: a glass back button and the screen title.
+class _DetailStage extends StatelessWidget {
+  const _DetailStage({
+    required this.phase,
+    required this.topInset,
+    required this.onBack,
+  });
+
+  final SkyPhase phase;
+  final double topInset;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final double top = topInset + 8;
+    return BackdropGroup(
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: <Widget>[
+          Positioned.fill(
+            child: SkyScene(phase: phase, cloudTop: top + 48),
+          ),
+          Positioned(
+            left: 14,
+            right: 14,
+            top: top,
+            child: Row(
+              children: <Widget>[
+                GlassIconButton(
+                  icon: LucideIcons.arrowLeft,
+                  semanticLabel: 'Back to Transactions',
+                  onTap: onBack,
+                ),
+                const SizedBox(width: AppSpacing.space3),
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    label: 'Entry',
+                    excludeSemantics: true,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        'Entry',
+                        maxLines: 1,
+                        style: AppTextStyles.displayTitle.copyWith(
+                          color: AppColors.glassInk,
+                          shadows: AppShadows.textOnSky,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

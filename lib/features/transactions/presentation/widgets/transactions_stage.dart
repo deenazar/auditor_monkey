@@ -6,6 +6,7 @@ import '../../../../core/utils/clock.dart';
 import '../../../../shared/scene/sky_phase.dart';
 import '../../../../shared/scene/sky_scene.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../demo_data/presentation/demo_data_menu_button.dart';
 import '../transactions_format.dart';
@@ -19,9 +20,7 @@ class TransactionsStage extends ConsumerWidget {
 
   final ValueListenable<String> month;
 
-  static const List<Shadow> _shadow = <Shadow>[
-    Shadow(color: Color(0x59000000), blurRadius: 12, offset: Offset(0, 2)),
-  ];
+  static const List<Shadow> _shadow = AppShadows.textOnSky;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,9 +96,8 @@ class TransactionsStage extends ConsumerWidget {
                     liveRegion: true,
                     child: Text(
                       monthTitle(m),
-                      style: AppTextStyles.body.copyWith(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
                         color: AppColors.glassInk,
                         shadows: _shadow,
                       ),

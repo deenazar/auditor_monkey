@@ -25,9 +25,6 @@ One entry per pull request, grouped as Added / Changed / Fixed / Security.
 - Home stage text uses a shared text shadow token.
 - The Home monkey no longer reacts to edits (only to new entries).
 
-### Fixed
-- Undo now works for entries linked to a closed loan.
-
 ## 2026-11-13: mini_checklist look and feel (PR: link added after opening)
 
 ### Added
