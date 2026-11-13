@@ -67,7 +67,7 @@ List<RecentEntryView> recentViewsOf(QuickAddData data) {
         RecentEntryView(
           type: e.type,
           amountPaise: e.amount,
-          label: '${names[e.accountId] ?? ''} › ${names[e.toAccountId] ?? ''}',
+          label: '${names[e.accountId] ?? ''} → ${names[e.toAccountId] ?? ''}',
           colourGroup: 'other',
         )
       else

@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200" fill="none">
 
-<rect x="72" y="34" width="110" height="58" rx="10" fill="#FFD86E" stroke="#10202A" stroke-width="2.5" transform="rotate(-8 127 63)"/>
-<rect x="84" y="50" width="34" height="7" rx="3.5" fill="#10202A" transform="rotate(-8 127 63)"/>
-<rect x="48" y="66" width="144" height="98" rx="16" fill="#FF6B4A" stroke="#10202A" stroke-width="2.5"/>
-<rect x="132" y="96" width="66" height="34" rx="12" fill="#FFC24D" stroke="#10202A" stroke-width="2.5"/>
-<circle cx="158" cy="113" r="5" fill="#10202A"/>
-<circle cx="206" cy="52" r="6" fill="#FFC24D"/>
-<circle cx="32" cy="46" r="4" fill="#FF6B4A"/>
-<ellipse cx="120" cy="176" rx="80" ry="6" fill="#DFE7E5"/>
+<rect x="72" y="34" width="110" height="58" rx="10" fill="#E4E782" stroke="#1E3B31" stroke-width="2.5" transform="rotate(-8 127 63)"/>
+<rect x="84" y="50" width="34" height="7" rx="3.5" fill="#1E3B31" transform="rotate(-8 127 63)"/>
+<rect x="48" y="66" width="144" height="98" rx="16" fill="#70D0B2" stroke="#1E3B31" stroke-width="2.5"/>
+<rect x="132" y="96" width="66" height="34" rx="12" fill="#FDD85C" stroke="#1E3B31" stroke-width="2.5"/>
+<circle cx="158" cy="113" r="5" fill="#1E3B31"/>
+<circle cx="206" cy="52" r="6" fill="#FDD85C"/>
+<circle cx="32" cy="46" r="4" fill="#70D0B2"/>
+<ellipse cx="120" cy="176" rx="80" ry="6" fill="#ECEFEE"/>
 </svg>

@@ -50,7 +50,7 @@ void setGoldenSurface(WidgetTester tester) {
   debugDisableShadows = false;
 }
 
-/// The real theme plus the test-only ₹ fallback font (The app fonts have no ₹; a
+/// The real theme plus the test-only ₹ fallback font (Outfit has no ₹; a
 /// phone's system font draws it, tests have none).
 ThemeData _goldenTheme() {
   final ThemeData theme = AppTheme.light();

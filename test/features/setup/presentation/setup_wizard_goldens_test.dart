@@ -3,6 +3,7 @@ library;
 
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/accounts/presentation/widgets/account_form_sheet.dart';
+import 'package:auditor_monkey/features/mascot/application/mascot_providers.dart';
 import 'package:auditor_monkey/features/setup/application/setup_wizard_state.dart';
 import 'package:auditor_monkey/features/setup/domain/account_presets.dart';
 import 'package:auditor_monkey/features/setup/presentation/setup_wizard_screen.dart';
@@ -62,7 +63,10 @@ void main() {
       tester,
       const SetupWizardScreen(),
       'wizard_welcome',
-      overrides: <Override>[wizardStateOverride(_state(WizardStep.welcome))],
+      overrides: <Override>[
+        wizardStateOverride(_state(WizardStep.welcome)),
+        mascotPosterOnlyProvider.overrideWithValue(true),
+      ],
     );
   });
 
@@ -71,7 +75,10 @@ void main() {
       tester,
       const SetupWizardScreen(),
       'wizard_done',
-      overrides: <Override>[wizardStateOverride(_state(WizardStep.review))],
+      overrides: <Override>[
+        wizardStateOverride(_state(WizardStep.review)),
+        mascotPosterOnlyProvider.overrideWithValue(true),
+      ],
     );
   });
 
@@ -163,6 +170,7 @@ void main() {
             saveError: 'An account with this name already exists.',
           ),
         ),
+        mascotPosterOnlyProvider.overrideWithValue(true),
       ],
     );
   });

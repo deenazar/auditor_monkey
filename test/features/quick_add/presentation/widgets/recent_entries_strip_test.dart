@@ -19,7 +19,7 @@ const List<RecentEntryView> _entries = <RecentEntryView>[
   RecentEntryView(
     type: TransactionType.transfer,
     amountPaise: 200000,
-    label: 'SBI › Axis',
+    label: 'SBI → Axis',
     colourGroup: 'other',
   ),
   RecentEntryView(
@@ -51,11 +51,11 @@ void main() {
     );
     expect(find.text('RECENT'), findsOneWidget);
     expect(find.text('Groceries'), findsOneWidget);
-    expect(find.text('SBI › Axis'), findsOneWidget);
+    expect(find.text('SBI → Axis'), findsOneWidget);
     expect(find.bySemanticsLabel('Repeat Groceries, ₹250.00'), findsOneWidget);
     expect(find.bySemanticsLabel('Repeat Salary, ₹1,200.50'), findsOneWidget);
 
-    await tester.tap(find.text('SBI › Axis'));
+    await tester.tap(find.text('SBI → Axis'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Salary'));
     await tester.pumpAndSettle();
@@ -63,7 +63,7 @@ void main() {
     expect(taps, <int>[1, 2]);
   });
 
-  testWidgets('transfer shows the arrow; income amount in success green', (
+  testWidgets('transfer shows the arrow; income amount in accentText', (
     WidgetTester tester,
   ) async {
     await pumpCompact(
@@ -76,7 +76,7 @@ void main() {
         (Widget w) => w is RichText && w.text.toPlainText().contains('+'),
       ),
     );
-    expect(rich.text.style?.color, AppColors.success);
+    expect(rich.text.style?.color, AppColors.accentText);
   });
 
   testWidgets('text scale 2.0 scrolls the strip, no overflow', (

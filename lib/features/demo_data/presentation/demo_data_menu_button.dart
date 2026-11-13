@@ -7,39 +7,26 @@ import '../../../core/logging/logger_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_text_styles.dart';
-import '../../../shared/widgets/glass_icon_button.dart';
 import '../application/demo_mode.dart';
 
 /// Debug and profile builds only: a small button that opens the demo data
 /// sheet. Shows nothing in release builds.
 class DemoDataMenuButton extends ConsumerWidget {
-  const DemoDataMenuButton({this.glass = false, super.key});
-
-  /// Draws as a glass pill (on the Home sky).
-  final bool glass;
-
-  void _open(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    builder: (_) => const DemoDataSheet(),
-  );
+  const DemoDataMenuButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (kReleaseMode) return const SizedBox.shrink();
-    if (glass) {
-      return GlassIconButton(
-        icon: LucideIcons.flaskConical,
-        semanticLabel: 'Demo data',
-        onTap: () => _open(context),
-      );
-    }
     return IconButton(
       tooltip: 'Demo data',
       icon: const Icon(LucideIcons.flaskConical),
       color: AppColors.inkMuted,
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-      onPressed: () => _open(context),
+      onPressed: () => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (_) => const DemoDataSheet(),
+      ),
     );
   }
 }

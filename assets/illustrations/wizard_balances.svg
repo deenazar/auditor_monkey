@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200" fill="none">
 
-<rect x="80" y="170" width="80" height="12" rx="6" fill="#0E9F9A"/>
-<rect x="114" y="60" width="12" height="110" rx="6" fill="#0E9F9A"/>
-<rect x="56" y="56" width="128" height="10" rx="5" fill="#0E9F9A"/>
-<path d="M60 61 L44 108 M60 61 L76 108 M180 61 L164 108 M180 61 L196 108" stroke="#10202A" stroke-width="2"/>
-<path d="M30 108 H90 Q86 124 60 124 Q34 124 30 108 Z" fill="#FFC24D" stroke="#10202A" stroke-width="2.5" stroke-linejoin="round"/>
-<path d="M150 108 H210 Q206 124 180 124 Q154 124 150 108 Z" fill="#FFD86E" stroke="#10202A" stroke-width="2.5" stroke-linejoin="round"/>
-<rect x="46" y="94" width="28" height="12" rx="6" fill="#FF6B4A" stroke="#10202A" stroke-width="2.5"/>
-<rect x="50" y="80" width="24" height="12" rx="6" fill="#FFC24D" stroke="#10202A" stroke-width="2.5"/>
-<rect x="166" y="94" width="28" height="12" rx="6" fill="#FFC24D" stroke="#10202A" stroke-width="2.5"/>
-<rect x="170" y="80" width="24" height="12" rx="6" fill="#FF6B4A" stroke="#10202A" stroke-width="2.5"/>
-<rect x="174" y="66" width="20" height="12" rx="6" fill="#FFD86E" stroke="#10202A" stroke-width="2.5"/>
+<rect x="80" y="170" width="80" height="12" rx="6" fill="#476E61"/>
+<rect x="114" y="60" width="12" height="110" rx="6" fill="#476E61"/>
+<rect x="56" y="56" width="128" height="10" rx="5" fill="#476E61"/>
+<path d="M60 61 L44 108 M60 61 L76 108 M180 61 L164 108 M180 61 L196 108" stroke="#1E3B31" stroke-width="2"/>
+<path d="M30 108 H90 Q86 124 60 124 Q34 124 30 108 Z" fill="#FDD85C" stroke="#1E3B31" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M150 108 H210 Q206 124 180 124 Q154 124 150 108 Z" fill="#E4E782" stroke="#1E3B31" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="46" y="94" width="28" height="12" rx="6" fill="#70D0B2" stroke="#1E3B31" stroke-width="2.5"/>
+<rect x="50" y="80" width="24" height="12" rx="6" fill="#FDD85C" stroke="#1E3B31" stroke-width="2.5"/>
+<rect x="166" y="94" width="28" height="12" rx="6" fill="#FDD85C" stroke="#1E3B31" stroke-width="2.5"/>
+<rect x="170" y="80" width="24" height="12" rx="6" fill="#70D0B2" stroke="#1E3B31" stroke-width="2.5"/>
+<rect x="174" y="66" width="20" height="12" rx="6" fill="#E4E782" stroke="#1E3B31" stroke-width="2.5"/>
 </svg>

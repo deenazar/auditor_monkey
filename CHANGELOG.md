@@ -2,43 +2,6 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-13: mini_checklist look and feel (PR: link added after opening)
-
-### Added
-- Home in mini_checklist's layout: an illustrated sky that follows the
-  time of day (dawn, day, dusk, night) with drifting clouds, twinkling
-  stars, hills and a sun or moon; the big date; glass buttons; the
-  week's spending as glass bars; stat chips (Today spent, Month left or
-  Budget left, Savings %); and a sliding panel with a 9-day strip and
-  the latest entries (tap a day to see only that day).
-- The Auditor Monkey, drawn natively in Mimi's SVG style (glasses,
-  clipboard, bow tie) with Mimi's moods, reactions and touch zones:
-  breathing, blinking, tail swish, head tilt, jump, hop, shake, nod,
-  dance, spin, wave, ear twitch, purr with hearts, dizzy stars, star
-  bursts and a speech bubble. It hops and speaks when you save in Quick
-  Add, worries when the month goes over plan, smiles when under, and
-  sleeps late at night.
-- `Glass` (blur 14 + saturate 1.4 + 1px white inner border, grouped
-  backdrop), `GlassIconButton`, `PressScale` (springy press),
-  `Keyframes` (CSS keyframes port), `SkyScene`.
-- Fonts Unbounded, DM Sans and DM Mono (OFL, licences bundled and on
-  the Licenses page).
-
-### Changed
-- All design tokens now follow mini_checklist (`panel`, `card`, `line`,
-  `fill`, `coral` accent, `teal`, `lime`, `sun`, `red`), radii 26 / 18 /
-  12, springy motion curves. Every screen (setup wizard, Accounts and
-  statement, Quick Add, empty and error states, demo-data sheet, bottom
-  bar, Quick Add button, buttons) picks this up through the tokens.
-- Illustrations recoloured to the new palette.
-- DESIGN.md replaced with the new system.
-- Goldens regenerated.
-
-### Removed
-- The 3D mascot (`flutter_3d_controller`, `assets/3d/monkey.glb`,
-  `tool/make_placeholder_glb.py`, `visibility_detector`) and the Outfit
-  font.
-
 ## 2026-11-13: Design polish (PR: #11)
 
 ### Added
