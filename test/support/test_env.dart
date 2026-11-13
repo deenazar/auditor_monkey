@@ -44,7 +44,8 @@ class MemoryLogSink implements LogSink {
 class TestEnv {
   TestEnv._(this.db, this.clock, this.sink, this.ctx);
 
-  factory TestEnv() {
+  /// [ids] replaces the random id maker (e.g. to force all-digit ids).
+  factory TestEnv({IdGenerator ids = const IdGenerator()}) {
     final FakeClock clock = FakeClock();
     final MemoryLogSink sink = MemoryLogSink();
     final AppLogger logger = AppLogger(
@@ -59,7 +60,7 @@ class TestEnv {
     final RepositoryContext ctx = RepositoryContext(
       db: db,
       clock: clock,
-      ids: const IdGenerator(),
+      ids: ids,
       logger: logger,
     );
     return TestEnv._(db, clock, sink, ctx);

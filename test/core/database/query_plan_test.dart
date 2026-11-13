@@ -4,6 +4,7 @@
 import 'package:auditor_monkey/core/database/daos/accounts_dao.dart';
 import 'package:auditor_monkey/core/database/daos/loans_dao.dart';
 import 'package:auditor_monkey/core/database/daos/transactions_dao.dart';
+import 'package:auditor_monkey/core/database/daos/transactions_quick_add_queries.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -109,6 +110,29 @@ void main() {
     expect(await plan(loanOutstandingSql), contains('ix_tx_loan'));
   });
 
+  test('the Quick Add queries use the date index', () async {
+    await seed(50);
+    const Variable<String> since = Variable<String>('2026-08-14');
+    for (final (String name, String sql, List<Variable<Object>> vars)
+        in <(String, String, List<Variable<Object>>)>[
+          (
+            'last used',
+            quickAddLastUsedSql,
+            <Variable<Object>>[const Variable<String>('expense'), since],
+          ),
+          (
+            'usage',
+            quickAddUsageSql,
+            <Variable<Object>>[const Variable<String>('expense'), since],
+          ),
+          ('recent', quickAddRecentSql, <Variable<Object>>[since]),
+        ]) {
+      final String p = await plan(sql, vars);
+      expect(p, contains('ix_tx_date'), reason: '$name plan: $p');
+      expect(p, isNot(contains('ix_tx_loan')), reason: '$name plan: $p');
+    }
+  });
+
   test('gold holdings by account use their index', () async {
     expect(
       await plan(
@@ -142,6 +166,59 @@ void main() {
       'PERF 20,000 rows: balances ${balances.elapsedMilliseconds} ms, '
       'first page ${page.elapsedMilliseconds} ms, '
       'year expense total ${sums.elapsedMilliseconds} ms',
+    );
+  });
+
+  test('statement and monthly sums use the account indexes', () async {
+    await seed(50);
+    final String statement = await plan(
+      statementPageSql(hasCursor: false),
+      <Variable<Object>>[const Variable<String>(_a1), const Variable<int>(51)],
+    );
+    expect(statement, contains('ix_tx_account'));
+    expect(statement, contains('ix_tx_to_account'));
+    final String withCursor = await plan(
+      statementPageSql(hasCursor: true),
+      <Variable<Object>>[
+        const Variable<String>(_a1),
+        const Variable<String>('2026-06-01'),
+        const Variable<int>(5000),
+        const Variable<String>('x'),
+        const Variable<int>(51),
+      ],
+    );
+    expect(withCursor, contains('ix_tx_account'));
+    final String monthly = await plan(accountMonthlySumsSql, <Variable<Object>>[
+      const Variable<String>(_a1),
+      const Variable<String>('2026-06-01'),
+      const Variable<String>('2026-11-31'),
+    ]);
+    expect(monthly, contains('ix_tx_account'));
+  });
+
+  test('statement and monthly totals on 20,000 rows (timings recorded)', () async {
+    await seed(20000);
+    final Stopwatch first = Stopwatch()..start();
+    final page = await env.transactions.statementPage(_a1);
+    first.stop();
+    expect(page.lines, hasLength(50));
+    expect(page.hasMore, isTrue);
+    final Stopwatch next = Stopwatch()..start();
+    await env.transactions.statementPage(_a1, after: page.nextCursor);
+    next.stop();
+    final Stopwatch monthly = Stopwatch()..start();
+    final totals = await env.transactions.monthlyTotalsForAccount(
+      _a1,
+      fromMonth: '2026-06',
+      toMonth: '2026-11',
+    );
+    monthly.stop();
+    expect(totals, hasLength(6));
+    // ignore: avoid_print
+    print(
+      'PERF 20,000 rows, one busy account: statement first page '
+      '${first.elapsedMilliseconds} ms, next page ${next.elapsedMilliseconds} '
+      'ms, monthly totals ${monthly.elapsedMilliseconds} ms',
     );
   });
 }

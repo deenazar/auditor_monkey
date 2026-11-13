@@ -266,3 +266,15 @@ const List<DefaultCategory> defaultCategories = <DefaultCategory>[
     'ellipsis',
   ),
 ];
+
+/// Ids of the 4 loan categories (Loan Given, Loan Repayment, Loan Received,
+/// Loan Repayment Received). Quick Add hides them until the loan screens
+/// exist, because an entry with a loan category but no loan link would count
+/// as normal spending or income. The ids are the stable key: never match on
+/// the display names.
+const Set<String> loanCategoryIds = <String>{
+  'e28dfe15-f534-48b6-8690-c20be2f1cf34',
+  'f39f6b89-ca75-49a4-aa73-ec0c67b87b68',
+  'ae691750-e226-45d0-80e4-679967449afe',
+  '4411a279-5a2f-49a6-923b-3c2f9ef3adca',
+};

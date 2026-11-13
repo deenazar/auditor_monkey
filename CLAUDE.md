@@ -13,6 +13,10 @@ listed in docs/PROJECT.md. No PROJECT.md yet → project-kickoff first.
 Follow the git-branching skill. Before the first query of every day /
 session, create a new branch from `develop`. Never commit to `main` or
 `develop` directly.
+- Feature PRs go into `develop`. Build, run and check the app locally
+  from `develop`.
+- `main` is only for smooth production releases: it gets changes only
+  through a release PR from `develop`, when the owner asks.
 
 ## Cloud accounts
 Account details are per project, given by the owner. Use the

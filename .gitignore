@@ -55,3 +55,6 @@ app.*.map.json
 *service-account*.json
 *.pem
 *.key
+
+# Golden test failure images (CI uploads them)
+**/failures/

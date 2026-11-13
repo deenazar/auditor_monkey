@@ -128,5 +128,25 @@ void main() {
     test('masks phone-like numbers', () {
       expect(LogRedactor.clean('call 9876543210'), 'call [number]');
     });
+
+    test('keeps short ids even when all 8 characters are digits', () {
+      // A UUID v4 can start with 8 digits (about 1 in 100); this was the
+      // cause of a flaky repository logging test.
+      expect(
+        LogRedactor.clean('create ok id=12345678'),
+        'create ok id=12345678',
+      );
+      expect(LogRedactor.clean('open id=0a1b2c3d'), 'open id=0a1b2c3d');
+      expect(
+        LogRedactor.clean('id=12345678 call 9876543210'),
+        'id=12345678 call [number]',
+      );
+    });
+
+    test('still masks a phone number written after id=', () {
+      expect(LogRedactor.clean('id=9876543210'), 'id=[number]');
+      expect(LogRedactor.clean('id=12345678 9876'), 'id=12345678 9876');
+      expect(LogRedactor.clean('xid=98765432'), 'xid=98765432');
+    });
   });
 }

@@ -100,14 +100,15 @@ Rules:
 All design tokens and rules live in **[DESIGN.md](../DESIGN.md)** at the
 repo root: colours (hex), typography, spacing, radius, shadows, icons,
 charts, motion, navigation, screen patterns, accessibility and the
-design assumptions. The reference image is
-[`docs/design/reference.png`](design/reference.png).
+design assumptions. The source is mini_checklist's `web/` UI.
 
-Summary: light mint design. White background, mint `#70D0B2` hero and
-cards, lime and yellow accents, dark-green `#1E3B31` text, Outfit font,
-flat rounded cards, Lucide outline icons, Quick Add + in the centre of
-the bottom bar. Use the DESIGN.md token names in code; if code and
-DESIGN.md disagree, DESIGN.md wins.
+Summary: mini_checklist's system. An illustrated sky that follows the
+time of day (with the 2D Auditor Monkey) on top of Home, a light `panel`
+that slides over it, frosted glass on the sky, white cards with a 1px
+`line`, `coral` accent, Unbounded / DM Sans / DM Mono fonts, Lucide
+icons, springy motion, Quick Add + in the centre of the bottom bar. Use
+the DESIGN.md token names in code; if code and DESIGN.md disagree,
+DESIGN.md wins.
 
 ## Folder structure
 Feature-first, per the flutter-mobile-design skill:

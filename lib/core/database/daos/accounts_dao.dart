@@ -95,6 +95,35 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
     return rows.single.read<bool>('used');
   }
 
+  /// True when at least one live account exists, kept up to date. Cheap:
+  /// stops at the first row.
+  Stream<bool> watchHasLive() => customSelect(
+    'SELECT EXISTS (SELECT 1 FROM accounts WHERE deleted_at IS NULL) '
+    'AS has_any',
+    readsFrom: <TableInfo<Table, Object?>>{accounts},
+  ).watchSingle().map((QueryRow r) => r.read<bool>('has_any'));
+
+  /// Largest sort order of live accounts, or -1 when there are none.
+  Future<int> maxSortOrder() async {
+    final QueryRow row = await customSelect(
+      'SELECT COALESCE(MAX(sort_order), -1) AS top FROM accounts '
+      'WHERE deleted_at IS NULL',
+      readsFrom: <TableInfo<Table, Object?>>{accounts},
+    ).getSingle();
+    return row.read<int>('top');
+  }
+
+  /// One live account with its calculated balance, or `null`.
+  Future<BalanceRow?> getBalance(String id) async {
+    final List<QueryRow> rows = await customSelect(
+      'SELECT * FROM ($balancesSql) WHERE id = ?',
+      variables: <Variable<Object>>[Variable<String>(id)],
+      readsFrom: <TableInfo<Table, Object?>>{accounts, transactions},
+    ).get();
+    if (rows.isEmpty) return null;
+    return _toBalanceRows(rows).single;
+  }
+
   Future<int> softDelete(String id, int now) =>
       softDeleteRow(attachedDatabase, accounts, id, now);
 
