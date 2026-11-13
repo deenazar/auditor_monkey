@@ -1,13 +1,12 @@
-import 'package:auditor_monkey/shared/theme/app_colors.dart';
 import 'package:auditor_monkey/shared/widgets/error_state.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../support/widget_harness.dart';
 
 void main() {
-  testWidgets('shows a danger icon, title and message', (
+  testWidgets('shows the error illustration, title and message', (
     WidgetTester tester,
   ) async {
     await pumpThemed(
@@ -19,10 +18,8 @@ void main() {
     );
     expect(find.text("We can't load accounts"), findsOneWidget);
     expect(find.text('Check your connection and try again.'), findsOneWidget);
-    final Icon icon = tester.widget<Icon>(
-      find.byIcon(LucideIcons.triangleAlert),
-    );
-    expect(icon.color, AppColors.danger);
+    expect(find.byType(SvgPicture), findsOneWidget);
+    expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
   });
 
   testWidgets('retry button calls onRetry with the default label', (

@@ -9,7 +9,10 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/staggered_entrance.dart';
 import '../../../accounts/presentation/widgets/account_colours.dart';
+import '../../../mascot/domain/mascot_mood.dart';
+import '../../../mascot/presentation/mascot_view.dart';
 import '../../application/setup_wizard_state.dart';
 import 'wizard_frame.dart';
 
@@ -38,22 +41,42 @@ class WizardReviewStep extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const PageHeader(eyebrow: 'Step 3 of 3', title: 'All set?'),
-          const SizedBox(height: AppSpacing.space6),
-          Text(
-            'STARTING NET WORTH',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.overline.copyWith(color: AppColors.inkMuted),
+          StaggeredEntrance(
+            index: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                const Center(
+                  child: MascotView(mood: MascotMood.celebrating, size: 180),
+                ),
+                const SizedBox(height: AppSpacing.space3),
+                const PageHeader(eyebrow: 'Step 3 of 3', title: 'All set?'),
+                const SizedBox(height: AppSpacing.space6),
+                Text(
+                  'STARTING NET WORTH',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.overline.copyWith(
+                    color: AppColors.inkMuted,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space1),
+                AmountText(
+                  paise: state.totalPaise ?? 0,
+                  style: AppTextStyles.headline,
+                  alignment: AlignmentDirectional.center,
+                ),
+                const SizedBox(height: AppSpacing.space6),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.space1),
-          AmountText(
-            paise: state.totalPaise ?? 0,
-            style: AppTextStyles.headline,
-            alignment: AlignmentDirectional.center,
-          ),
-          const SizedBox(height: AppSpacing.space6),
-          for (final WizardAccount a in picked) ...<Widget>[
-            _MiniCard(account: a, paise: state.openingFor(a).paise ?? 0),
+          for (int i = 0; i < picked.length; i++) ...<Widget>[
+            StaggeredEntrance(
+              index: i + 1,
+              child: _MiniCard(
+                account: picked[i],
+                paise: state.openingFor(picked[i]).paise ?? 0,
+              ),
+            ),
             const SizedBox(height: AppSpacing.space3),
           ],
         ],

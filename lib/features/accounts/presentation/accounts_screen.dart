@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../core/utils/validation_failure.dart';
@@ -13,6 +12,7 @@ import '../../../shared/widgets/error_state.dart';
 import '../../../shared/widgets/page_header.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/rolling_amount.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
 import '../../../shared/widgets/step_dots.dart';
 import '../application/accounts_providers.dart';
 import '../domain/account.dart';
@@ -137,21 +137,25 @@ class _DataBody extends StatelessWidget {
           const SizedBox(height: AppSpacing.space6),
           // The carousel is full-bleed: no side padding around it.
           if (live.isNotEmpty)
-            AccountCarousel(
-              controller: carousel,
-              itemCount: live.length,
-              onPageChanged: onPageChanged,
-              itemBuilder: (BuildContext context, int index) {
-                final Account a = live[index].account;
-                return AccountCard(
-                  name: a.name,
-                  type: a.type,
-                  colourToken: a.colour,
-                  balancePaise: live[index].balance,
-                  openingPaise: a.openingBalance,
-                  onTap: () => onOpen(a),
-                );
-              },
+            StaggeredEntrance(
+              index: 1,
+              child: AccountCarousel(
+                controller: carousel,
+                itemCount: live.length,
+                onPageChanged: onPageChanged,
+                itemBuilder: (BuildContext context, int index) {
+                  final Account a = live[index].account;
+                  return AccountCard(
+                    name: a.name,
+                    type: a.type,
+                    colourToken: a.colour,
+                    balancePaise: live[index].balance,
+                    openingPaise: a.openingBalance,
+                    rollKey: 'account:${a.id}',
+                    onTap: () => onOpen(a),
+                  );
+                },
+              ),
             ),
           if (live.length > 1) ...<Widget>[
             const SizedBox(height: AppSpacing.space3),
@@ -183,8 +187,11 @@ class _DataBody extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sectionGap),
                 const Text('All accounts', style: AppTextStyles.title),
                 const SizedBox(height: AppSpacing.space3),
-                for (final AccountBalance b in live)
-                  _row(b, () => onOpen(b.account)),
+                for (int i = 0; i < live.length; i++)
+                  StaggeredEntrance(
+                    index: 2 + i,
+                    child: _row(live[i], () => onOpen(live[i].account)),
+                  ),
                 if (archived.isNotEmpty) ...<Widget>[
                   const SizedBox(height: AppSpacing.space5),
                   Text(
@@ -244,6 +251,7 @@ class _NetWorth extends ConsumerWidget {
         const SizedBox(height: AppSpacing.space1),
         RollingAmount.text(
           paise: paise,
+          rollKey: 'net-worth',
           style: AppTextStyles.headline,
           textAlign: TextAlign.center,
         ),
@@ -258,7 +266,7 @@ class _EmptyBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EmptyState(
-      icon: LucideIcons.wallet,
+      illustration: 'empty_accounts',
       title: 'No accounts yet',
       message: 'Set up your accounts to see balances here.',
       action: PrimaryButton(

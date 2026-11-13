@@ -73,11 +73,13 @@ void main() {
     );
   });
 
-  testWidgets('golden: accounts_empty', (WidgetTester tester) async {
+  testWidgets('golden: accounts_empty_illustration', (
+    WidgetTester tester,
+  ) async {
     await pumpRupeeGolden(
       tester,
       const AccountsScreen(),
-      'accounts_empty',
+      'accounts_empty_illustration',
       overrides: _accounts(const <AccountBalance>[]),
     );
   });
@@ -116,11 +118,13 @@ void main() {
     );
   });
 
-  testWidgets('golden: statement_empty', (WidgetTester tester) async {
+  testWidgets('golden: statement_empty_illustration', (
+    WidgetTester tester,
+  ) async {
     await pumpRupeeGolden(
       tester,
       AccountStatementScreen(accountId: fixtureId(2)),
-      'statement_empty',
+      'statement_empty_illustration',
       overrides: _statement(
         goldenStatement(lines: const <StatementLine>[]),
         months: emptyMonths(),

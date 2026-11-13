@@ -8,7 +8,8 @@ class SpringCurve extends Curve {
     double mass = 1,
     double stiffness = 200,
     double dampingRatio = 0.8,
-  }) : _sim = SpringSimulation(
+  }) : _seconds = 1,
+       _sim = SpringSimulation(
          SpringDescription.withDampingRatio(
            mass: mass,
            stiffness: stiffness,
@@ -19,11 +20,19 @@ class SpringCurve extends Curve {
          0,
        );
 
-  // Built once; curve time (0..1) maps onto the first second of the spring.
+  /// A spring from [description], stretched so curve time 0..1 covers the
+  /// first [seconds] of the motion.
+  SpringCurve.fromDescription(
+    SpringDescription description, {
+    this._seconds = 1,
+  }) : _sim = SpringSimulation(description, 0, 1, 0);
+
+  // Built once; curve time (0..1) maps onto the first [_seconds] of the spring.
   final SpringSimulation _sim;
+  final double _seconds;
 
   @override
-  double transformInternal(double t) => t >= 1 ? 1 : _sim.x(t);
+  double transformInternal(double t) => t >= 1 ? 1 : _sim.x(t * _seconds);
 }
 
 /// Design tokens: motion.
@@ -46,6 +55,37 @@ abstract final class AppMotion {
   /// Spring of the card carousel snap (same values as [curveSpring]).
   static const double springStiffness = 200;
   static const double springDampingRatio = 0.8;
+
+  /// Delay between items in a staggered entrance.
+  static const Duration durationStagger = Duration(milliseconds: 40);
+
+  /// Items up to this count are staggered; the rest appear with the last.
+  static const int staggerMaxItems = 8;
+
+  /// Card entrance slide-up distance (pt).
+  static const double cardEnterOffset = 12;
+
+  /// Pushed page shared-axis slide distance (pt, = space6).
+  static const double pageSlideOffset = 24;
+
+  /// Quick Add sheet open spring: stiffness 380, damping ratio 0.82.
+  static final SpringDescription sheetSpring =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 380, ratio: 0.82);
+
+  /// How long the Quick Add sheet spring runs (it settles within this).
+  static const Duration durationSheetOpen = Duration(milliseconds: 350);
+
+  /// [sheetSpring] as a curve over [durationSheetOpen] (tiny overshoot).
+  static final Curve sheetSpringCurve = SpringCurve.fromDescription(
+    sheetSpring,
+    seconds: 0.35,
+  );
+
+  /// Incoming tab content scale start (to 1).
+  static const double tabFadeScaleFrom = 0.98;
+
+  /// Toast check mark scale start (to 1).
+  static const double successPopFrom = 0.8;
 
   /// True when the phone's "reduce motion" setting is on.
   static bool reduceMotion(BuildContext context) =>

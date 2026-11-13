@@ -15,17 +15,19 @@ import 'quick_add_keys.dart';
 class QuickAddSheet extends ConsumerStatefulWidget {
   const QuickAddSheet({super.key});
 
-  /// Opens the sheet: [AppMotion.durationMedium], [AppMotion.curveEnter];
-  /// closes with [AppMotion.curveExit]. Zero durations with reduce motion.
+  /// Opens with the [AppMotion.sheetSpring] curve (about 350ms, slight
+  /// overshoot); the sheet is usable from its first frame. Closes in
+  /// [AppMotion.durationMedium] with [AppMotion.curveExit]. Zero durations
+  /// with reduce motion.
   static Future<SavedEntry?> show(BuildContext context) {
     return showModalBottomSheet<SavedEntry>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       sheetAnimationStyle: AnimationStyle(
-        duration: AppMotion.resolve(context, AppMotion.durationMedium),
+        duration: AppMotion.resolve(context, AppMotion.durationSheetOpen),
         reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),
-        curve: AppMotion.curveEnter,
+        curve: AppMotion.sheetSpringCurve,
         reverseCurve: AppMotion.curveExit,
       ),
       builder: (BuildContext context) => const QuickAddSheet(),

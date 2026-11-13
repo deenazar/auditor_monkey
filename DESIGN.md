@@ -187,7 +187,7 @@ aligned with the date or amount right aligned.
 | Segmented tabs | `tile` pill track, `chipHeight`; selected segment `primaryDeep` fill + `onDark` `bodyStrong`; others `ink` `body`; disabled `iconInactive`. Indicator slides `durationFast` `curveEnter`; reduce motion: fade |
 | Number pad key | `tile` fill, `radiusField`, `numPadKeyHeight`, `headline` `ink` digits, icons 24 `ink`. Pressed: `navIndicator` fill + `pressScale`, `durationFast` |
 | Refused input | Amount nudges `space2` sideways and back, `durationMedium`, `curveEnter`; hint `caption` in `danger`. Reduce motion: hint fade only |
-| Toast | `primaryDeep` fill, `onDark` `body` text, action `bodyStrong` `onDark`, `radiusCard`, `shadowFloat`, margin `space6`, above the nav bar, stays `toastDuration`. In: `space4` slide up + fade `durationMedium` `curveEnter`; out: fade `durationFast` `curveExit`. Reduce motion: fade only |
+| Toast | `primaryDeep` fill, `onDark` `body` text, action `bodyStrong` `onDark`, `radiusCard`, flat (elevation 0, as built in session 4), margin `space6`. Save toasts lead with the drawn success check (Motion patterns, `onDark` stroke, 24pt circle), above the nav bar, stays `toastDuration`. In: `space4` slide up + fade `durationMedium` `curveEnter`; out: fade `durationFast` `curveExit`. Reduce motion: fade only |
 | Wizard step change | 24pt (`space6`) slide plus fade, `durationMedium`, `curveEnter` in and `curveExit` out. Reduce motion: fade only |
 
 ## Elevation and shadows
@@ -227,13 +227,37 @@ aligned with the date or amount right aligned.
 | `curveSpring` | soft spring (damping ratio about 0.8) | Card carousel snap |
 | `springStiffness` | 200 | Spring of the card carousel snap (with `curveSpring`) |
 | `springDampingRatio` | 0.8 | Spring damping of the carousel snap (`curveSpring`) |
+| `durationStagger` | 40ms per item | Delay between items in a staggered entrance |
+| `staggerMaxItems` | 8 | Items 1-8 are staggered; the rest appear together with item 8 |
+| `cardEnterOffset` | 12 | Card entrance slide-up distance (pt) |
+| `pageSlideOffset` | 24 | Pushed page shared-axis slide distance (pt, = `space6`) |
+| `sheetSpring` | stiffness 380, damping ratio 0.82 | Quick Add sheet open: slight overshoot, settles in about 350ms |
+| `tabFadeScaleFrom` | 0.98 | Incoming tab content scale start (to 1) |
+| `successPopFrom` | 0.8 | Toast check mark scale start (to 1) |
+
+### Motion patterns
+| Pattern | Rule |
+|---------|------|
+| Card entrance | Fade + `cardEnterOffset` (12pt) slide up, `durationMedium`, `curveEnter`. In lists / groups each card waits `durationStagger` (40ms) more than the one before; max `staggerMaxItems` (8) staggered, the rest appear with the 8th |
+| Balance numbers | `RollingAmount`, `durationSlow`. Rolls from 0 only the first time a screen shows per app launch; after that it rolls from the old value to the new one |
+| Quick Add sheet open | `sheetSpring` (stiffness 380, damping 0.82), slight overshoot, settles in about 350ms. The sheet is usable from its first frame (pad takes taps during the spring). The 300ms open budget is about the first frame / interactive, not the settle. Close stays `durationMedium`, `curveExit` |
+| Save success | In the toast: a check mark drawn inside a circle (stroke draws in) over `durationSlow`, with a small scale pop `successPopFrom` 0.8 → 1, `curveEnter` |
+| Tab change (bottom bar) | Fade-through: outgoing content fades out `durationFast` (`curveExit`); incoming fades in + scales `tabFadeScaleFrom` 0.98 → 1 over `durationMedium` (`curveEnter`) |
+| Pushed pages | Shared-axis horizontal: fade + `pageSlideOffset` (24pt) slide, `durationMedium`, `curveEnter` in, `curveExit` out |
 
 Rules:
 - Smooth and subtle. Numbers roll to new values; charts draw in and
   morph; list rows slide and fade.
 - Nothing blocks the user while it animates.
-- When the phone's "reduce motion" is on, show final values instantly
-  (fades only, no movement).
+- When the phone's "reduce motion" is on: no movement, no scale, no
+  stagger, no spring (fades only or instant). Numbers show the final
+  value at once. The 3D mascot shows its still poster image.
+- 60fps rule:
+  - Animate only opacity and transform (translate, scale, rotate).
+  - Wrap each animated subtree in a `RepaintBoundary`.
+  - No layout animations on lists (no animated heights / sizes of rows).
+  - No animation may rebuild a whole screen; use `AnimatedBuilder` /
+    transitions with a `child` so only the moving part repaints.
 
 ## Navigation
 - Bottom bar: white background, no labels, 5 slots, icons only:
@@ -266,6 +290,74 @@ Rules:
 - **Stat tile**: `tile` background, `overline` label centred at top,
   one chart or number centred.
 - Every screen has empty, loading and error states in this style.
+- **Empty and error states**: illustration (see Illustrations) above
+  the `title` and `body` text, centred, replacing the `iconLarge` icon
+  where an illustration exists. The block enters with the card entrance.
+- **Home** and the **setup wizard** show the 3D mascot (see Mascot).
+- Cards and list groups on a screen use the card entrance with stagger
+  (Motion patterns).
+
+## Illustrations
+Original flat vector SVGs, drawn with `flutter_svg`.
+
+| Rule | Value |
+|------|-------|
+| Location | `assets/illustrations/*.svg` |
+| Palette | DESIGN.md tokens only: `primary`, `primaryDeep`, `lime`, `sun` (yellow), `tile`, `ink`, `inkMuted`, `background` (white) |
+| Style | Flat shapes, rounded corners, optional 2-3pt `ink` outlines, no gradients, no text inside the SVG, no photos of people. A friendly monkey character may appear |
+| Size: empty / error states | 160pt tall; 120pt when the screen is short (height under 700pt) or text scale is 1.5 or more |
+| Size: setup wizard | 200pt tall; 160pt on short screens / text scale 1.5+ |
+| File size | Each file under 8KB |
+| Semantics | Decorative: excluded from screen readers (`ExcludeSemantics`) |
+
+| File | Where |
+|------|-------|
+| `empty_accounts` | Accounts, no accounts |
+| `empty_transactions` | No transactions (used where an empty transaction list shows today) |
+| `empty_statement` | Account statement, no entries |
+| `empty_insights` | Insights tab placeholder |
+| `empty_home` | Home with no data yet |
+| `error_generic` | Any error state |
+| `wizard_welcome` | Wizard step 1 |
+| `wizard_pick` | Wizard: pick accounts |
+| `wizard_balances` | Wizard: opening balances |
+| `wizard_done` | Wizard: finished |
+| `mascot_poster` | Still 2D poster of the mascot (see Mascot) |
+
+## Mascot (3D Auditor Monkey)
+| Rule | Value |
+|------|-------|
+| Where | Home and the setup wizard only |
+| Size | 160pt square on Home, 180pt in the wizard |
+| States | `idle`, `happy`, `worried`, `celebrating`, `sleeping` (each screen picks its state) |
+| Tap | Plays `happy` once, then back to the screen's state; light haptic |
+| Semantics | Label "Auditor Monkey, tap to say hi", button role |
+| Package | `flutter_3d_controller` (see DECISIONS.md) |
+| Lazy load | The 3D view starts only after the screen's first frame and only when on-screen (`visibility_detector`) |
+| Pause | Rendering paused (or the view unmounted) when off-screen or the app is in the background |
+| Poster | `assets/illustrations/mascot_poster.svg` shows while loading, on any error, in tests and with reduce motion |
+
+### Model requirements (owner's real model)
+| Item | Requirement |
+|------|-------------|
+| File | `assets/3d/monkey.glb` |
+| Format | glTF 2.0 binary (.glb), all textures embedded |
+| File size | Max 3 MB (a CI test fails above it) |
+| Textures | Max 1024×1024, PNG or JPEG. KTX2 / Draco not required; Draco allowed |
+| Triangles | Up to about 15k |
+| Axes and units | Y-up, metres; model faces +Z (towards the camera); feet at y=0; centred on x/z; about 1 unit tall |
+| Rig | One skinned or node-animated rig |
+| Animation clips | Names exactly lower-case: `idle` (loop), `happy` (one-shot, 1-2s), `worried` (loop), `celebrating` (one-shot, 2-3s), `sleeping` (loop) |
+| Extra / missing clips | Extra clips are ignored; a missing clip falls back to `idle` |
+| Cameras / lights | Not needed in the file |
+| Swap | Replace the file and rebuild. No code change |
+
+## Demo data
+| Rule | Value |
+|------|-------|
+| Builds | Debug and profile only (never in release) |
+| Ribbon | "Demo data" ribbon pinned at the top of the app shell while demo mode is on: `warning` fill, `ink` text in `caption` size at SemiBold 600, full width, above all content (below the status bar inset) |
+| Purpose | Demo data can never be confused with real data |
 
 ## Accessibility
 - Text contrast WCAG AA (4.5:1 normal, 3:1 large text and icons). All
@@ -276,6 +368,9 @@ Rules:
   and the `selected` semantics.
 - White on `primary` is **not allowed** (1.85:1).
 - Supports large system text sizes without cutting off amounts.
+- Decorative illustrations are excluded from semantics.
+- The mascot has the semantic label "Auditor Monkey, tap to say hi".
+- `ink` on `warning` (demo ribbon) is about 6.8:1.
 
 ## Assumptions
 What was unclear in the reference, what we assumed, and the owner's

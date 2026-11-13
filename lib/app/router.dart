@@ -13,8 +13,9 @@ import '../features/setup/presentation/setup_wizard_screen.dart';
 import '../features/setup/presentation/start_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
 import '../shared/theme/app_motion.dart';
-import '../shared/theme/app_spacing.dart';
+
 import '../shared/widgets/fade_indexed_stack.dart';
+import '../shared/widgets/shared_axis_transition.dart';
 import 'app_shell.dart';
 
 abstract final class AppRoutes {
@@ -189,46 +190,19 @@ StatefulShellBranch _branch(
   );
 }
 
-/// Child page: slides in a little from the right and fades
-/// (`durationMedium`, `curveEnter` in, `curveExit` out). With reduce motion
-/// it only fades and there is no movement.
+/// Child page: shared-axis push (see [SharedAxisTransition]).
 Page<void> _slidePage(BuildContext context, GoRouterState state, Widget child) {
-  final bool reduce = AppMotion.reduceMotion(context);
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
     transitionDuration: AppMotion.durationMedium,
     reverseTransitionDuration: AppMotion.durationMedium,
-    transitionsBuilder:
-        (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child,
-        ) {
-          final CurvedAnimation curved = CurvedAnimation(
-            parent: animation,
-            curve: AppMotion.curveEnter,
-            reverseCurve: AppMotion.curveExit,
-          );
-          return FadeTransition(
-            opacity: curved,
-            child: reduce
-                ? child
-                : AnimatedBuilder(
-                    animation: curved,
-                    builder: (BuildContext context, Widget? inner) =>
-                        Transform.translate(
-                          offset: Offset(
-                            AppSpacing.space6 * (1 - curved.value),
-                            0,
-                          ),
-                          child: inner,
-                        ),
-                    child: child,
-                  ),
-          );
-        },
+    transitionsBuilder: (
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child,
+    ) => SharedAxisTransition(animation: animation, child: child),
   );
 }
 

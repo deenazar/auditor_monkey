@@ -2,6 +2,57 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-13: Design polish (PR: #11)
+
+### Added
+- Motion tokens from DESIGN.md in `AppMotion`, and a staggered entrance
+  for cards and list rows (`StaggeredEntrance`).
+- Balance roll-up: balances and net worth roll from 0 the first time
+  they show in each app launch, then roll from the old to the new value
+  when they change.
+- Saved toast in Quick Add now shows a drawn success check
+  (`SuccessCheck`).
+- 11 original SVG illustrations in `assets/illustrations/` (empty
+  states, error, wizard, mascot poster), drawn by the new
+  `AppIllustration` widget. Decorative only (no semantics).
+- 3D Auditor Monkey mascot on Home and in the setup wizard
+  (`MascotView`). Moods: idle, happy, worried, celebrating, sleeping.
+  A tap plays `happy` once. Loads after the first frame, unmounts when
+  off-screen or the app is in the background, and shows a still poster
+  when the 3D view is not available.
+- Placeholder model `assets/3d/monkey.glb` (70KB) with the five named
+  animations, made by `tool/make_placeholder_glb.py`.
+- Demo data (debug and profile builds only): 3 months of Indian
+  personal finance entries in a separate database file, one-tap clear,
+  and a "Demo data" ribbon while it is on.
+- New goldens and updated ones, listed with pictures in
+  `docs/plans/design-polish-goldens.md`.
+- Packages: flutter_3d_controller, flutter_svg, visibility_detector.
+
+### Changed
+- Quick Add sheet opens with a spring; the number pad works from the
+  first frame.
+- Tab switch is a fade-through (old tab fades out, new tab fades and
+  scales in).
+- Pages pushed inside a tab (for example the statement) use a
+  shared-axis slide and fade.
+- Empty and error states use illustrations instead of large icons.
+  `accounts_empty.png` golden replaced by
+  `accounts_empty_illustration.png`.
+- All new motion respects reduce motion (final state at once).
+- No schema change.
+
+### Security
+- Android network security config: plain HTTP is allowed only to
+  `127.0.0.1` and `localhost` (the mascot's local file server);
+  everything else stays HTTPS only. `INTERNET` permission added.
+- Demo data code runs only when `kReleaseMode` is false, so release
+  builds do not include it, and demo entries never mix with real data.
+
+### Fixed
+- Logs keep short row ids that are all digits (about 1 in 100 ids were
+  masked as `[number]`); this also fixes a randomly failing logging test.
+
 ## 2026-11-12: Session 4, Quick Add (PR: -)
 
 ### Added

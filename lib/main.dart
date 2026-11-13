@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/logging/app_logger.dart';
 import 'core/utils/no_retry.dart';
+import 'features/demo_data/application/demo_mode.dart';
+import 'features/demo_data/data/demo_files.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final AppLogger logger = AppLogger.instance;
@@ -34,5 +36,13 @@ void main() {
   });
 
   logger.info('app', 'app started');
-  runApp(const ProviderScope(retry: noRetry, child: AuditorMonkeyApp()));
+  // Debug and profile only: is demo mode left on from the last run?
+  final bool demoOn = !kReleaseMode && await readDemoMarker();
+  runApp(
+    ProviderScope(
+      retry: noRetry,
+      overrides: [demoModeInitialProvider.overrideWithValue(demoOn)],
+      child: const AuditorMonkeyApp(),
+    ),
+  );
 }

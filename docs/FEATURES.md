@@ -271,6 +271,77 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-12
 - **PR link**: -
 
+## Design polish (before roadmap session 5)
+- **What it does**: Makes the app feel alive without changing any data
+  or rules. Plan: [design-polish.md](plans/design-polish.md).
+  - Motion: cards and rows slide in one after another; balances and net
+    worth roll from ₹0 the first time you see them in each launch, then
+    roll from the old to the new value; Quick Add springs open and you
+    can type at once; the saved toast shows a tick; tabs fade through;
+    pages inside a tab slide in.
+  - Illustrations: 11 original drawings in the app's colours for empty
+    states, errors, the wizard and the mascot poster.
+  - Mascot: a 3D Auditor Monkey on Home and in the setup wizard. It
+    idles, looks happy, worried, celebrates or sleeps. Tap it to see it
+    happy.
+  - Demo data: fills the app with 3 months of sample Indian personal
+    finance entries, so you can see how screens look with real-sized
+    data.
+- **Screens**:
+  - Home: mascot, flask button (top right, demo data).
+  - Wizard: the mascot replaces the illustration on the welcome step
+    (with the flask button, top right); the review step shows the
+    celebrating mascot.
+  - Accounts and statement empty states, generic error state, start
+    error, Quick Add load error: now with illustrations.
+  - Quick Add saved toast: success tick (not on "Entry removed").
+  - "Demo data" ribbon at the top of the app while demo data is on.
+- **User flow (demo data)**: Debug or profile build only → tap the
+  flask button (top right on Home, or on the wizard welcome step) → load
+  demo data → the app switches to the demo data and shows the "Demo
+  data" ribbon. Tap the flask again → clear → the app goes back to your
+  real data and the demo file is deleted.
+- **User flow (real mascot model)**: Follow the requirements in
+  [DESIGN.md, Mascot](../DESIGN.md#mascot-3d-auditor-monkey). Replace
+  `assets/3d/monkey.glb` with your model, keep the clip names `idle`,
+  `happy`, `worried`, `celebrating`, `sleeping`, keep the file under
+  3MB, and rebuild the app. No code change is needed.
+- **Business rules**:
+  - Reduce motion on: no slides, springs, rolls or ticks; final state
+    shown at once. The mascot shows its still poster.
+  - The mascot loads after the first frame, is removed when off-screen
+    or when the app is in the background, and shows a still poster
+    until it is ready or if it fails. A missing clip falls back to
+    `idle`.
+  - Demo data lives in its own database file
+    (`auditor_monkey_demo.sqlite`); your real data is never touched.
+    Release builds do not contain demo data.
+  - Illustrations are decorative; screen readers skip them.
+- **Data stored**: No schema change. Demo data in a separate file plus a
+  small marker file (`auditor_monkey_demo.on`) while it is on.
+- **Validations**: n/a (no new inputs). Demo entries go through the
+  normal repositories, so all existing rules apply.
+- **Edge cases**: Large text (illustrations shrink to 120pt); no 3D
+  support or slow first load (poster shows); app sent to background
+  (mascot unmounted); demo data cleared while screens are open (they
+  switch back to real data).
+- **Security**: Android allows plain HTTP only to `127.0.0.1` /
+  `localhost` (the mascot's local file server); everything else stays
+  HTTPS only.
+- **Known limits**:
+  - The 3D mascot only runs on a device. Tests always show the poster.
+  - Quick Add open time on a real phone (target under 300ms, profile
+    mode) is not measured yet; there is no phone in the cloud session.
+  - The model is a placeholder until the owner supplies the real
+    `monkey.glb`.
+- **Tests**: motion widgets, roll-up keys, mascot view (fake viewer),
+  demo seed and load / clear, illustrations, plus goldens.
+- **Goldens**: all new and updated pictures on one page:
+  [design-polish-goldens.md](plans/design-polish-goldens.md).
+- **Status**: Done
+- **Date**: 2026-11-13
+- **PR link**: -
+
 ## 3. Accounts
 - **What it does**: Shows live balances and each account's statement;
   lets the owner fix or add an account.

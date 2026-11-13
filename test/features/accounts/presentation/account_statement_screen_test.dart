@@ -67,6 +67,13 @@ void main() {
       find.text('No income or expense in the last 6 months'),
       findsOneWidget,
     );
+    // The empty-statement illustration pushes the opening row below the
+    // fold; the list is lazy, so scroll to it first.
+    await tester.scrollUntilVisible(
+      find.text('Opening balance'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Opening balance'), findsOneWidget);
   });
 

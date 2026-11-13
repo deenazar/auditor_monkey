@@ -88,6 +88,33 @@ void main() {
     await end(tester);
   });
 
+  testWidgets('the spring: the sheet takes key presses from frame 1', (
+    WidgetTester tester,
+  ) async {
+    setPhoneSurface(tester);
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(),
+        child: ProviderScope(
+          overrides: envOverrides(env),
+          child: const AuditorMonkeyApp(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel('Quick Add'));
+    // One frame into the spring (it runs about 350ms): the sheet is there
+    // and already takes input.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.byType(QuickAddSheet), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit7);
+    await tester.pump();
+    expect(find.textContaining('7'), findsWidgets);
+    await settle(tester);
+    await end(tester);
+  });
+
   testWidgets('Undo removes the entry and balances return', (
     WidgetTester tester,
   ) async {

@@ -4,9 +4,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import 'app_illustration.dart';
 
-/// Centred empty state: optional icon, `title`, a `body` message and an
-/// optional action (for example a button to add the first item).
+/// Centred empty state: an optional illustration (or icon), `title`, a
+/// `body` message and an optional action (for example a button to add the
+/// first item). The illustration replaces the icon when both are set.
 ///
 /// Scrolls when large text does not fit, so nothing is cut off.
 class EmptyState extends StatelessWidget {
@@ -14,6 +16,7 @@ class EmptyState extends StatelessWidget {
     required this.title,
     required this.message,
     this.icon,
+    this.illustration,
     this.iconColour = AppColors.inkMuted,
     this.action,
     super.key,
@@ -24,6 +27,10 @@ class EmptyState extends StatelessWidget {
 
   /// Lucide icon shown above the title. Optional.
   final IconData? icon;
+
+  /// Name of an `assets/illustrations` file (see [AppIllustration]). Used
+  /// instead of [icon] when set.
+  final String? illustration;
 
   /// Colour of [icon]. `inkMuted` for empty, `danger` for errors.
   final Color iconColour;
@@ -51,7 +58,10 @@ class EmptyState extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    if (iconData != null) ...<Widget>[
+                    if (illustration != null) ...<Widget>[
+                      AppIllustration(illustration!),
+                      const SizedBox(height: AppSpacing.space3),
+                    ] else if (iconData != null) ...<Widget>[
                       Icon(
                         iconData,
                         size: AppSizes.iconLarge,

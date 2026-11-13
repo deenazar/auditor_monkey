@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widgets/app_illustration.dart';
 import '../../../../shared/widgets/page_header.dart';
+import '../../../../shared/widgets/staggered_entrance.dart';
 import '../../../transactions/domain/statement_line.dart';
 import '../../application/account_statement_provider.dart';
 import '../../domain/account.dart';
@@ -59,31 +61,58 @@ class StatementListView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                PageHeader(
-                  eyebrow: accountTypeLabel(account.type),
-                  title: account.name,
-                ),
-                const SizedBox(height: AppSpacing.space6),
-                StatementBalanceCard(
-                  colourToken: account.colour,
-                  balancePaise: s.balance,
+                StaggeredEntrance(
+                  index: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      PageHeader(
+                        eyebrow: accountTypeLabel(account.type),
+                        title: account.name,
+                      ),
+                      const SizedBox(height: AppSpacing.space6),
+                      StatementBalanceCard(
+                        colourToken: account.colour,
+                        balancePaise: s.balance,
+                        rollKey: 'statement:${account.id}',
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.space5),
-                StatementChartTile(
-                  months: months.value,
-                  failed: months.hasError && !months.hasValue,
+                StaggeredEntrance(
+                  index: 1,
+                  child: StatementChartTile(
+                    months: months.value,
+                    failed: months.hasError && !months.hasValue,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sectionGap),
-                const Text('Statement', style: AppTextStyles.title),
-                const SizedBox(height: AppSpacing.space3),
-                if (s.lines.isEmpty && !s.hasMore)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: AppSpacing.space5),
-                    child: Text(
-                      'Entries you add with + show here.',
-                      style: AppTextStyles.caption,
-                    ),
+                StaggeredEntrance(
+                  index: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const Text('Statement', style: AppTextStyles.title),
+                      const SizedBox(height: AppSpacing.space3),
+                      if (s.lines.isEmpty && !s.hasMore)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: AppSpacing.space5),
+                          child: Column(
+                            children: <Widget>[
+                              AppIllustration('empty_statement'),
+                              SizedBox(height: AppSpacing.space3),
+                              Text(
+                                'Entries you add with + show here.',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.caption,
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
