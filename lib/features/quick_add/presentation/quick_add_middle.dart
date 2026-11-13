@@ -96,6 +96,8 @@ class QuickAddMiddle extends ConsumerWidget {
           ),
           child: QuickAddDetails(view: view, balances: balances),
         ),
+        // Air above the pad when the middle scrolls (large text).
+        const SizedBox(height: AppSpacing.space4),
       ],
     );
   }

@@ -578,3 +578,41 @@ approved by the owner on 2026-11-12.
 - Reason: The only way to fix a mistake before the transactions list
   (session 5).
 - Decided by: owner.
+
+## 2026-11-12: Session 4 build choices (Quick Add)
+- Decision:
+  1. Saved entries go through an app-wide `quickAddSavedProvider`. The
+     shell shows the toast with Undo from it, so the toast shows even if
+     the sheet is swiped away while the save is running. A route check
+     stops a second pop of the sheet.
+  2. The toast and date picker themes use elevation 0 (flat rule).
+     Material cannot apply the `shadowFloat` token to a dialog, so the
+     date picker has no shadow and the scrim separates it.
+  3. The amount hint line always keeps its space, so nothing jumps when
+     a hint shows or goes.
+  4. The amount rolls (`RollingAmount`, `durationSlow`) only when a
+     recent entry is applied, never while typing.
+  5. New size tokens: `categoryLabelMaxWidth` 160, `recentLabelMaxWidth`
+     120, `notePillMaxWidth` 200, `typeTabInset` 2, `quickAddErrorHeight`
+     280, `quickAddSheetHeightFraction` 0.92. Added to DESIGN.md.
+  6. Reduce motion uses zero durations (instant), per the existing
+     project rule (`AppMotion.resolve`).
+  7. The app theme is built once (`AppTheme.light()` returns one cached
+     `ThemeData`), so rebuilds do not start a theme animation.
+  8. Category usage groups by `+category_id`, so SQLite uses `ix_tx_date`
+     for the 90-day range. Measured on 20,000 rows: save p50 about
+     3.6ms, open data p50 about 35–38ms; the gate is p50 under 250ms.
+- Options considered: toast owned by the sheet; a dialog shadow
+  workaround; a hint line that collapses; rolling on every key.
+- Reason: The toast and Undo must not be lost; flat design rule; no
+  layout jumps; rolling digits while typing is distracting.
+- Decided by: team (senior-dev, junior-dev, qa-reviewer).
+
+## 2026-11-12: Open after session 4
+- Quick Add open time on a real phone (profile mode, target under
+  300ms) is not measured yet: there is no device in CI or the cloud
+  session. The owner should check it on a phone.
+- The bottom sheet theme still uses elevation 16 with `shadowInk`
+  instead of a flat or `shadowFloat` style. Align it later.
+- DESIGN.md's toast rule still lists `shadowFloat`; the built toast is
+  flat (elevation 0). Update DESIGN.md or the toast to match.

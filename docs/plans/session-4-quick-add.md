@@ -1,6 +1,7 @@
 # Session 4 plan: Quick Add
 
-- Roadmap item 4 (Feature 2). Status: **Approved** (owner, 2026-11-12). Built on branch `claude/vigilant-heisenberg-2oik0f`.
+- Roadmap item 4 (Feature 2). Status: **Done** (built, QA-reviewed, documented 2026-11-12). Owner
+  approved 2026-11-12. Built on branch `claude/vigilant-heisenberg-2oik0f`.
 - Date: 2026-11-12. Planned by project-manager.
 - Suggested branch: `feature/20261112-quick-add` (from `develop`).
 - Done when: an entry saves offline in under 100ms and a transfer

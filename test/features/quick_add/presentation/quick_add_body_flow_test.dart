@@ -130,6 +130,34 @@ void main() {
     await endTest(tester);
   });
 
+  testWidgets('a recent entry rolls the amount; typing never rolls', (
+    WidgetTester tester,
+  ) async {
+    await env.account('Hand', opening: 100000);
+    await pumpBody(tester, env);
+    await settleDb(tester);
+    await typeKeys(tester, '250');
+    await tester.tap(saveButton('Save expense'));
+    await settleDb(tester);
+    await endTest(tester);
+
+    await pumpBody(tester, env, reduceMotion: false);
+    await settleDb(tester);
+    await typeKeys(tester, '7');
+    await tester.pump();
+    // Typing shows the final value at once.
+    expect(find.bySemanticsLabel('₹7'), findsOneWidget);
+    await tester.tap(recentChip('Groceries'));
+    await tester.pump();
+    await tester.pump(AppMotion.durationSlow ~/ 3);
+    // Mid-roll: still moving, so the final value is not shown yet.
+    expect(tester.hasRunningAnimations, isTrue);
+    await tester.pump(AppMotion.durationSlow);
+    await tester.pump();
+    expect(find.bySemanticsLabel('₹250'), findsOneWidget);
+    await endTest(tester);
+  });
+
   testWidgets('Save is off for an empty and for a zero amount', (
     WidgetTester tester,
   ) async {

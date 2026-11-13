@@ -42,6 +42,8 @@ class QuickAddBody extends ConsumerWidget {
         hint: hint?.message,
         isError: hint != null,
         refuseTick: view.state.refusalCount,
+        paise: view.state.amount.paise,
+        rollTick: view.state.recentTick,
         onPaste: n.paste,
       ),
       middle: IgnorePointer(

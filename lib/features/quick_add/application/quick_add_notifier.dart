@@ -225,6 +225,7 @@ class QuickAddNotifier extends Notifier<QuickAddState> {
       type: entry.type,
       amount: AmountInput.fromPaise(entry.amount),
       note: entry.note ?? '',
+      recentTick: state.recentTick + 1,
       picks: <TransactionType, Picks>{
         ...state.picks,
         entry.type: Picks(

@@ -2,6 +2,55 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-12: Session 4, Quick Add (PR: -)
+
+### Added
+- Quick Add sheet behind the centre +: tabs Expense / Income / Transfer,
+  number pad on screen at once, amount with live Indian grouping,
+  category chips (up to 6 suggested first, then the rest) and an "All"
+  sheet grouped by colour group, account picker with balances, From /
+  swap / To for transfers, "Today" / "Yesterday" chips plus a date
+  picker (up to 31 days ahead), note sheet, Save.
+- Last-used account and category per type are picked by default. An
+  expense with the right defaults takes 3 steps: open, type amount,
+  save.
+- "RECENT" strip: up to 6 distinct recent entries; a tap fills the form
+  (Save still needed).
+- Saved toast above the nav bar with Undo (4s), shown even if the sheet
+  was closed while saving.
+- States: loading, typing, amount refused, transfer disabled (one
+  account), saving, save error, no categories, load error.
+- Read-only Quick Add queries (last used per type, category usage,
+  recent entries) in `transactions_quick_add_queries.dart` and
+  `QuickAddRepository`. No schema change.
+- Category colour groups: each group uses an existing colour token at
+  20% tint (DESIGN.md). Statement rows now use the group tint.
+- New DESIGN.md tokens in code: `numPadKeyHeight`, `chipHeight`,
+  `chipIconCircle`, `quickAddSheetHeightFraction`,
+  `categoryLabelMaxWidth`, `recentLabelMaxWidth`, `notePillMaxWidth`,
+  `typeTabInset`, `quickAddErrorHeight`, motion `toastDuration`. Rules
+  for choice chips, segmented tabs, number pad keys, refused input and
+  the toast. Toast and date picker themes from tokens.
+- Tests: amount parsing and refusal cases (no rounding, no doubles),
+  defaults, category order, recent de-duplication, validation, queries,
+  notifier (double save saves once), money correctness (expense, income,
+  both sides of a transfer, spending totals unchanged by transfers,
+  Undo), logs, performance on 20,000 rows, widget tests and 19 new
+  goldens.
+
+### Changed
+- `statementPageSql` also returns the category colour group.
+- Loan categories are not offered in Quick Add (owner decision); how
+  totals count them did not change.
+
+### Fixed
+- The app theme is now built once, so rebuilds no longer start a theme
+  animation.
+
+### Security
+- Quick Add logs show only the type, timings, counts and failure codes;
+  never amounts, notes, names, dates or clipboard text (tested).
+
 ## 2026-11-12: Session 3, accounts and setup wizard (PR: [#9](https://github.com/deenazar/auditor_monkey/pull/9))
 
 ### Added

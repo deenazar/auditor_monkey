@@ -7,10 +7,11 @@ Details are filled in further when each feature is planned and built.
 - **What it does**: The app's base: Flutter project, theme, navigation,
   logger, money formatting, lint and CI. No real features yet.
 - **Screens**: Home, Insights, Transactions, Accounts (placeholders with
-  page header and empty state); Quick Add (empty bottom sheet).
+  page header and empty state). The centre + opens Quick Add (built in
+  session 4, see Feature 2).
 - **User flow**: App opens on Home → bottom bar (icons only) switches
   tabs with a short fade; tabs keep their state; tapping the current tab
-  again returns to its root. Centre + opens the empty Quick Add sheet.
+  again returns to its root. Centre + opens the Quick Add sheet.
 - **Business rules**: Theme built only from `DESIGN.md` tokens, light
   mode only. Outfit font bundled (no runtime download). Money shown as
   `₹1,23,456.00` (Indian grouping; negatives `-₹…`). Debug logs off in
@@ -87,7 +88,9 @@ Details are filled in further when each feature is planned and built.
     to do in session 8.
   - Whether archived accounts count in net worth on screen: yes on the
     Accounts screen (session 3); confirm on the dashboard in session 6.
-  - Category colour groups have no colours in DESIGN.md yet (session 4).
+  - ~~Category colour groups have no colours in DESIGN.md yet~~: closed
+    in session 4 (each group uses an existing colour token at 20% tint;
+    statement rows and Quick Add chips use it).
 - **Status**: Done
 - **Date**: 2026-11-12
 - **PR link**: PR: https://github.com/deenazar/auditor_monkey/pull/7
@@ -173,21 +176,98 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-12
 - **PR link**: [#9](https://github.com/deenazar/auditor_monkey/pull/9)
 
-## 2. Quick Add
-- **What it does**: Add an expense, income or transfer in a few taps.
-- **Screens**: Quick Add sheet with tabs Expense / Income / Transfer.
-- **User flow**: Tap + → type amount on number pad → pick category chip
-  → account (or From / To) → date (default today) → optional note →
-  Save.
-- **Business rules**: Transfer updates both balances and is never
-  counted as income or expense. Recent and frequent categories shown
-  first. "Duplicate" copies a past entry with today's date.
-- **Data stored**: Transactions.
-- **Validations**: Amount > 0 with at most 2 decimals; category required
-  for expense / income; From and To must differ; date not empty.
-- **Edge cases**: Very large amounts; no categories yet; account
-  archived; saving offline; double-tap on Save.
-- **Status**: Planned (roadmap session 4)
+## 2. Quick Add (roadmap session 4)
+- **What it does**: Adds an expense, income or transfer in a few taps,
+  fully offline. The most used screen in the app.
+- **Screens**:
+  - Quick Add sheet (opened by the centre +, about 92% of the screen
+    height). Top: close button and tabs Expense / Income / Transfer, then
+    the amount. Middle (scrolls on small phones and large text):
+    "RECENT" strip, "CATEGORY" chip row (Transfer: From / swap / To),
+    detail pills (account, Today, Yesterday, calendar, note). Bottom:
+    number pad and "Save expense" / "Save income" / "Save transfer".
+  - States: loading (pad already works, skeleton chips), empty, typing,
+    amount refused (hint, sideways nudge), income, transfer, transfer
+    disabled (fewer than 2 accounts, with a hint), recent entry applied,
+    saving (ring), save error card (fields kept), no categories, load
+    error ("Try again").
+  - Account picker (colour dot, name, balance; in the To picker the
+    From account is disabled), "All" categories sheet grouped by colour
+    group, note sheet, date picker.
+  - Saved toast above the nav bar: "Expense saved · ₹250.00" with Undo
+    for 4s; after Undo, "Entry removed".
+- **User flow**: Tap + → type the amount → Save (3 steps when the
+  defaults are right). Other category: tap a chip first. Repeat a past
+  entry: + → recent chip → Save (3 taps). Income or transfer: one extra
+  tap on the tab.
+- **Business rules**:
+  - Number pad first: it is on screen from the first frame, no system
+    keyboard for the amount. Hardware keys (digits, dot, Backspace,
+    Enter = Save) work too. Long press on the amount pastes a copied
+    amount.
+  - Defaults per type: the last-used account and category (expense,
+    income) and the last transfer's From and To. Fallback: the first
+    account or category. A choice the user made is never replaced by a
+    default that loads later.
+  - Categories: up to 6 suggested (last used, then most used) first,
+    then the rest in sort order. "All" opens every category grouped by
+    colour group.
+  - Recent strip: up to 6 distinct recent entries of all types. A tap
+    fills type, amount, accounts, category and note; the date stays the
+    form's date. It does not save by itself; Save is still needed.
+  - Date: "Today" (default), "Yesterday", or the picker, up to 31 days
+    after today. Today is read fresh on every open.
+  - Amount, date and note are shared by the tabs; account and category
+    picks are kept per tab. The sheet always opens on Expense.
+  - Transfer changes both balances and is never counted as income or
+    expense. It has no category.
+  - Loan categories (Loan Given, Loan Repayment, Loan Received, Loan
+    Repayment Received) are hidden until the loan screens exist. How
+    totals count them did not change.
+  - Archived accounts and categories are not offered.
+  - Suggestions, defaults and recent entries look only at entries dated
+    in the last 90 days (future dates included) and leave out
+    loan-linked entries.
+  - After save the sheet closes and the toast shows, even if the sheet
+    was swiped away while saving. Undo soft deletes the entry. Closing
+    the sheet drops the draft without asking.
+- **Data stored**: Transactions (through the existing repository). No
+  schema change.
+- **Validations**:
+  - Amount: above ₹0 and at most ₹10,00,00,00,00,000.00, at most 2
+    decimals. Input is never rounded: a third decimal or a value over
+    the max is refused with a hint. Empty or zero keeps Save disabled.
+  - Category required for expense / income and of the same kind.
+  - Transfer: From and To required and different (picking To = From
+    swaps them).
+  - Note: optional, up to 200 characters (counter from 180), single
+    line, no control characters.
+  - Date: real date, from 1900-01-01, up to 31 days after today.
+  - The repository checks everything again.
+- **Edge cases**: Double tap on Save saves once. Save fails (for example
+  an account deleted meanwhile): error card, fields kept. Only one
+  account: Transfer disabled. No categories of a kind: message and Save
+  disabled. Large text (2.0): middle scrolls, amount never clips. Reduce
+  motion: no nudge, slide, scale or turn; changes are instant.
+- **Known gaps**: Open time on a real phone (profile mode, target under
+  300ms) not yet measured; the owner should check it.
+- **Tests**: `test/features/quick_add/` (amount input, domain logic,
+  repository queries, notifier, logs, money correctness, performance,
+  sheet, body states and flows, widgets, mapping),
+  `test/core/database/query_plan_test.dart`.
+- **Goldens** (`test/features/quick_add/presentation/goldens/`):
+  `quick_add_loading.png`, `quick_add_expense_empty.png`,
+  `quick_add_expense_typing.png`, `quick_add_amount_refused.png`,
+  `quick_add_income.png`, `quick_add_transfer.png`,
+  `quick_add_transfer_disabled.png`, `quick_add_recent_applied.png`,
+  `quick_add_saving.png`, `quick_add_save_error.png`,
+  `quick_add_no_categories.png`, `quick_add_load_error.png`,
+  `quick_add_saved_toast.png`, `quick_add_account_picker.png`,
+  `quick_add_all_categories.png`, `quick_add_note_sheet.png`,
+  `quick_add_date_picker.png`, `quick_add_textscale2.png`,
+  `category_chips_all_groups.png`. Updated: `statement_data.png`
+  (group tints).
+- **Status**: Done
 - **Date**: 2026-11-12
 - **PR link**: -
 
@@ -206,7 +286,8 @@ Details are filled in further when each feature is planned and built.
   - Statement (`/accounts/:accountId`, inside the Accounts tab): back
     button, "Edit account", balance card, "INCOME VS EXPENSE" chart
     (last 6 months, pill bars: income `primary`, expense `sun`),
-    entries newest first. Each row: icon circle, name ("Groceries" /
+    entries newest first. Each row: icon circle (tinted in the
+    category's colour group since session 4), name ("Groceries" /
     "To Axis" / "From SBI"), signed amount, date, running balance.
     "Opening balance" is the last row. Footer: ring while the next page
     loads, "Couldn't load more. Try again" on error. States: loading,

@@ -52,6 +52,7 @@ class QuickAddState {
     this.picks = const <TransactionType, Picks>{},
     this.amountHint,
     this.refusalCount = 0,
+    this.recentTick = 0,
     this.status = SaveStatus.idle,
     this.saveError,
     this.saved,
@@ -74,6 +75,10 @@ class QuickAddState {
   /// Grows with every refusal, so the screen can nudge again even when the
   /// hint text is the same.
   final int refusalCount;
+
+  /// Grows only when a recent entry is applied (never when typing), so the
+  /// amount rolls to the entry's value but not on every key.
+  final int recentTick;
   final SaveStatus status;
 
   /// Plain message from the failed save or the form check. Cleared by the
@@ -96,6 +101,7 @@ class QuickAddState {
     AmountRefusal? amountHint,
     bool clearHint = false,
     int? refusalCount,
+    int? recentTick,
     SaveStatus? status,
     String? saveError,
     bool clearError = false,
@@ -109,6 +115,7 @@ class QuickAddState {
     picks: picks ?? this.picks,
     amountHint: clearHint ? null : (amountHint ?? this.amountHint),
     refusalCount: refusalCount ?? this.refusalCount,
+    recentTick: recentTick ?? this.recentTick,
     status: status ?? this.status,
     saveError: clearError ? null : (saveError ?? this.saveError),
     saved: saved ?? this.saved,
