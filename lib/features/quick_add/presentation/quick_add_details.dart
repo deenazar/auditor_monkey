@@ -6,6 +6,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../transactions/domain/transaction_entry.dart';
 import '../application/quick_add_data_provider.dart';
 import '../application/quick_add_notifier.dart';
+import '../application/quick_add_state.dart';
 import '../application/quick_add_view.dart';
 import '../domain/quick_add_defaults.dart';
 import 'quick_add_mapping.dart';
@@ -75,10 +76,17 @@ class QuickAddDetails extends ConsumerWidget {
           selected: dayOf(view.state.date),
           today: today,
           firstDate: quickAddFirstDate,
-          lastDate: quickAddLastDate(today),
+          // An edited entry may already sit further ahead than the limit.
+          lastDate: _lastDate(today, view.state),
           onChanged: (DateTime day) => n.setDate(dateKey(day)),
         ),
       ],
     );
   }
+}
+
+DateTime _lastDate(DateTime today, QuickAddState state) {
+  final DateTime limit = quickAddLastDate(today);
+  final DateTime own = dayOf(state.edit?.date ?? state.date);
+  return own.isAfter(limit) ? own : limit;
 }

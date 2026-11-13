@@ -73,7 +73,7 @@ class QuickAddMiddle extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        if (data.recent.isNotEmpty) ...<Widget>[
+        if (!view.isEditing && data.recent.isNotEmpty) ...<Widget>[
           RecentEntriesStrip(
             entries: recentViewsOf(data),
             onTap: (int i) => n.applyRecent(data.recent[i]),

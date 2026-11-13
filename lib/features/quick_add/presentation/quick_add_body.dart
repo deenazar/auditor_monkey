@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_text_styles.dart';
 import '../../transactions/domain/transaction_entry.dart';
 import '../application/quick_add_notifier.dart';
 import '../application/quick_add_view.dart';
@@ -91,13 +92,31 @@ class _Header extends StatelessWidget {
           onPressed: onClose,
         ),
         Expanded(
-          child: IgnorePointer(
-            ignoring: locked,
-            child: TypeTabs(
-              selected: view.type,
-              transferEnabled: view.transferAvailable,
-              onChanged: onType,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (view.headerTitle != null) ...<Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpacing.space2,
+                    bottom: AppSpacing.space2,
+                  ),
+                  child: Text(
+                    view.headerTitle!,
+                    style: AppTextStyles.title,
+                    semanticsLabel: view.headerTitle,
+                  ),
+                ),
+              ],
+              IgnorePointer(
+                ignoring: locked,
+                child: TypeTabs(
+                  selected: view.type,
+                  transferEnabled: view.transferAvailable,
+                  onChanged: onType,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(width: AppSpacing.minTapTarget),
