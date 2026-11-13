@@ -13,6 +13,7 @@ import '../domain/category_order.dart';
 import '../domain/quick_add_defaults.dart';
 import '../domain/quick_add_hints.dart';
 import '../domain/recent_entries.dart';
+import 'quick_add_edit.dart';
 
 final Provider<QuickAddRepository> quickAddRepositoryProvider =
     Provider<QuickAddRepository>(
@@ -76,14 +77,29 @@ final FutureProvider<QuickAddData> quickAddDataProvider =
           .read(quickAddRepositoryProvider)
           .loadHints(today: today);
 
-      final List<Account> accounts = offeredAccounts(live);
+      // Edit mode: the entry's own account and category are offered even
+      // when archived (or a hidden loan category), so it can be saved.
+      final TransactionEntry? edit = ref.read(quickAddEditProvider);
+      final List<Account> accounts = edit == null
+          ? offeredAccounts(live)
+          : _withOwnAccounts(live, edit);
       final OrderedCategories expense = orderCategories(
-        offered: offeredCategories(categories, CategoryKind.expense),
+        offered: _withOwnCategory(
+          offeredCategories(categories, CategoryKind.expense),
+          categories,
+          edit,
+          CategoryKind.expense,
+        ),
         usage: hints.usage[TransactionType.expense] ?? const <CategoryUsage>[],
         lastUsedId: hints.lastUsed[TransactionType.expense]?.categoryId,
       );
       final OrderedCategories income = orderCategories(
-        offered: offeredCategories(categories, CategoryKind.income),
+        offered: _withOwnCategory(
+          offeredCategories(categories, CategoryKind.income),
+          categories,
+          edit,
+          CategoryKind.income,
+        ),
         usage: hints.usage[TransactionType.income] ?? const <CategoryUsage>[],
         lastUsedId: hints.lastUsed[TransactionType.income]?.categoryId,
       );
@@ -108,3 +124,28 @@ final FutureProvider<QuickAddData> quickAddDataProvider =
         ),
       );
     });
+
+List<Account> _withOwnAccounts(List<Account> live, TransactionEntry edit) {
+  final Set<String> own = <String>{edit.accountId, ?edit.toAccountId};
+  return List<Account>.unmodifiable(
+    live.where(
+      (Account a) => a.deletedAt == null && (!a.archived || own.contains(a.id)),
+    ),
+  );
+}
+
+List<Category> _withOwnCategory(
+  List<Category> offered,
+  List<Category> live,
+  TransactionEntry? edit,
+  CategoryKind kind,
+) {
+  final String? id = edit?.categoryId;
+  if (id == null || offered.any((Category c) => c.id == id)) return offered;
+  for (final Category c in live) {
+    if (c.id == id && c.kind == kind && c.deletedAt == null) {
+      return List<Category>.unmodifiable(<Category>[...offered, c]);
+    }
+  }
+  return offered;
+}

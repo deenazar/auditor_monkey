@@ -11,6 +11,7 @@ import '../features/insights/presentation/insights_screen.dart';
 import '../features/setup/application/setup_providers.dart';
 import '../features/setup/presentation/setup_wizard_screen.dart';
 import '../features/setup/presentation/start_screen.dart';
+import '../features/transactions/presentation/transaction_detail_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
 import '../shared/theme/app_motion.dart';
 
@@ -32,6 +33,14 @@ abstract final class AppRoutes {
 
   /// Route name of the statement (child of the Accounts branch).
   static const String accountStatementName = 'account-statement';
+
+  /// Route name of the transaction detail (child of the Transactions branch).
+  static const String transactionDetailName = 'transaction-detail';
+
+  /// Path of one entry's detail. [transactionId] is put in the path as is;
+  /// the screen checks it.
+  static String transactionDetail(String transactionId) =>
+      '$transactions/${Uri.encodeComponent(transactionId)}';
 
   /// Path of one account's statement. [accountId] is put in the path as is;
   /// the screen checks it.
@@ -148,7 +157,25 @@ GoRouter createAppRouter({
         branches: <StatefulShellBranch>[
           _branch(AppRoutes.home, const HomeScreen()),
           _branch(AppRoutes.insights, const InsightsScreen()),
-          _branch(AppRoutes.transactions, const TransactionsScreen()),
+          _branch(
+            AppRoutes.transactions,
+            const TransactionsScreen(),
+            children: <RouteBase>[
+              GoRoute(
+                path: ':transactionId',
+                name: AppRoutes.transactionDetailName,
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _slidePage(
+                      context,
+                      state,
+                      TransactionDetailScreen(
+                        transactionId:
+                            state.pathParameters['transactionId'] ?? '',
+                      ),
+                    ),
+              ),
+            ],
+          ),
           _branch(
             AppRoutes.accounts,
             const AccountsScreen(),
