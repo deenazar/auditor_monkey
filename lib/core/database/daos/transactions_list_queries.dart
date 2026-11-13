@@ -50,18 +50,15 @@ class ListWhere {
 }
 
 final RegExp _likeSpecials = RegExp(r'[\\%_]');
-final RegExp _amountJunk = RegExp(r'[₹,\s]');
 
 /// Escapes `\`, `%` and `_` so the text is matched literally by `LIKE ... ESCAPE '\'`.
 String escapeLike(String text) =>
     text.replaceAllMapped(_likeSpecials, (Match m) => '\\${m[0]}');
 
-/// Paise when the search text reads as rupees (`250`, `₹1,250.50`).
-int? queryAsPaise(String query) {
-  final String cleaned = query.replaceAll(_amountJunk, '');
-  if (cleaned.isEmpty) return null;
-  return parseRupeesToPaise(cleaned);
-}
+/// Paise when the whole search text reads as rupees (`250`, `₹1,250.50`).
+/// Commas must be valid Indian or Western grouping, and there are no spaces
+/// inside the number ("1 2" and "1,2,3" are plain text, not amounts).
+int? queryAsPaise(String query) => parseRupeesToPaise(query.trim());
 
 /// The WHERE conditions of [f] on table alias `t` (and `c` for categories).
 ListWhere listWhere(ListFilterSpec f) {

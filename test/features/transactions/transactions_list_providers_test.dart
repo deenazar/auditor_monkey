@@ -200,6 +200,34 @@ void main() {
       expect(current()!.items, hasLength(100));
     });
 
+    test('a reload keeps the instance of unchanged rows', () async {
+      await seed(60);
+      await loaded();
+      final List<TransactionListItem> before = current()!.items;
+      env.clock.advance();
+      await env.transactions.update(
+        rows[30].id,
+        expenseDraft(
+          accountId: a.id,
+          categoryId: groceries,
+          amount: 424242,
+          date: rows[30].date,
+        ),
+      );
+      await until(
+        () => current()!.items.any(
+          (TransactionListItem i) => i.entry.amount == 424242,
+        ),
+      );
+      final List<TransactionListItem> after = current()!.items;
+      expect(after, hasLength(before.length));
+      int same = 0;
+      for (int i = 0; i < after.length; i++) {
+        if (identical(after[i], before[i])) same++;
+      }
+      expect(same, before.length - 1, reason: 'only the edited row is new');
+    });
+
     test('delete and undo keep the loaded count', () async {
       await seed(120);
       await loaded();
@@ -323,6 +351,40 @@ void main() {
       await actions.delete(rows.first.id);
       await env.accounts.softDelete(a.id);
       expect(await actions.undoDelete(rows.first.id), isFalse);
+    });
+  });
+
+  group('saved filters file limits', () {
+    test('names are checked on read like on add', () {
+      const String id = '00000000-0000-4000-8000-0000000000f1';
+      String doc(String name) =>
+          '{"filters":[{"id":"$id","name":"$name","filter":'
+          '{"accountIds":["00000000-0000-4000-8000-0000000000a1"]}}]}';
+      expect(decodeSavedFilters(doc('Cash')), hasLength(1));
+      expect(decodeSavedFilters(doc(r'a\u0007b')), isEmpty);
+      expect(decodeSavedFilters(doc('x' * 25)), isEmpty);
+      expect(decodeSavedFilters(doc('   ')), isEmpty);
+    });
+
+    test('a file over 64 KB is not read', () async {
+      expect(decodeSavedFilters('x' * (maxSavedFiltersBytes + 1)), isNull);
+      final Directory dir = await Directory.systemTemp.createTemp('sf_');
+      addTearDown(() => dir.delete(recursive: true));
+      File('${dir.path}/$savedFiltersFileName')
+          .writeAsStringSync(' ' * (maxSavedFiltersBytes + 1));
+      final ProviderContainer c = containerFor(
+        env,
+        extra: [
+          savedFiltersStoreProvider.overrideWithValue(
+            FileSavedFiltersStore(() async => dir),
+          ),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.listen(savedFiltersProvider, (_, _) {});
+      env.sink.records.clear();
+      expect(await c.read(savedFiltersProvider.future), isEmpty);
+      expect(env.sink.allText, contains('could not be read'));
     });
   });
 

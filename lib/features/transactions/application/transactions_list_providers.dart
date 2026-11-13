@@ -142,11 +142,34 @@ class TransactionsListNotifier extends AsyncNotifier<TransactionsListState> {
     return _stateOf(first);
   }
 
-  TransactionsListState _stateOf(ListPage page) => TransactionsListState(
-    items: page.items,
-    dayTotals: page.dayTotals,
-    hasMore: page.hasMore,
-  );
+  TransactionsListState _stateOf(ListPage page, [TransactionsListState? old]) {
+    if (old == null) {
+      return TransactionsListState(
+        items: page.items,
+        dayTotals: page.dayTotals,
+        hasMore: page.hasMore,
+      );
+    }
+    // Keep the old instance of every row that did not change, so the list
+    // can skip rebuilding it.
+    final Map<String, TransactionListItem> before =
+        <String, TransactionListItem>{
+          for (final TransactionListItem i in old.items) i.entry.id: i,
+        };
+    return TransactionsListState(
+      items: <TransactionListItem>[
+        for (final TransactionListItem i in page.items)
+          sameItem(before[i.entry.id], i) ? before[i.entry.id]! : i,
+      ],
+      dayTotals: <String, DayTotal>{
+        for (final MapEntry<String, DayTotal> e in page.dayTotals.entries)
+          e.key: old.dayTotals[e.key] == e.value
+              ? old.dayTotals[e.key]!
+              : e.value,
+      },
+      hasMore: page.hasMore,
+    );
+  }
 
   Future<void> _reload(int generation) async {
     if (_reloading) {
@@ -166,7 +189,7 @@ class TransactionsListNotifier extends AsyncNotifier<TransactionsListState> {
         final ListPage fresh = await _repo.page(_filter, limit: wanted);
         if (!ref.mounted || generation != _generation) return;
         _epoch++;
-        state = AsyncData<TransactionsListState>(_stateOf(fresh));
+        state = AsyncData<TransactionsListState>(_stateOf(fresh, state.value));
       } while (_reloadAgain);
     } on Object {
       // Keep the rows on screen; the next change reloads them.
@@ -297,3 +320,26 @@ class _RepositoryActions implements TransactionActions {
     }
   }
 }
+
+/// True when [fresh] shows exactly what [old] shows (same entry version and
+/// same resolved names, colours and icon).
+bool sameItem(TransactionListItem? old, TransactionListItem fresh) =>
+    old != null &&
+    old.entry.id == fresh.entry.id &&
+    old.entry.updatedAt == fresh.entry.updatedAt &&
+    old.entry.deletedAt == fresh.entry.deletedAt &&
+    old.entry.type == fresh.entry.type &&
+    old.entry.amount == fresh.entry.amount &&
+    old.entry.date == fresh.entry.date &&
+    old.entry.accountId == fresh.entry.accountId &&
+    old.entry.toAccountId == fresh.entry.toAccountId &&
+    old.entry.categoryId == fresh.entry.categoryId &&
+    old.entry.note == fresh.entry.note &&
+    old.entry.loanId == fresh.entry.loanId &&
+    old.accountName == fresh.accountName &&
+    old.accountColour == fresh.accountColour &&
+    old.toAccountName == fresh.toAccountName &&
+    old.toAccountColour == fresh.toAccountColour &&
+    old.categoryName == fresh.categoryName &&
+    old.categoryIcon == fresh.categoryIcon &&
+    old.categoryColourGroup == fresh.categoryColourGroup;

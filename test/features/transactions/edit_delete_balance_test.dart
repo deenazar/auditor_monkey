@@ -2,6 +2,7 @@
 // the month sums and the statement running balance correct.
 import 'package:auditor_monkey/core/utils/validation_failure.dart';
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
+import 'package:auditor_monkey/features/loans/domain/loan.dart';
 import 'package:auditor_monkey/features/transactions/data/transactions_list_repository.dart';
 import 'package:auditor_monkey/features/transactions/domain/statement_line.dart';
 import 'package:auditor_monkey/features/transactions/domain/transaction_entry.dart';
@@ -359,6 +360,34 @@ void main() {
       // Balance counts it; spending sums leave loan entries out.
       await verify(balA: openA, balB: 47000);
     });
+  });
+
+  test('undo of a delete linked to a CLOSED loan works', () async {
+    final loan = await env.loans.create(loanDraft());
+    final TransactionEntry e = await add(
+      TransactionDraft(
+        type: TransactionType.expense,
+        amount: 2000,
+        date: day,
+        accountId: a.id,
+        categoryId: groceries,
+        loanId: loan.id,
+      ),
+    );
+    await env.transactions.softDelete(e.id);
+    await env.loans.update(
+      loan.id,
+      const LoanDraft(
+        direction: LoanDirection.lent,
+        person: 'Ravi',
+        principal: 100000,
+        startDate: '2026-10-01',
+        closed: true,
+      ),
+    );
+    await env.transactions.restore(e.id);
+    expect((await env.transactions.getById(e.id))!.loanId, loan.id);
+    await verify(balA: 98000, balB: openB);
   });
 
   group('deleted entries vanish from the list views', () {

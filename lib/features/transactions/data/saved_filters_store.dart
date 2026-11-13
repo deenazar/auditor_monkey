@@ -31,6 +31,9 @@ class MemorySavedFiltersStore implements SavedFiltersStore {
   Future<void> write(String value) async => text = value;
 }
 
+/// Biggest saved filters file that is read (64 KB). A real file is under 5 KB.
+const int maxSavedFiltersBytes = 64 * 1024;
+
 const String savedFiltersFileName = 'saved_filters.json';
 
 /// A JSON file in the app support folder (private to the app, not backed up
@@ -48,7 +51,11 @@ class FileSavedFiltersStore implements SavedFiltersStore {
   @override
   Future<String?> read() async {
     final File file = await _file();
-    return file.existsSync() ? file.readAsString() : null;
+    if (!file.existsSync()) return null;
+    if (file.lengthSync() > maxSavedFiltersBytes) {
+      throw FileSystemException('saved filters file is too large', file.path);
+    }
+    return file.readAsString();
   }
 
   /// Writes to a temp file first and renames it, so a crash in the middle
@@ -76,6 +83,7 @@ String encodeSavedFilters(List<SavedFilter> filters) =>
 /// (chips keep facets only).
 List<SavedFilter>? decodeSavedFilters(String? text) {
   if (text == null || text.trim().isEmpty) return const <SavedFilter>[];
+  if (text.length > maxSavedFiltersBytes) return null;
   try {
     final Object? root = jsonDecode(text);
     if (root is! Map<String, Object?>) return null;
@@ -89,11 +97,7 @@ List<SavedFilter>? decodeSavedFilters(String? text) {
       final Object? name = item['name'];
       final Object? filter = item['filter'];
       if (id is! String || !isUuidShape(id) || !ids.add(id)) continue;
-      if (name is! String ||
-          name.trim().isEmpty ||
-          name.length > maxSavedFilterName) {
-        continue;
-      }
+      if (name is! String || !isValidSavedFilterName(name)) continue;
       if (filter is! Map<String, Object?>) continue;
       final TransactionFilter facets = TransactionFilter.fromJson(filter)
           .withoutQuery();
@@ -110,4 +114,15 @@ List<SavedFilter>? decodeSavedFilters(String? text) {
   } on Object {
     return null;
   }
+}
+
+final RegExp _nameControlChars = RegExp(r'[\u0000-\u001F\u007F]');
+
+/// Same name rule as adding a chip: 1 to [maxSavedFilterName] characters
+/// after trimming, no control characters.
+bool isValidSavedFilterName(String name) {
+  final String t = name.trim();
+  return t.isNotEmpty &&
+      t.length <= maxSavedFilterName &&
+      !_nameControlChars.hasMatch(t);
 }

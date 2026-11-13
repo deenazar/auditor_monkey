@@ -244,6 +244,11 @@ void main() {
     expect(queryAsPaise('abc'), isNull);
     expect(queryAsPaise('1.234'), isNull);
     expect(queryAsPaise(''), isNull);
+    expect(queryAsPaise('1 2'), isNull);
+    expect(queryAsPaise('1,2,3'), isNull);
+    expect(queryAsPaise('₹ 1,20,000'), 12000000);
+    expect(queryAsPaise('1,000'), 100000);
+    expect(queryAsPaise('₹₹5'), isNull);
   });
 
   group('paging', () {
