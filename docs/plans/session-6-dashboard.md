@@ -31,33 +31,36 @@ New on Home:
 The hero (Net Worth) and the lime card (This Month Spent) stay where
 they are.
 
-### Dependency on main's Transactions (PR #16)
-The plan assumes develop gets main's Transactions data layer (list
-queries, summaries, `transaction_entry`) once the owner reconciles.
+### Dependency on Transactions (Session 5, merged by PR #18)
+Checked on 2026-11-13 against the merged code (T0 is done):
 
-**Not checked:** this session had no shell, so the PM could not run
-`git show origin/main:...` or `git diff --stat`. Task T0 does that check
-before anything is wired.
-
-What the Dashboard needs from it:
-- **Needs it:**
-  - "See all" opens the Transactions tab.
-  - A tap on a top category opens Transactions filtered by that month +
-    category.
-  - A tap on the Spent tile opens Transactions filtered by this month +
-    expenses.
-  - All three need main's filter state or route params.
-- **Reuse, don't copy:** if main's summaries already give month totals
-  or per-category sums, the Dashboard uses them. No second copy of the
-  SQL.
-- **Does not need it:** every number. Develop already has
-  `expenseTotal`, `incomeTotal`, `expenseByCategory(limit)`, `page`,
-  `watchBalances`, `watchNetWorth` and `budgetsForMonthProvider`.
-- **If main never lands:** the drill-downs and "See all" are left out
-  (the rows still swipe and long-press). The numbers are still done.
-- `TransactionEntry`: if main changed its fields, T0 lists what changed.
-  The Dashboard reads only `id, type, amount, date, accountId,
-  toAccountId, categoryId, note, loanId`.
+- **No changes under us:** the merge did not touch `TransactionEntry`,
+  `transactions_dao.dart` or `lib/features/home`. Every number still
+  comes from develop's `expenseTotal`, `incomeTotal`,
+  `expenseByCategory(limit)`, `watchBalances`, `watchNetWorth` and
+  `budgetsForMonthProvider`.
+- **Same rules as the Transactions tab:** `monthSummarySql` counts only
+  live `expense` / `income` rows, leaves out loan-linked rows
+  (`loan_id IS NULL`) and uses the whole calendar month. So the
+  Dashboard's Spent / Income equal the Transactions tab's Spent /
+  Income for the same month (no filter). T3 adds a test that checks
+  this on the test month.
+- **Drill-downs (no new routes):** set `transactionFilterProvider`
+  with `setFacets(TransactionFilter(from:, to:, types:, categoryIds:))`,
+  then go to `AppRoutes.transactions`:
+  - "See all" → `clear()`, then open the tab.
+  - Spent tile → this month + `expense`.
+  - Top category row → this month + `expense` + that category.
+- **Recent rows:** a tap opens `AppRoutes.transactionDetail(id)` (the
+  new detail screen). Swipe edit / delete + Undo reuse the
+  Transactions `TransactionActions`, so Home and Transactions act the
+  same.
+- **Reuse, don't copy:** no second copy of the month SQL. If T2 needs a
+  one-read snapshot, it calls the existing DAO methods inside one read
+  transaction.
+- **Q1 warning:** if the owner picks "leave loan categories out
+  everywhere", `monthSummarySql` must change too (it only skips
+  loan-linked rows today), or the two tabs show different Spent.
 
 ## 2. Number rules (exact)
 Notation:
@@ -123,11 +126,11 @@ Layout, top to bottom:
 7. **"Top spending"** (new): 3 rows.
    - Category icon circle, name, amount, % and a pill bar that grows
      in, staggered.
-   - Tap opens Transactions filtered by month + category (needs main).
+   - Tap opens Transactions filtered by month + category.
    - Long-press preview.
-8. **"Recent transactions"**: 5 rows (existing swipe-delete + Undo and
-   long-press) plus a "See all" text button that opens the Transactions
-   tab.
+8. **"Recent transactions"**: 5 rows (swipe edit / delete + Undo,
+   long-press; tap opens the detail screen) plus a "See all" text
+   button that opens the Transactions tab with no filter.
 
 Quality bar checklist (adds rows to `motion-illustration-pass.md`):
 
@@ -158,10 +161,10 @@ States:
 
 | # | Task | Owner | Files | Skills | Acceptance |
 |---|------|-------|-------|--------|------------|
-| T0 | Read main's Transactions data layer once the owner has reconciled; list the APIs to reuse (filters, summaries, entry fields) in a note on this plan | senior-dev | this plan (note only) | code-review | Note lists exact names; any clash with section 2 is raised to the PM before T5 |
+| T0 | ~~Read the Transactions data layer and list the APIs to reuse~~ **Done 2026-11-13**, see section 1 "Dependency on Transactions" | senior-dev | this plan (note only) | code-review | Done |
 | T1 | Pure rules: `DashboardSummary`, `buildBalanceSlices` (positive only, max 5 → 4 + Other, owed sum, largest-remainder %, "<1%"), `topCategoryShares` (half-up %), `remaining` | senior-dev | `lib/features/home/domain/dashboard_summary.dart`, `balance_slices.dart`, `top_categories.dart` + `test/features/home/domain/` | validation, qa-testing, dataviz (doughnut rules) | Unit tests cover every rule in section 2 rows 3, 6, 7, including ties, all-negative, exactly 5 vs 6 accounts, % sum = 100 |
 | T2 | Data: `loadDashboardSummary` in one read transaction (spent, income, budget total, top 3, recent 5) for full month `M`; loan-category filter (Q1); budgets added to the change signal; `todayProvider` refresh on resume; logs | senior-dev | `lib/features/home/application/home_providers.dart`, `dashboard_providers.dart`; if new SQL: `lib/core/database/daos/transactions_dashboard_queries.dart` (extension, like Quick Add) | logging, performance, security, validation | Query-plan test: month sums use `ix_tx_date`. Inputs checked (month key, limit 1..500). Logs: `dashboard load ok ms=… rows=…`, never amounts or names |
-| T3 | Test month fixture + numbers acceptance test (section 5), on an in-memory DB through the real repositories | junior-dev | `test/support/fixtures/test_month_2026_10.dart`, `test/features/home/dashboard_numbers_test.dart` | qa-testing | Every value in tables 5.3-5.6 asserted to the paisa; also the widget shows the same formatted strings |
+| T3 | Test month fixture + numbers acceptance test (section 5), on an in-memory DB through the real repositories | junior-dev | `test/support/fixtures/test_month_2026_10.dart`, `test/features/home/dashboard_numbers_test.dart` | qa-testing | Every value in tables 5.3-5.6 asserted to the paisa; the widget shows the same formatted strings; Transactions `monthSummary` (no filter) gives the same Spent / Income |
 | T4 | Widgets with fake data: `MonthTiles`, `BalanceDoughnut` (fl_chart `PieChart`, DESIGN.md doughnut style), `TopSpendingCard`, "See all" | junior-dev | `lib/features/home/presentation/widgets/month_tiles.dart`, `balance_doughnut.dart`, `doughnut_legend.dart`, `top_spending_card.dart`, `see_all_button.dart` | ui-ux-motion, dataviz, performance, qa-testing | Quality bar row done; `RepaintBoundary` around ring; only opacity / transform animate; semantics label per slice ("PF, ₹1,00,000.00, 50%"); 44pt targets; large text 2.0 does not clip |
 | T5 | Wire into Home: new sections, mascot reactions, slice → statement, drill-downs (after T0), recent 5. Split `home_screen.dart` (already 428 lines) into section widgets | senior-dev | `lib/features/home/presentation/home_screen.dart`, `widgets/home_sections.dart`, `domain/home_summary.dart` | ui-ux-motion, logging, code-review | File under ~300 lines; mascot uses real budget; existing Home tests still pass |
 | T6 | Illustration `empty_top_spending.svg`; goldens: data, loading, empty month, no budget, over budget, all negative, section error, text scale 2, slice selected | junior-dev | `assets/illustrations/empty_top_spending.svg`, `test/features/home/presentation/goldens/` | ui-ux-motion, qa-testing | SVG under 8KB, palette only, decorative; goldens on Linux, 0.5% tolerance |
@@ -174,8 +177,7 @@ States:
   writes plus this plan's tables. T4 uses fake data. T6's SVG can start
   as well.
 - T2 after T1.
-- T5 after T2 and T4. Its drill-down part also waits for T0 and the
-  owner's reconcile.
+- T5 after T2 and T4.
 - T6 goldens and T7 after T5.
 - T8, then T9.
 
@@ -379,6 +381,4 @@ From PROJECT.md and the performance skill.
 - **Q7 Spendings / Savings tiles.** Keep the existing week-bars and
   savings-ring tiles under the new month tiles, or drop them to keep
   the screen short?
-- **Q8 Reconcile with main (PR #16).** The drill-downs and "See all"
-  wait for main's Transactions to be on develop. If that is later,
-  should we ship the numbers first and add the links later?
+- ~~**Q8 Reconcile with main.**~~ Closed: PR #18 merges main into develop. Session 6 starts after it is merged.
