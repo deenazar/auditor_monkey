@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/today_provider.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/wow/parallax.dart';
+import '../../../shared/wow/scene_activity.dart';
 import 'transactions_panel.dart';
-import 'widgets/transactions_stage.dart';
+import 'widgets/transactions_header.dart';
 
-/// The Transactions screen, in Home's layout: a compact sky on top (title,
-/// month summary) and a panel that slides over it with search, filters,
-/// saved chips and the day-grouped list. The month summary follows the
-/// topmost visible day.
+/// The Transactions screen: a living header (`WowHeader`) with the month
+/// summary on top, then search, filters, saved chips and the day-grouped
+/// list. The month summary follows the topmost visible day. The header
+/// stays put while the list scrolls; its title parallaxes away.
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
 
@@ -18,8 +20,10 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 }
 
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
-  /// `YYYY-MM` of the topmost visible day. Only the stage listens to it.
+  /// `YYYY-MM` of the topmost visible day. Only the header listens to it.
   final ValueNotifier<String> _month = ValueNotifier<String>('');
+  final ScrollOffset _scroll = ScrollOffset();
+  final SceneActivity _activity = SceneActivity();
 
   @override
   void initState() {
@@ -30,51 +34,43 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   @override
   void dispose() {
     _month.dispose();
+    _scroll.dispose();
+    _activity.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.panel,
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints c) {
-          final double padTop = MediaQuery.paddingOf(context).top;
-          final double stageH =
-              padTop + (c.maxHeight * 0.3).clamp(200.0, 250.0);
-          final double initial = ((c.maxHeight - stageH + 22) / c.maxHeight)
-              .clamp(0.2, 0.9);
-          final double max = ((c.maxHeight - padTop - 64) / c.maxHeight).clamp(
-            initial,
-            1.0,
-          );
-          return Stack(
-            children: <Widget>[
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                height: stageH,
-                child: TransactionsStage(month: _month),
+    final double height = MediaQuery.sizeOf(context).height;
+    return Material(
+      color: AppColors.background,
+      child: Listener(
+        onPointerDown: (_) => _activity.poke(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // At large text sizes the header scrolls inside this box, so
+            // the list always keeps at least half of the screen.
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: height * 0.5),
+              child: SingleChildScrollView(
+                child: TransactionsHeader(
+                  month: _month,
+                  scroll: _scroll,
+                  activity: _activity,
+                ),
               ),
-              DraggableScrollableSheet(
-                initialChildSize: initial,
-                minChildSize: initial,
-                maxChildSize: max,
-                snap: true,
-                builder: (BuildContext context, ScrollController scroll) =>
-                    MediaQuery.removePadding(
-                      context: context,
-                      removeTop: true,
-                      child: TransactionsPanel(
-                        scroll: scroll,
-                        onMonthChanged: (String m) => _month.value = m,
-                      ),
-                    ),
+            ),
+            Expanded(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _scroll.onScroll,
+                child: TransactionsPanel(
+                  onMonthChanged: (String m) => _month.value = m,
+                ),
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }

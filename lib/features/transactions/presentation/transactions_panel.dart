@@ -7,9 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../core/logging/logger_provider.dart';
 import '../../../core/utils/today_provider.dart';
-import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_radius.dart';
-import '../../../shared/theme/app_shadows.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
@@ -28,18 +25,11 @@ import 'widgets/saved_filter_chips.dart';
 import 'widgets/transaction_row.dart';
 import 'widgets/transactions_search_field.dart';
 
-/// The sliding panel of the Transactions screen: handle, search and filter
-/// button, saved chips, then the day-grouped list. The list pages in as the
+/// The body of the Transactions screen: search and filter button, saved
+/// chips, then the day-grouped list. The list pages in as the
 /// user scrolls, and reports the month of the topmost visible day.
 class TransactionsPanel extends ConsumerStatefulWidget {
-  const TransactionsPanel({
-    required this.scroll,
-    required this.onMonthChanged,
-    super.key,
-  });
-
-  /// The sheet's scroll controller (from [DraggableScrollableSheet]).
-  final ScrollController scroll;
+  const TransactionsPanel({required this.onMonthChanged, super.key});
 
   /// Called with `YYYY-MM` when the topmost visible day changes month.
   final ValueChanged<String> onMonthChanged;
@@ -65,6 +55,11 @@ class _Line {
 
 class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
   final GlobalKey _listKey = GlobalKey();
+  final ScrollController _scroll = ScrollController();
+
+  /// Rows whose delete failed: their key changes so the swiped-away row
+  /// comes back (a dismissed row cannot be shown again).
+  final Map<String, int> _deleteFailures = <String, int>{};
   final Map<String, GlobalKey> _dayKeys = <String, GlobalKey>{};
   TransactionsListState? _memoState;
   List<_Line> _lines = const <_Line>[];
@@ -100,6 +95,12 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
     _queueMonthReport();
   }
 
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
   GlobalKey _keyFor(String date) => _dayKeys.putIfAbsent(date, GlobalKey.new);
 
   void _queueMonthReport() {
@@ -131,8 +132,7 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
     }
     // Nothing above the top: at the very start the first day is the topmost.
     if (best == null) {
-      final bool atStart =
-          !widget.scroll.hasClients || widget.scroll.offset <= 0;
+      final bool atStart = !_scroll.hasClients || _scroll.offset <= 0;
       final DayGroup? first = _lines.isEmpty ? null : _lines.first.group;
       if (!atStart || first == null) return;
       best = first.date;
@@ -172,13 +172,18 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
     unawaited(openEditEntry(context, ref.read(loggerProvider), item.entry));
   }
 
-  Future<bool> _delete(TransactionListItem item) {
-    return deleteEntryWithUndo(
+  Future<bool> _delete(TransactionListItem item) async {
+    final bool deleted = await deleteEntryWithUndo(
       actions: ref.read(transactionActionsProvider),
       messenger: ScaffoldMessenger.of(context),
       log: ref.read(loggerProvider),
       entry: item.entry,
     );
+    if (!deleted && mounted) {
+      final String id = item.entry.id;
+      setState(() => _deleteFailures[id] = (_deleteFailures[id] ?? 0) + 1);
+    }
+    return deleted;
   }
 
   @override
@@ -195,9 +200,10 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
         async.isLoading && (state == null || state.items.isEmpty);
     final bool failed = async.hasError && state == null;
     final double bottom = MediaQuery.paddingOf(context).bottom + 24;
+    const double side = AppSpacing.screenPadding;
     // Room for an illustration, a title, a message and a button, also at
     // large text sizes (the views scroll inside this box if they must).
-    final double stateHeight = MediaQuery.sizeOf(context).height * 0.55;
+    final double stateHeight = MediaQuery.sizeOf(context).height * 0.5;
 
     final Widget? footer = state == null
         ? null
@@ -217,168 +223,143 @@ class _TransactionsPanelState extends ConsumerState<TransactionsPanel> {
           )
         : null;
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.panel,
-        borderRadius: AppRadius.sheet,
-        boxShadow: AppShadows.shadowPanel,
-      ),
-      child: ClipRRect(
-        borderRadius: AppRadius.sheet,
-        child: NotificationListener<ScrollNotification>(
-          onNotification: _onScroll,
-          child: CustomScrollView(
-            key: _listKey,
-            controller: widget.scroll,
-            slivers: <Widget>[
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Center(
-                        child: Container(
-                          width: 38,
-                          height: 4,
-                          decoration: const BoxDecoration(
-                            color: AppColors.line,
-                            borderRadius: BorderRadius.all(Radius.circular(2)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Row(
-                        children: <Widget>[
-                          Expanded(child: TransactionsSearchField()),
-                          SizedBox(width: 8),
-                          TransactionsFilterButton(),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: SavedFilterChips(),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 8)),
-              if (loading)
-                const SliverPadding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        SizedBox(height: AppSpacing.space4),
-                        SkeletonBlock(height: 18, width: 110),
-                        SizedBox(height: AppSpacing.space3),
-                        SkeletonRows(count: 6),
-                      ],
-                    ),
-                  ),
-                )
-              else if (failed)
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: stateHeight,
-                    child: ErrorState(
-                      title: 'Could not load entries',
-                      message: 'Your data is safe. Try again.',
-                      onRetry: () => ref.invalidate(transactionsListProvider),
-                    ),
-                  ),
-                )
-              else if (state == null || state.items.isEmpty)
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: stateHeight,
-                    child: filter.isEmpty
-                        ? EmptyState(
-                            illustration: 'empty_transactions',
-                            title: 'No entries yet',
-                            message:
-                                'Add your first expense, income or transfer. '
-                                'The monkey keeps count.',
-                            action: PrimaryButton(
-                              label: 'Add your first entry',
-                              fullWidth: false,
-                              onPressed: () => unawaited(
-                                openAddEntry(context, ref.read(loggerProvider)),
-                              ),
-                            ),
-                          )
-                        : EmptyState(
-                            illustration: 'no_results',
-                            title: 'No entries match',
-                            message:
-                                'Try other words, or clear the filters to see '
-                                'everything.',
-                            action: PrimaryButton(
-                              label: 'Clear filters',
-                              fullWidth: false,
-                              onPressed: () {
-                                ref
-                                    .read(loggerProvider)
-                                    .info(
-                                      transactionsLogTag,
-                                      'filters cleared',
-                                    );
-                                ref
-                                    .read(transactionFilterProvider.notifier)
-                                    .clear();
-                              },
-                            ),
-                          ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList.builder(
-                    itemCount: _lines.length + (footer == null ? 0 : 1),
-                    itemBuilder: (BuildContext context, int i) {
-                      if (i >= _lines.length) return footer!;
-                      final _Line line = _lines[i];
-                      final DayGroup? group = line.group;
-                      if (group != null) {
-                        return DayHeader(
-                          key: _keyFor(group.date),
-                          group: group,
-                          today: today,
-                        );
-                      }
-                      final TransactionListItem item = line.item!;
-                      final Widget row = Padding(
-                        key: ValueKey<String>(item.entry.id),
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: RepaintBoundary(
-                          child: TransactionRow(
-                            item: item,
-                            onTap: () => _open(item),
-                            onEdit: () => _edit(item),
-                            onDelete: () => _delete(item),
-                          ),
-                        ),
-                      );
-                      // Same wrapper type for every row, so switching the
-                      // entrance off never remounts a row.
-                      return StaggeredEntrance(
-                        index: i,
-                        animate:
-                            !_staggerDone && i < TransactionsPanel.staggerRows,
-                        child: row,
-                      );
-                    },
-                  ),
-                ),
-              SliverToBoxAdapter(child: SizedBox(height: bottom)),
-            ],
-          ),
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScroll,
+      child: CustomScrollView(
+        key: _listKey,
+        controller: _scroll,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
         ),
+        slivers: <Widget>[
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(side, AppSpacing.space4, side, 0),
+            sliver: SliverToBoxAdapter(
+              child: Row(
+                children: <Widget>[
+                  Expanded(child: TransactionsSearchField()),
+                  SizedBox(width: AppSpacing.space2),
+                  TransactionsFilterButton(),
+                ],
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: AppSpacing.space3),
+              child: SavedFilterChips(),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.space2)),
+          if (loading)
+            const SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: side),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(height: AppSpacing.space4),
+                    SkeletonBlock(height: 18, width: 110),
+                    SizedBox(height: AppSpacing.space3),
+                    SkeletonRows(count: 6),
+                  ],
+                ),
+              ),
+            )
+          else if (failed)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: stateHeight,
+                child: ErrorState(
+                  title: 'Could not load entries',
+                  message: 'Your data is safe. Try again.',
+                  onRetry: () => ref.invalidate(transactionsListProvider),
+                ),
+              ),
+            )
+          else if (state == null || state.items.isEmpty)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: stateHeight,
+                child: filter.isEmpty
+                    ? EmptyState(
+                        illustration: 'empty_transactions',
+                        title: 'No entries yet',
+                        message:
+                            'Add your first expense, income or transfer. '
+                            'The monkey keeps count.',
+                        action: PrimaryButton(
+                          label: 'Add your first entry',
+                          fullWidth: false,
+                          onPressed: () => unawaited(
+                            openAddEntry(context, ref.read(loggerProvider)),
+                          ),
+                        ),
+                      )
+                    : EmptyState(
+                        illustration: 'no_results',
+                        title: 'No entries match',
+                        message:
+                            'Try other words, or clear the filters to see '
+                            'everything.',
+                        action: PrimaryButton(
+                          label: 'Clear filters',
+                          fullWidth: false,
+                          onPressed: () {
+                            ref
+                                .read(loggerProvider)
+                                .info(transactionsLogTag, 'filters cleared');
+                            ref
+                                .read(transactionFilterProvider.notifier)
+                                .clear();
+                          },
+                        ),
+                      ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: side),
+              sliver: SliverList.builder(
+                itemCount: _lines.length + (footer == null ? 0 : 1),
+                itemBuilder: (BuildContext context, int i) {
+                  if (i >= _lines.length) return footer!;
+                  final _Line line = _lines[i];
+                  final DayGroup? group = line.group;
+                  if (group != null) {
+                    return DayHeader(
+                      key: _keyFor(group.date),
+                      group: group,
+                      today: today,
+                    );
+                  }
+                  final TransactionListItem item = line.item!;
+                  final Widget row = KeyedSubtree(
+                    key: ValueKey<String>(
+                      '${item.entry.id}#'
+                      '${_deleteFailures[item.entry.id] ?? 0}',
+                    ),
+                    child: RepaintBoundary(
+                      child: TransactionRow(
+                        item: item,
+                        onTap: () => _open(item),
+                        onEdit: () => _edit(item),
+                        onDelete: () => _delete(item),
+                      ),
+                    ),
+                  );
+                  // Same wrapper type for every row, so switching the
+                  // entrance off never remounts a row.
+                  return StaggeredEntrance(
+                    index: i,
+                    animate: !_staggerDone && i < TransactionsPanel.staggerRows,
+                    child: row,
+                  );
+                },
+              ),
+            ),
+          SliverToBoxAdapter(child: SizedBox(height: bottom)),
+        ],
       ),
     );
   }
