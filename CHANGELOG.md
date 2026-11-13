@@ -2,7 +2,7 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-13: Design polish (PR: -)
+## 2026-11-13: Design polish (PR: #11)
 
 ### Added
 - Motion tokens from DESIGN.md in `AppMotion`, and a staggered entrance
