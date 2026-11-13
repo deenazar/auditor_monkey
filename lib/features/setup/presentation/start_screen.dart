@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_motion.dart';
 import '../../../shared/theme/app_sizes.dart';
+import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/error_state.dart';
+import '../../mascot/presentation/mascot_moment.dart';
 
 /// Start screen (shown while the app opens its data).
 ///
@@ -57,7 +59,20 @@ class _StartScreenState extends State<StartScreen> {
                 message: 'Your data is safe. Update or restart the app.',
                 onRetry: widget.onRetry,
               )
-            : Center(child: _ringDue ? const _FadingRing() : null),
+            : Center(
+                child: _ringDue
+                    // Motion & 3D: the monkey opens the books while the
+                    // ring turns (only shown on slow starts).
+                    ? const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          MascotMoment(say: 'Opening your books…', size: 120),
+                          SizedBox(height: AppSpacing.space4),
+                          _FadingRing(),
+                        ],
+                      )
+                    : null,
+              ),
       ),
     );
   }

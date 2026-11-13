@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
 import '../../../core/logging/logger_provider.dart';
@@ -12,13 +13,19 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_text_styles.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
-import '../../../shared/widgets/page_header.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/rolling_amount.dart';
 import '../../../shared/widgets/staggered_entrance.dart';
 import '../../../shared/widgets/step_dots.dart';
 import '../../../shared/wow/long_press_preview.dart';
+import '../../../shared/wow/parallax.dart';
+import '../../../shared/wow/scene_activity.dart';
+import '../../../shared/wow/swipe_action_row.dart';
 import '../../../shared/wow/tilt_3d.dart';
+import '../../../shared/wow/wow_header.dart';
+import '../../mascot/domain/mascot_mood.dart';
+import '../../mascot/presentation/mascot_controller.dart';
+import '../../mascot/presentation/mascot_moment.dart';
 import '../application/accounts_providers.dart';
 import '../domain/account.dart';
 import 'widgets/account_card.dart';
@@ -43,12 +50,24 @@ class AccountsScreen extends ConsumerStatefulWidget {
 
 class _AccountsScreenState extends ConsumerState<AccountsScreen> {
   final AccountCarouselController _carousel = AccountCarouselController();
+  final MascotController _monkey = MascotController();
+  final ScrollOffset _scroll = ScrollOffset();
+  final SceneActivity _activity = SceneActivity();
   int _page = 0;
+
+  @override
+  void dispose() {
+    _monkey.dispose();
+    _scroll.dispose();
+    _activity.dispose();
+    super.dispose();
+  }
 
   /// Pull-to-refresh: re-reads balances (they are live anyway; this also
   /// reassures after an import or sync).
   Future<void> _refresh() async {
     ref.read(loggerProvider).info('accounts', 'pull to refresh');
+    _monkey.react(MascotReaction.spin);
     ref.invalidate(accountBalancesProvider);
     ref.invalidate(netWorthProvider);
     try {
@@ -79,6 +98,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
     final AccountDetails details = toAccountDetails(values);
     try {
       await ref.read(accountsRepositoryProvider).addAccount(details);
+      _monkey.react(MascotReaction.check, text: 'New account added!');
       return null;
     } on DataFailure catch (failure) {
       return accountFormErrorFrom(failure);
@@ -94,20 +114,36 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
       color: AppColors.background,
       child: SafeArea(
         bottom: false,
-        child: balances.when(
-          loading: () => const AccountsLoadingView(),
-          error: (Object error, StackTrace stack) => _ErrorBody(error: error),
-          data: (List<AccountBalance> list) => list.isEmpty
-              ? const _EmptyBody()
-              : _DataBody(
-                  list: list,
-                  page: _page,
-                  carousel: _carousel,
-                  onPageChanged: (int page) => setState(() => _page = page),
-                  onOpen: _openStatement,
-                  onAdd: _addAccount,
-                  onRefresh: _refresh,
-                ),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: _scroll.onScroll,
+          child: Listener(
+            onPointerDown: (PointerDownEvent e) {
+              _activity.poke();
+              _monkey.follow(e.position);
+            },
+            child: balances.when(
+              loading: () => const AccountsLoadingView(),
+              error: (Object error, StackTrace stack) =>
+                  _ErrorBody(error: error),
+              data: (List<AccountBalance> list) => list.isEmpty
+                  ? const _EmptyBody()
+                  : _DataBody(
+                      list: list,
+                      page: _page,
+                      carousel: _carousel,
+                      onPageChanged: (int page) {
+                        _monkey.look(Offset(page > _page ? 1 : -1, 0.4));
+                        setState(() => _page = page);
+                      },
+                      onOpen: _openStatement,
+                      onAdd: _addAccount,
+                      onRefresh: _refresh,
+                      monkey: _monkey,
+                      scroll: _scroll,
+                      activity: _activity,
+                    ),
+            ),
+          ),
         ),
       ),
     );
@@ -123,9 +159,15 @@ class _DataBody extends StatelessWidget {
     required this.onOpen,
     required this.onAdd,
     required this.onRefresh,
+    required this.monkey,
+    required this.scroll,
+    required this.activity,
   });
 
   final Future<void> Function() onRefresh;
+  final MascotController monkey;
+  final ScrollOffset scroll;
+  final SceneActivity activity;
   final List<AccountBalance> list;
   final int page;
   final AccountCarouselController carousel;
@@ -153,18 +195,25 @@ class _DataBody extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.space6),
+        padding: const EdgeInsets.only(bottom: AppSpacing.space6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
+            // Living header (Motion & 3D): blobs, parallax title, rolling
+            // net worth and an Auditor Monkey that reacts to this screen.
+            WowHeader(
+              eyebrow: 'Your Wallet',
+              title: 'Accounts',
+              scroll: scroll,
+              activity: activity,
+              bottom: _NetWorth(fallback: _sum(list)),
+              trailing: MascotMoment(
+                controller: monkey,
+                reaction: MascotReaction.hello,
+                size: 64,
+                halo: false,
               ),
-              child: PageHeader(eyebrow: 'Your Wallet', title: 'Accounts'),
             ),
-            const SizedBox(height: AppSpacing.space6),
-            _NetWorth(fallback: _sum(list)),
             const SizedBox(height: AppSpacing.space6),
             // The carousel is full-bleed: no side padding around it.
             if (live.isNotEmpty)
@@ -258,26 +307,47 @@ class _DataBody extends StatelessWidget {
     );
   }
 
-  /// A row; long-press peeks at the account's card (Motion & 3D).
+  /// A row (Motion & 3D): long-press peeks at the account's card; swipe
+  /// left opens the statement, swipe right peeks at the card too.
   Widget _row(AccountBalance b, VoidCallback onTap) => Padding(
     padding: const EdgeInsets.only(bottom: AppSpacing.listRowGap),
-    child: LongPressPreview(
-      semanticHint: 'Long press to preview the card',
-      preview: (_) => AccountCard(
-        name: b.account.name,
-        type: b.account.type,
-        colourToken: b.account.colour,
-        balancePaise: b.balance,
-        openingPaise: b.account.openingBalance,
-        archived: b.account.archived,
-      ),
-      child: AccountListRow(
-        name: b.account.name,
-        colourToken: b.account.colour,
-        balancePaise: b.balance,
-        onTap: onTap,
+    child: Builder(
+      builder: (BuildContext context) => SwipeActionRow(
+        id: 'account-${b.account.id}',
+        start: SwipeAction(
+          icon: LucideIcons.eye,
+          label: 'Preview card',
+          colour: AppColors.primaryDeep,
+          onTrigger: () =>
+              LongPressPreview.show(context, (_) => _previewCard(b)),
+        ),
+        end: SwipeAction(
+          icon: LucideIcons.chevronRight,
+          label: 'Open statement',
+          colour: AppColors.primary,
+          onTrigger: onTap,
+        ),
+        child: LongPressPreview(
+          semanticHint: 'Long press to preview the card',
+          preview: (_) => _previewCard(b),
+          child: AccountListRow(
+            name: b.account.name,
+            colourToken: b.account.colour,
+            balancePaise: b.balance,
+            onTap: onTap,
+          ),
+        ),
       ),
     ),
+  );
+
+  static Widget _previewCard(AccountBalance b) => AccountCard(
+    name: b.account.name,
+    type: b.account.type,
+    colourToken: b.account.colour,
+    balancePaise: b.balance,
+    openingPaise: b.account.openingBalance,
+    archived: b.account.archived,
   );
 
   static int _sum(List<AccountBalance> list) {
@@ -304,7 +374,7 @@ class _NetWorth extends ConsumerWidget {
         Text(
           'NET WORTH',
           textAlign: TextAlign.center,
-          style: AppTextStyles.overline.copyWith(color: AppColors.inkMuted),
+          style: AppTextStyles.overline.copyWith(color: AppColors.ink),
         ),
         const SizedBox(height: AppSpacing.space1),
         RollingAmount.text(

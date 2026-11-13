@@ -4,6 +4,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
+import '../../../shared/wow/depth_turn.dart';
 import '../../transactions/domain/transaction_entry.dart';
 import '../application/quick_add_notifier.dart';
 import '../application/quick_add_view.dart';
@@ -13,6 +15,7 @@ import 'quick_add_middle.dart';
 import 'quick_add_save_bar.dart';
 import 'widgets/amount_display.dart';
 import 'widgets/number_pad.dart';
+import 'widgets/quick_add_mascot.dart';
 import 'widgets/type_tabs.dart';
 
 /// The Quick Add sheet content (DESIGN.md Quick Add, sec. 3): close and
@@ -36,19 +39,26 @@ class QuickAddBody extends ConsumerWidget {
         onClose: () => Navigator.of(context).maybePop(),
         onType: n.setType,
       ),
-      amount: AmountDisplay(
-        text: view.state.amount.text,
-        type: view.type,
-        hint: hint?.message,
-        isError: hint != null,
-        refuseTick: view.state.refusalCount,
-        paise: view.state.amount.paise,
-        rollTick: view.state.recentTick,
-        onPaste: n.paste,
+      // The amount turns over in 3D when the type changes.
+      amount: DepthTurn(
+        turnKey: view.type,
+        child: AmountDisplay(
+          text: view.state.amount.text,
+          type: view.type,
+          hint: hint?.message,
+          isError: hint != null,
+          refuseTick: view.state.refusalCount,
+          paise: view.state.amount.paise,
+          rollTick: view.state.recentTick,
+          onPaste: n.paste,
+        ),
       ),
-      middle: IgnorePointer(
-        ignoring: saving,
-        child: QuickAddMiddle(view: view),
+      middle: StaggeredEntrance(
+        index: 1,
+        child: IgnorePointer(
+          ignoring: saving,
+          child: QuickAddMiddle(view: view),
+        ),
       ),
       pad: NumberPad(
         enabled: !saving,
@@ -100,7 +110,8 @@ class _Header extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: AppSpacing.minTapTarget),
+        // Motion & 3D: the monkey watches you add the entry.
+        const QuickAddMascot(size: AppSpacing.minTapTarget),
       ],
     );
   }

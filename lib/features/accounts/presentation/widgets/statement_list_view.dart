@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_radius.dart';
+import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_illustration.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/staggered_entrance.dart';
+import '../../../../shared/wow/long_press_preview.dart';
+import '../../../../shared/wow/swipe_action_row.dart';
+import '../../../../shared/wow/tilt_3d.dart';
+import '../../../mascot/domain/mascot_mood.dart';
+import '../../../mascot/presentation/mascot_moment.dart';
 import '../../../transactions/domain/statement_line.dart';
 import '../../application/account_statement_provider.dart';
 import '../../domain/account.dart';
@@ -29,6 +38,7 @@ class StatementListView extends StatelessWidget {
     required this.months,
     required this.scrollController,
     required this.onRetryMore,
+    this.onDeleteLine,
     super.key,
   });
 
@@ -42,6 +52,33 @@ class StatementListView extends StatelessWidget {
 
   final ScrollController scrollController;
   final VoidCallback onRetryMore;
+
+  /// Swipe-to-delete on a line (Motion & 3D). Null: no swipe.
+  final ValueChanged<StatementLine>? onDeleteLine;
+
+  /// A statement line with swipe-to-delete and a long-press preview.
+  Widget _entryRow(StatementLine line) {
+    final Widget row = LongPressPreview(
+      preview: (_) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.space4),
+        child: StatementRow(line: line, todayKey: todayKey),
+      ),
+      child: StatementRow(line: line, todayKey: todayKey),
+    );
+    final ValueChanged<StatementLine>? delete = onDeleteLine;
+    if (delete == null) return row;
+    return SwipeActionRow(
+      id: line.entry.id,
+      end: SwipeAction(
+        icon: LucideIcons.trash2,
+        label: 'Delete',
+        colour: AppColors.swipeDelete,
+        removesRow: true,
+        onTrigger: () => delete(line),
+      ),
+      child: row,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +109,22 @@ class StatementListView extends StatelessWidget {
                         title: account.name,
                       ),
                       const SizedBox(height: AppSpacing.space6),
-                      Hero(
-                        tag: accountHeroTag(account.id),
-                        child: StatementBalanceCard(
-                          colourToken: account.colour,
-                          balancePaise: s.balance,
-                          rollKey: 'statement:${account.id}',
+                      // Motion & 3D: the card arrives by Hero, tilts and
+                      // lifts on layered shadows.
+                      Tilt3D(
+                        child: Hero(
+                          tag: accountHeroTag(account.id),
+                          child: DecoratedBox(
+                            decoration: const BoxDecoration(
+                              borderRadius: AppRadius.card,
+                              boxShadow: AppShadows.shadowLayered,
+                            ),
+                            child: StatementBalanceCard(
+                              colourToken: account.colour,
+                              balancePaise: s.balance,
+                              rollKey: 'statement:${account.id}',
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -86,9 +133,11 @@ class StatementListView extends StatelessWidget {
                 const SizedBox(height: AppSpacing.space5),
                 StaggeredEntrance(
                   index: 1,
-                  child: StatementChartTile(
-                    months: months.value,
-                    failed: months.hasError && !months.hasValue,
+                  child: Tilt3D(
+                    child: StatementChartTile(
+                      months: months.value,
+                      failed: months.hasError && !months.hasValue,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sectionGap),
@@ -105,6 +154,13 @@ class StatementListView extends StatelessWidget {
                           child: Column(
                             children: <Widget>[
                               AppIllustration('empty_statement'),
+                              SizedBox(height: AppSpacing.space2),
+                              MascotMoment(
+                                reaction: MascotReaction.hello,
+                                say: 'Add one with +',
+                                size: 72,
+                                halo: false,
+                              ),
                               SizedBox(height: AppSpacing.space3),
                               Text(
                                 'Entries you add with + show here.',
@@ -129,7 +185,7 @@ class StatementListView extends StatelessWidget {
             itemCount: rowCount,
             itemBuilder: (BuildContext context, int index) {
               final Widget row = index < s.lines.length
-                  ? StatementRow(line: s.lines[index], todayKey: todayKey)
+                  ? _entryRow(s.lines[index])
                   : OpeningBalanceRow(openingPaise: account.openingBalance);
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.listRowGap),

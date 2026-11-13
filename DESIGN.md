@@ -339,6 +339,22 @@ clipboard and bow tie.
 | Poster | `mascot_poster.svg` stays as the still 2D drawing (illustrations gallery) |
 | 3D model | The `.glb` / WebView viewer is removed (see DECISIONS.md, 2026-11-13). A real model can come back later if it holds 60 fps on iPhone |
 
+## Quality bar (permanent rule)
+**Every new screen must ship with illustration, motion and interaction at
+the Home dashboard's level.** Concretely, a screen (or sheet, dialog,
+state) is done only when it has, where it fits:
+
+| Area | Must have |
+|------|-----------|
+| Illustration | An original vector illustration (`assets/illustrations`, reference palette, pops in with `DepthPopIn`) or an animated mascot moment (`MascotMoment`) |
+| Motion | Staggered entrance; numbers roll (`RollingAmount`); a living header (`AnimatedBlobs` / `WowHeader`) on top-level screens; Hero between related screens; `Shimmer` (via `SkeletonBlock`) while loading |
+| 3D | Cards tilt (`Tilt3D`); headers parallax on scroll; 3D page / step transitions (built into pushed routes and the wizard); layered shadows on lifting cards |
+| Interaction | Haptics on every tap (`AppHaptics`); springy buttons (`SpringPress`, `PrimaryButton`, `PressSurface`); swipe actions on list rows (`SwipeActionRow`); long-press previews (`LongPressPreview`); sheets via `showWowSheet` |
+| Mascot | The Auditor Monkey reacts to what the user does on that screen (`MascotController.react / type / follow`) |
+
+Reduce motion and 60 fps rules below apply to all of it. Track the work
+in a checklist under `docs/plans/` (see `motion-illustration-pass.md`).
+
 ## Motion & 3D
 A premium layer **on top of** the base design above. It adds depth and
 motion only: no base colour, font, size or layout changes. Tokens live in
@@ -357,7 +373,9 @@ motion only: no base colour, font, size or layout changes. Tokens live in
 | `press` | 200ms | Press scale time |
 | `tiltSettle` | 450ms | Tilt follow / spring back |
 | `parallaxBack` / `parallaxMid` | 0.35 / 0.18 | Share of the scroll a header layer moves |
-| `flipDegrees` / `flip` | 70° / 420ms | `FlipSwitcher` page flip |
+| `flipDegrees` / `flip` | 70° / 420ms | `FlipSwitcher` page flip, `DepthTurn` |
+| `pageTurnDegrees` / `pageRecedeScale` | 14° / 0.94 | Pushed page turn-in; page beneath recedes |
+| `sheet` / `sheetOpen` | `Cubic(0.2, 1.1, 0.3, 1)` / 420ms | Bottom sheets rising (`showWowSheet`) |
 | `stepTurnDegrees` | 28° | Wizard step turn (around the centre) |
 | `blobLoop` | 14s | Header blob drift loop |
 | `sceneRestAfter` | 15s | Endless loops (blobs, mascot) rest after the last touch |
@@ -398,6 +416,11 @@ only the cards listed above lift.
 | `Confetti` | 60 palette pieces burst, tumble in 3D and fall; removes itself |
 | `LongPressPreview` | Long press: blur + scrim, the preview springs in; release / tap closes |
 | `DepthPopIn` | One-shot entrance: tips forward 22° and grows from 0.9 (illustrations) |
+| `WowHeader` | Living mint header (blobs, centred `PageHeader` in ink, parallax, mascot corner) for top-level screens |
+| `MascotMoment` | The monkey for a state or step: mood + one reaction + speech, follows the finger |
+| `SwipeActionRow` | Swipe actions on rows (delete removes the row; others spring back), warning haptic at the threshold, screen-reader actions |
+| `showWowSheet` | Every bottom sheet: springy rise, `press` haptic, instant with reduce motion |
+| `DepthTurn` / `ShakeIn` | 3D flip-board turn on a key change / error shake with warning haptic |
 | `AppHaptics` | `tap` (keys, chips, tabs), `press` (buttons, cards), `success` (saved, goal, preview), `warning` (swipe threshold, refused tab, over plan) |
 
 ### Mascot in 2.5D
@@ -432,7 +455,11 @@ only the cards listed above lift.
 | Empty / error / success states | Illustrations pop in with `DepthPopIn`; new `success_goal` illustration |
 | Loading | `SkeletonBlock` shimmers (max 10s) |
 | Bottom bar | Haptic on tab tap; Quick Add springs and gives a `press` haptic |
-| Settings | There is no settings screen yet; it will use the same blocks |
+| Settings | Living header with back and monkey; rows tilt, spring, swipe right to run, long-press to preview; "Say hi" makes the monkey dance with confetti; opened from the gear on Home |
+| Account sheets | Live preview card (tilts) + monkey that perks up while typing and nods on errors; springy sheet |
+| Demo data sheet | Mascot moment, springy button, confetti when demo data loads |
+| Pushed pages | Swing in 14° on the Y axis while the page beneath recedes to 0.94 and tilts away |
+| Errors | Worried monkey moment (`ErrorState`); inline error cards shake in (`ShakeIn`) with a warning haptic |
 
 ### Rules
 - **Reduce motion**: no tilt, parallax, flip, blobs, shimmer, confetti,

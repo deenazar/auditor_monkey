@@ -807,3 +807,37 @@ approved by the owner on 2026-11-12.
   previews); tiles and rows stay flat as the base says.
 - Decided by: owner (direction), lead (build choices).
 
+## 2026-11-13: Every screen at the Home dashboard's level (owner)
+- Decision: Treat Home as the quality bar and audit every screen, sheet,
+  dialog and state against five columns:
+  - Illustration or mascot moment.
+  - Motion.
+  - 3D.
+  - Interaction.
+  - Mascot reaction.
+  The ticked checklist is `docs/plans/motion-illustration-pass.md`. Make
+  it a permanent rule in DESIGN.md ("Quality bar") and CLAUDE.md.
+- New shared pieces instead of per-screen code: `WowHeader`,
+  `MascotMoment`, `SwipeActionRow`, `showWowSheet`, `DepthTurn`,
+  `ShakeIn`, and a 3D turn in the existing page transition. So new
+  screens get the same feel by using the kit.
+- Settings did not exist; added a small Settings screen. It holds only
+  things that need no stored preference:
+  - Demo data.
+  - Say hi.
+  - Motion status (read from the phone).
+  - Licences.
+  - About.
+- Errors use an animated worried monkey (mascot moment) instead of the
+  static `error_generic` drawing; the drawing stays in the gallery as a
+  fallback.
+- Quick Add keeps its own sheet spring (token from session 4); all other
+  sheets use `showWowSheet`. With reduce motion sheets appear at once.
+- `StaggeredEntrance` now keeps semantics while fading
+  (`alwaysIncludeSemantics`). Screen readers no longer miss content
+  during the entrance.
+- Not used where it does not fit:
+  - No mascot in list-only sheets (account picker, categories).
+  - No 3D in the system date picker; it gets haptics only.
+- Decided by: owner (scope), lead (build choices).
+

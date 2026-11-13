@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/app_illustration.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/staggered_entrance.dart';
+import '../../../mascot/presentation/mascot_controller.dart';
 import '../../application/setup_wizard_state.dart';
 import 'wizard_balance_row.dart';
 import 'wizard_frame.dart';
+import 'wizard_scene.dart';
 
 /// Step 2 (W2): today's balance of each picked account. Empty means 0.
 /// Continue needs every amount valid.
 class WizardBalancesStep extends StatelessWidget {
   const WizardBalancesStep({
+    this.mascot,
     required this.state,
     required this.onBack,
     required this.onAmountChanged,
@@ -33,6 +35,9 @@ class WizardBalancesStep extends StatelessWidget {
 
   final VoidCallback onContinue;
 
+  /// The wizard's Auditor Monkey (perks up while you type).
+  final MascotController? mascot;
+
   @override
   Widget build(BuildContext context) {
     final List<WizardAccount> picked = state.selected;
@@ -42,26 +47,28 @@ class WizardBalancesStep extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const StaggeredEntrance(
+          StaggeredEntrance(
             index: 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Center(
-                  child: AppIllustration(
-                    'wizard_balances',
-                    size: AppIllustrationSize.wizard,
-                  ),
+                WizardScene(
+                  illustration: 'wizard_balances',
+                  say: "Today's balances, please",
+                  mascot: mascot,
                 ),
-                SizedBox(height: AppSpacing.space3),
-                PageHeader(eyebrow: 'Step 2 of 3', title: 'Opening balances'),
-                SizedBox(height: AppSpacing.space3),
-                Text(
+                const SizedBox(height: AppSpacing.space3),
+                const PageHeader(
+                  eyebrow: 'Step 2 of 3',
+                  title: 'Opening balances',
+                ),
+                const SizedBox(height: AppSpacing.space3),
+                const Text(
                   'Your balance today. Leave empty for ₹0.00.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption,
                 ),
-                SizedBox(height: AppSpacing.space6),
+                const SizedBox(height: AppSpacing.space6),
               ],
             ),
           ),

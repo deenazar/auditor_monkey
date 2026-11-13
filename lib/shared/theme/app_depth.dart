@@ -32,6 +32,15 @@ abstract final class AppDepth {
   static const double flipDegrees = 70;
   static const Duration flip = Duration(milliseconds: 420);
 
+  /// Pushed pages swing in this far (Y axis, around their centre); the
+  /// page underneath recedes to [pageRecedeScale].
+  static const double pageTurnDegrees = 14;
+  static const double pageRecedeScale = 0.94;
+
+  /// Sheets rise with a slight overshoot: cubic-bezier(.2,1.1,.3,1).
+  static const Curve sheet = Cubic(0.2, 1.1, 0.3, 1);
+  static const Duration sheetOpen = Duration(milliseconds: 420);
+
   /// Wizard steps turn this far in 3D (around their centre) as they move.
   static const double stepTurnDegrees = 28;
 

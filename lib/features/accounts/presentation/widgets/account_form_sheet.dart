@@ -3,13 +3,22 @@ import 'package:flutter/services.dart';
 
 import '../../../../features/setup/domain/opening_balance_input.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_radius.dart';
+import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/money_input_formatter.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/staggered_entrance.dart';
+import '../../../../shared/wow/haptics.dart';
+import '../../../../shared/wow/tilt_3d.dart';
+import '../../../mascot/domain/mascot_mood.dart';
+import '../../../mascot/presentation/mascot_controller.dart';
+import '../../../mascot/presentation/mascot_moment.dart';
 import '../../domain/account.dart';
 import '../../domain/account_form_rules.dart';
+import 'account_card.dart';
 import 'account_colours.dart';
 import 'account_form_values.dart';
 import 'account_type_chips.dart';
@@ -62,6 +71,9 @@ const AccountType _defaultType = AccountType.bank;
 const String _defaultColour = 'primary';
 
 class _AccountFormSheetState extends State<AccountFormSheet> {
+  /// The sheet's Auditor Monkey (Motion & 3D): perks up while you type,
+  /// hops when you pick, nods when something is wrong.
+  final MascotController _monkey = MascotController();
   late final TextEditingController _name = TextEditingController(
     text: widget.initial?.name ?? '',
   );
@@ -92,6 +104,7 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
   @override
   void dispose() {
     _balanceFocus.removeListener(_onBalanceFocus);
+    _monkey.dispose();
     _balanceFocus.dispose();
     _name.dispose();
     _balance.dispose();
@@ -141,7 +154,11 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
       _attempted = true;
       _serverError = null;
     });
-    if (!_valid) return;
+    if (!_valid) {
+      AppHaptics.warning();
+      _monkey.react(MascotReaction.sad, text: 'Check the fields');
+      return;
+    }
     setState(() => _saving = true);
     final AccountFormError? error = await widget.onSave(_values());
     if (!mounted) return;
@@ -177,10 +194,44 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(
-              widget.title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.title,
+            StaggeredEntrance(
+              index: 0,
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.title,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.space3),
+            // Live preview of the card being made: tilts, and changes as
+            // the name, type, colour and balance change; the monkey sits
+            // beside it and reacts.
+            StaggeredEntrance(
+              index: 1,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Expanded(
+                    child: _PreviewCard(
+                      values: _values(),
+                      opening: _opening.paise ?? 0,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.space2),
+                  MascotMoment(
+                    controller: _monkey,
+                    reaction: MascotReaction.hello,
+                    size: 72,
+                    halo: false,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: AppSpacing.space5),
             AppTextField(
@@ -189,7 +240,10 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
               maxLength: accountNameMaxLength,
               errorText: _errorFor('name'),
               textInputAction: TextInputAction.next,
-              onChanged: (_) => setState(() => _nameTouched = true),
+              onChanged: (_) {
+                _monkey.type();
+                setState(() => _nameTouched = true);
+              },
             ),
             const SizedBox(height: AppSpacing.space5),
             const _Caption('Type'),
@@ -197,6 +251,8 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
             AccountTypeChips(
               selected: _type,
               onChanged: (AccountType t) => setState(() {
+                AppHaptics.tap();
+                _monkey.react(MascotReaction.add);
                 _type = t;
                 if (t != AccountType.card) _owes = false;
               }),
@@ -207,7 +263,11 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
             ColourSwatchPicker(
               tokens: _colourChoices,
               selected: _colour,
-              onChanged: (String token) => setState(() => _colour = token),
+              onChanged: (String token) {
+                AppHaptics.tap();
+                _monkey.react(MascotReaction.spin);
+                setState(() => _colour = token);
+              },
             ),
             if (widget.showOpeningBalance) ...<Widget>[
               const SizedBox(height: AppSpacing.space5),
@@ -224,7 +284,10 @@ class _AccountFormSheetState extends State<AccountFormSheet> {
                   MoneyInputFormatter(),
                 ],
                 errorText: _errorFor('balance'),
-                onChanged: (_) => setState(() => _balanceTouched = true),
+                onChanged: (_) {
+                  _monkey.type();
+                  setState(() => _balanceTouched = true);
+                },
               ),
               const SizedBox(height: AppSpacing.space2),
               const _Caption('Your balance today. Leave empty for ₹0.00.'),
@@ -295,6 +358,44 @@ class _RemoveButton extends StatelessWidget {
             child: Text(
               'Remove account',
               style: AppTextStyles.bodyStrong.copyWith(color: AppColors.danger),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The account card as it will look, scaled down, tilting under the finger.
+class _PreviewCard extends StatelessWidget {
+  const _PreviewCard({required this.values, required this.opening});
+
+  final AccountFormValues values;
+  final int opening;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Tilt3D(
+        child: SizedBox(
+          height: 112,
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: SizedBox(
+              width: 320,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  borderRadius: AppRadius.card,
+                  boxShadow: AppShadows.shadowLayered,
+                ),
+                child: AccountCard(
+                  name: values.name.isEmpty ? 'New account' : values.name,
+                  type: values.type,
+                  colourToken: values.colour,
+                  balancePaise: opening,
+                  openingPaise: opening,
+                ),
+              ),
             ),
           ),
         ),

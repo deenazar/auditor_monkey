@@ -1,3 +1,4 @@
+import 'package:auditor_monkey/features/mascot/presentation/auditor_monkey.dart';
 import 'package:auditor_monkey/shared/widgets/error_state.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,7 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../support/widget_harness.dart';
 
 void main() {
-  testWidgets('shows the error illustration, title and message', (
+  testWidgets('shows the worried mascot, title and message', (
     WidgetTester tester,
   ) async {
     await pumpThemed(
@@ -18,7 +19,9 @@ void main() {
     );
     expect(find.text("We can't load accounts"), findsOneWidget);
     expect(find.text('Check your connection and try again.'), findsOneWidget);
-    expect(find.byType(SvgPicture), findsOneWidget);
+    // Motion & 3D: an animated mascot moment instead of the drawing.
+    expect(find.byType(AuditorMonkey), findsOneWidget);
+    expect(find.byType(SvgPicture), findsNothing);
     expect(find.byIcon(LucideIcons.triangleAlert), findsNothing);
   });
 

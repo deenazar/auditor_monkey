@@ -5,19 +5,23 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/app_illustration.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/staggered_entrance.dart';
+import '../../../../shared/wow/spring_press.dart';
+import '../../../../shared/wow/tilt_3d.dart';
+import '../../../mascot/presentation/mascot_controller.dart';
 import '../../application/setup_wizard_state.dart';
 import 'account_pick_tile.dart';
 import 'wizard_frame.dart';
+import 'wizard_scene.dart';
 
 /// Step 1 (W1): the account list. Presets start selected; the pencil edits
 /// a row, "Add another account" adds one. Continue needs at least one
 /// account picked.
 class WizardPickStep extends StatelessWidget {
   const WizardPickStep({
+    this.mascot,
     required this.accounts,
     required this.selectedCount,
     required this.canContinue,
@@ -38,6 +42,9 @@ class WizardPickStep extends StatelessWidget {
   final VoidCallback onAdd;
   final VoidCallback onContinue;
 
+  /// The wizard's Auditor Monkey (reacts to picks).
+  final MascotController? mascot;
+
   @override
   Widget build(BuildContext context) {
     return WizardFrame(
@@ -46,30 +53,35 @@ class WizardPickStep extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const StaggeredEntrance(
+          StaggeredEntrance(
             index: 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Center(
-                  child: AppIllustration(
-                    'wizard_pick',
-                    size: AppIllustrationSize.wizard,
-                  ),
+                WizardScene(
+                  illustration: 'wizard_pick',
+                  say: 'Pick the ones you use',
+                  mascot: mascot,
                 ),
-                SizedBox(height: AppSpacing.space3),
-                PageHeader(eyebrow: 'Step 1 of 3', title: 'Your accounts'),
-                SizedBox(height: AppSpacing.space6),
+                const SizedBox(height: AppSpacing.space3),
+                const PageHeader(
+                  eyebrow: 'Step 1 of 3',
+                  title: 'Your accounts',
+                ),
+                const SizedBox(height: AppSpacing.space6),
               ],
             ),
           ),
           for (int i = 0; i < accounts.length; i++) ...<Widget>[
             StaggeredEntrance(
               index: i + 1,
-              child: AccountPickTile(
-                account: accounts[i],
-                onToggle: () => onToggle(accounts[i].key),
-                onEdit: () => onEdit(accounts[i]),
+              child: Tilt3D(
+                maxDegrees: 5,
+                child: AccountPickTile(
+                  account: accounts[i],
+                  onToggle: () => onToggle(accounts[i].key),
+                  onEdit: () => onEdit(accounts[i]),
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.space3),
@@ -80,7 +92,7 @@ class WizardPickStep extends StatelessWidget {
             button: true,
             onTap: onAdd,
             excludeSemantics: true,
-            child: InkWell(
+            child: SpringPress(
               onTap: onAdd,
               child: SizedBox(
                 height: AppSpacing.minTapTarget,

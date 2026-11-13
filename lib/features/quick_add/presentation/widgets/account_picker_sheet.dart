@@ -9,7 +9,10 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
+import '../../../../shared/widgets/staggered_entrance.dart';
 import '../../../../shared/wow/haptics.dart';
+import '../../../../shared/wow/tilt_3d.dart';
+import '../../../../shared/wow/wow_sheet.dart';
 import '../../../accounts/presentation/widgets/account_colours.dart';
 import 'quick_add_view_models.dart';
 
@@ -36,18 +39,13 @@ class AccountPickerSheet extends StatelessWidget {
     required String? selectedId,
     String? disabledId,
   }) {
-    return showModalBottomSheet<String>(
+    return showWowSheet<String>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
-      sheetAnimationStyle: AnimationStyle(
-        duration: AppMotion.resolve(context, AppMotion.durationMedium),
-        reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),
-        curve: AppMotion.curveEnter,
-        reverseCurve: AppMotion.curveExit,
-      ),
+      animationStyle: wowSheetAnimation(context),
       builder: (BuildContext sheetContext) => AccountPickerSheet(
         title: title,
         accounts: accounts,
@@ -87,12 +85,19 @@ class AccountPickerSheet extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  for (final AccountOption account in accounts) ...<Widget>[
-                    _AccountRow(
-                      account: account,
-                      selected: account.id == selectedId,
-                      disabled: account.id == disabledId,
-                      onTap: () => onSelected(account.id),
+                  for (int i = 0; i < accounts.length; i++) ...<Widget>[
+                    StaggeredEntrance(
+                      index: i,
+                      child: Tilt3D(
+                        maxDegrees: 4,
+                        haptic: false,
+                        child: _AccountRow(
+                          account: accounts[i],
+                          selected: accounts[i].id == selectedId,
+                          disabled: accounts[i].id == disabledId,
+                          onTap: () => onSelected(accounts[i].id),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.listRowGap),
                   ],

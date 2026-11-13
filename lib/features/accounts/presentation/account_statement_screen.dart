@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../app/router.dart';
+import '../../../core/logging/logger_provider.dart';
 import '../../../core/utils/today_provider.dart';
 import '../../../core/utils/validation_failure.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -14,7 +15,12 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../../../shared/widgets/error_state.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../mascot/domain/mascot_mood.dart';
+import '../../mascot/presentation/mascot_controller.dart';
+import '../../mascot/presentation/mascot_moment.dart';
 import '../../setup/domain/opening_balance_input.dart';
+import '../../transactions/application/transactions_providers.dart';
+import '../../transactions/data/transactions_repository.dart';
 import '../../transactions/domain/statement_line.dart';
 import '../application/account_statement_provider.dart';
 import '../application/accounts_providers.dart';
@@ -48,6 +54,7 @@ const double _loadMoreAt = 0.8;
 class _AccountStatementScreenState
     extends ConsumerState<AccountStatementScreen> {
   final ScrollController _scroll = ScrollController();
+  final MascotController _monkey = MascotController();
 
   @override
   void initState() {
@@ -58,6 +65,7 @@ class _AccountStatementScreenState
   @override
   void dispose() {
     _scroll.dispose();
+    _monkey.dispose();
     super.dispose();
   }
 
@@ -108,9 +116,63 @@ class _AccountStatementScreenState
       await ref
           .read(accountsRepositoryProvider)
           .editAccount(id, toAccountDetails(values));
+      _monkey.react(MascotReaction.check, text: 'Saved!');
       return null;
     } on DataFailure catch (failure) {
       return accountFormErrorFrom(failure);
+    }
+  }
+
+  /// Swipe-to-delete (soft delete) with Undo in the toast.
+  Future<void> _deleteLine(StatementLine line) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final TransactionsRepository repo = ref.read(
+      transactionsRepositoryProvider,
+    );
+    ref.read(loggerProvider).info('statement', 'entry deleted by swipe');
+    _monkey.react(MascotReaction.del);
+    try {
+      await repo.softDelete(line.entry.id);
+    } catch (error) {
+      ref
+          .read(loggerProvider)
+          .error('statement', 'swipe delete failed', error: error);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not delete. Try again.')),
+      );
+      return;
+    }
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Entry removed'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () async {
+              try {
+                await repo.restore(line.entry.id);
+              } catch (error) {
+                ref
+                    .read(loggerProvider)
+                    .error('statement', 'undo failed', error: error);
+              }
+            },
+          ),
+        ),
+      );
+  }
+
+  /// Pull-to-refresh: re-reads the statement and its chart.
+  Future<void> _refresh() async {
+    ref.read(loggerProvider).info('statement', 'pull to refresh');
+    _monkey.react(MascotReaction.spin);
+    ref.invalidate(accountStatementProvider(widget.accountId));
+    ref.invalidate(accountMonthlyTotalsProvider(widget.accountId));
+    try {
+      await ref.read(accountStatementProvider(widget.accountId).future);
+    } catch (_) {
+      // The error view shows itself.
     }
   }
 
@@ -137,6 +199,7 @@ class _AccountStatementScreenState
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             _TopBar(
+              monkey: _monkey,
               onBack: _back,
               onEdit: data == null ? null : () => _openEdit(data.account),
             ),
@@ -152,17 +215,23 @@ class _AccountStatementScreenState
                           accountStatementProvider(widget.accountId),
                         ),
                       ),
-                data: (AccountStatementState state) => StatementListView(
-                  state: state,
-                  todayKey: todayKey,
-                  months: months,
-                  scrollController: _scroll,
-                  onRetryMore: () => unawaited(
-                    ref
-                        .read(
-                          accountStatementProvider(widget.accountId).notifier,
-                        )
-                        .loadMore(),
+                data: (AccountStatementState state) => RefreshIndicator(
+                  onRefresh: _refresh,
+                  color: AppColors.primaryDeep,
+                  backgroundColor: AppColors.background,
+                  child: StatementListView(
+                    onDeleteLine: _deleteLine,
+                    state: state,
+                    todayKey: todayKey,
+                    months: months,
+                    scrollController: _scroll,
+                    onRetryMore: () => unawaited(
+                      ref
+                          .read(
+                            accountStatementProvider(widget.accountId).notifier,
+                          )
+                          .loadMore(),
+                    ),
                   ),
                 ),
               ),
@@ -176,9 +245,13 @@ class _AccountStatementScreenState
 
 /// Back on the left, "Edit account" on the right (44pt targets).
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onBack, this.onEdit});
+  const _TopBar({required this.onBack, required this.monkey, this.onEdit});
 
   final VoidCallback onBack;
+
+  /// The small Auditor Monkey in the middle of the bar; reacts to saves,
+  /// deletes and refreshes on this screen.
+  final MascotController monkey;
   final VoidCallback? onEdit;
 
   @override
@@ -198,6 +271,13 @@ class _TopBar extends StatelessWidget {
               size: AppSizes.iconNav,
               color: AppColors.ink,
             ),
+          ),
+          const Spacer(),
+          MascotMoment(
+            controller: monkey,
+            reaction: MascotReaction.hello,
+            size: 40,
+            halo: false,
           ),
           const Spacer(),
           if (onEdit != null)
@@ -223,6 +303,12 @@ class _NotAvailable extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: LucideIcons.wallet,
+      mascot: const MascotMoment(
+        mood: MascotMood.worried,
+        reaction: MascotReaction.sad,
+        say: "Hmm, can't find it",
+        size: 120,
+      ),
       title: "This account isn't available",
       message: 'It may have been removed, or the link is wrong.',
       action: PrimaryButton(

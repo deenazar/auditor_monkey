@@ -34,7 +34,14 @@ Never write feature code before I approve the plan.
 - Validate all inputs (validation skill)
 - Meet performance targets (performance skill)
 - Look good, feel interactive, use purposeful motion (ui-ux-motion skill)
+- Ship with illustration, motion and interaction at the Home
+  dashboard's level (DESIGN.md "Quality bar" rule; checklist in
+  docs/plans/motion-illustration-pass.md)
 - Be tested and reviewed (qa-testing + code-review skills)
+
+## Design rule (permanent)
+Every new screen must ship with illustration, motion and interaction at
+the Home dashboard's level.
 
 ## Communication
 Simple English, short summaries.

@@ -73,8 +73,10 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
       child: AnimatedBuilder(
         animation: anim,
         child: widget.child,
+        // Screen readers get the content at once, even while it fades in.
         builder: (context, child) => Opacity(
           opacity: anim.value,
+          alwaysIncludeSemantics: true,
           child: Transform.translate(
             offset: Offset(0, (1 - anim.value) * AppMotion.cardEnterOffset),
             child: child,
