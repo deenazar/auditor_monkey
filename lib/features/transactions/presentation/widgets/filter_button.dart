@@ -6,14 +6,13 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
-import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/wow/spring_press.dart';
 import '../../application/transactions_list_providers.dart';
 import '../../domain/transaction_filter.dart';
 import '../filter_sheet.dart';
 
-/// The filter button: a card square with an active-facet count badge. Opens
+/// The filter button: a tile square with an active-facet count badge. Opens
 /// the filter sheet.
 class TransactionsFilterButton extends ConsumerWidget {
   const TransactionsFilterButton({super.key});
@@ -23,21 +22,21 @@ class TransactionsFilterButton extends ConsumerWidget {
     final int count = ref.watch(
       transactionFilterProvider.select((TransactionFilter f) => f.facetCount),
     );
-    return PressScale(
+    return SpringPress(
       semanticLabel: count == 0 ? 'Filters' : 'Filters, $count active',
       onTap: () => showTransactionFilterSheet(context),
       child: SizedBox.square(
-        dimension: AppSpacing.minTapTarget + 4,
+        dimension: AppSizes.fieldHeight,
         child: Stack(
           clipBehavior: Clip.none,
           children: <Widget>[
             const Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.card,
+                  color: AppColors.tile,
                   borderRadius: AppRadius.field,
                   border: Border.fromBorderSide(
-                    BorderSide(color: AppColors.line),
+                    BorderSide(color: AppColors.divider),
                   ),
                 ),
                 child: Center(
@@ -62,11 +61,13 @@ class TransactionsFilterButton extends ConsumerWidget {
                     color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: Text(
-                    '$count',
-                    style: AppTextStyles.overline.copyWith(
-                      fontSize: 10,
-                      color: AppColors.onDark,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      '$count',
+                      style: AppTextStyles.overline.copyWith(
+                        fontSize: 10,
+                        color: AppColors.ink,
+                      ),
                     ),
                   ),
                 ),

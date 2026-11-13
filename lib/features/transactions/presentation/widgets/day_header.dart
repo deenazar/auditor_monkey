@@ -8,7 +8,7 @@ import '../../domain/transaction_list_item.dart';
 import '../transactions_format.dart';
 
 /// A day's heading in the list: `Today`, `Yesterday` or `Thu 12 Nov`, with
-/// the day's spent (ink, `-₹`) and income (success, `+₹`) on the right. The
+/// the day's spent (ink, `-₹`) and income (accentText, `+₹`) on the right. The
 /// whole-day total comes from the list state, so it is right even for rows
 /// that are not loaded yet.
 class DayHeader extends StatelessWidget {
@@ -37,10 +37,7 @@ class DayHeader extends StatelessWidget {
           spacing: AppSpacing.space2,
           runSpacing: AppSpacing.space1,
           children: <Widget>[
-            Text(
-              label,
-              style: AppTextStyles.sectionTitle.copyWith(fontSize: 14),
-            ),
+            Text(label, style: AppTextStyles.bodyStrong),
             // Totals sit beside the label when they fit, on a second line
             // under it when they do not (never shrunk).
             if (total.expense > 0 || total.income > 0)
@@ -50,7 +47,7 @@ class DayHeader extends StatelessWidget {
                   if (total.expense > 0)
                     Text(
                       '-${formatPaise(total.expense)}',
-                      style: AppTextStyles.amountSmall.copyWith(
+                      style: AppTextStyles.caption.copyWith(
                         color: AppColors.ink,
                       ),
                     ),
@@ -59,8 +56,8 @@ class DayHeader extends StatelessWidget {
                   if (total.income > 0)
                     Text(
                       '+${formatPaise(total.income)}',
-                      style: AppTextStyles.amountSmall.copyWith(
-                        color: AppColors.success,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.accentText,
                       ),
                     ),
                 ],

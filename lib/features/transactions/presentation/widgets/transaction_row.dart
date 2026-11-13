@@ -1,19 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
+import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/category_icon_circle.dart';
+import '../../../../shared/wow/spring_press.dart';
+import '../../../../shared/wow/swipe_action_row.dart';
 import '../../domain/transaction_entry.dart';
 import '../../domain/transaction_list_item.dart';
 import '../transactions_format.dart';
-import 'swipe_row.dart';
 
-/// One entry in the list (Home's row, with swipe actions). Tap opens the
-/// detail. Screen readers get the full label and the Edit and Delete
+/// One entry in the list (DESIGN "List row", with swipe actions from
+/// `SwipeActionRow`: right = Edit, left = Delete). Tap opens the detail. Screen readers get the full label and the Edit and Delete
 /// actions, so nothing depends on the swipe.
 class TransactionRow extends StatelessWidget {
   const TransactionRow({
@@ -28,7 +31,7 @@ class TransactionRow extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
 
-  /// Deletes without the swipe animation (used by the screen reader action).
+  /// Deletes the entry. `true` once it is removed.
   final Future<bool> Function() onDelete;
 
   @override
@@ -36,7 +39,7 @@ class TransactionRow extends StatelessWidget {
     final TransactionEntry e = item.entry;
     final Color colour = switch (e.type) {
       TransactionType.expense => AppColors.ink,
-      TransactionType.income => AppColors.success,
+      TransactionType.income => AppColors.accentText,
       TransactionType.transfer => AppColors.inkMuted,
     };
     return Semantics(
@@ -49,22 +52,34 @@ class TransactionRow extends StatelessWidget {
         const CustomSemanticsAction(label: 'Delete'): () => onDelete(),
       },
       excludeSemantics: true,
-      child: SwipeRow(
-        onEdit: onEdit,
-        onDelete: onDelete,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: AppRadius.card,
-            border: Border.all(color: AppColors.line),
-          ),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
+      child: SwipeActionRow(
+        id: e.id,
+        start: SwipeAction(
+          icon: LucideIcons.pencil,
+          label: 'Edit',
+          colour: AppColors.primaryDeep,
+          onTrigger: onEdit,
+        ),
+        end: SwipeAction(
+          icon: LucideIcons.trash2,
+          label: 'Delete',
+          colour: AppColors.swipeDelete,
+          removesRow: true,
+          onTrigger: () => unawaited(onDelete()),
+        ),
+        // Opaque, so the swipe panel only shows where the row has moved.
+        child: ColoredBox(
+          color: AppColors.background,
+          child: SpringPress(
+            scale: 0.98,
             onTap: onTap,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 60),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(9, 9, 14, 9),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.space1,
+                  vertical: AppSpacing.space2,
+                ),
                 child: Row(
                   children: <Widget>[
                     if (e.type == TransactionType.transfer)
@@ -78,7 +93,7 @@ class TransactionRow extends StatelessWidget {
                                 ? 'income'
                                 : 'other'),
                       ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.space3),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,26 +107,21 @@ class TransactionRow extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.bodyStrong,
                             ),
-                          const SizedBox(height: 2),
                           Text(
                             rowMeta(item).join(' · '),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.caption.copyWith(
-                              fontSize: 11.5,
-                            ),
+                            style: AppTextStyles.caption,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.space2),
                     Text(
                       signedAmount(e),
                       maxLines: 1,
-                      style: AppTextStyles.amount.copyWith(
-                        fontSize: 14,
-                        color: colour,
-                      ),
+                      style: AppTextStyles.tabular(AppTextStyles.bodyStrong)
+                          .copyWith(color: colour),
                     ),
                   ],
                 ),
@@ -167,13 +177,16 @@ class _TransferBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const DecoratedBox(
-      decoration: BoxDecoration(color: AppColors.fill, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: AppColors.navIndicator,
+        shape: BoxShape.circle,
+      ),
       child: SizedBox.square(
         dimension: AppSizes.iconCircle,
         child: Icon(
           LucideIcons.arrowLeftRight,
           size: AppSizes.iconInline,
-          color: AppColors.inkMuted,
+          color: AppColors.ink,
         ),
       ),
     );

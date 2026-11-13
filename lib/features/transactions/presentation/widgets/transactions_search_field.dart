@@ -83,11 +83,11 @@ class _TransactionsSearchFieldState
     });
     final bool hasText = _controller.text.isNotEmpty;
     return Container(
-      height: AppSizes.fieldHeight - 4,
+      height: AppSizes.fieldHeight,
       decoration: const BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.tile,
         borderRadius: AppRadius.field,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.line)),
+        border: Border.fromBorderSide(BorderSide(color: AppColors.divider)),
       ),
       child: Row(
         children: <Widget>[

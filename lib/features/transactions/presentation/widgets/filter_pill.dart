@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/wow/spring_press.dart';
 
 /// A selectable pill in the filter sheet (44 pt tall). Selected: [colour]
 /// (or `ink`) fill with matching text; otherwise a white pill with a line.
@@ -31,22 +32,19 @@ class FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color fill = selected ? (colour ?? AppColors.ink) : AppColors.card;
+    final Color fill = selected ? (colour ?? AppColors.ink) : AppColors.tile;
     // White on `ink`; on a light account colour the text is `ink`.
     final Color text = !selected
         ? AppColors.ink
         : (colour != null && colour!.computeLuminance() > 0.5)
         ? AppColors.ink
         : AppColors.onDark;
-    return Semantics(
-      button: true,
+    return SpringPress(
+      semanticLabel: label,
       selected: selected,
-      label: label,
-      excludeSemantics: true,
       onTap: onTap,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+      scale: 0.95,
+      child: ExcludeSemantics(
         child: AnimatedContainer(
           duration: AppMotion.resolve(context, AppMotion.durationMedium),
           curve: AppMotion.curveEnter,
@@ -56,7 +54,7 @@ class FilterPill extends StatelessWidget {
             color: fill,
             borderRadius: AppRadius.pill,
             border: Border.all(
-              color: selected ? fill : AppColors.line,
+              color: selected ? fill : AppColors.divider,
               width: AppSizes.fieldLineWidth / 2,
             ),
           ),

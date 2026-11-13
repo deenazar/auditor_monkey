@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_depth.dart';
 import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_shadows.dart';
@@ -9,101 +10,25 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/category_icon_circle.dart';
+import '../../../../shared/wow/tilt_3d.dart';
 import '../../../accounts/presentation/widgets/account_colours.dart';
 import '../../domain/transaction_entry.dart';
 import '../../domain/transaction_list_item.dart';
 import '../transactions_format.dart';
 
-/// The entry's hero card. It tilts in 3D as the finger moves over it and
-/// springs back on release (off with reduce motion). Transfers show the
-/// From and To accounts in their colours with an arrow that slides in.
-class DetailHero extends StatefulWidget {
+/// The entry's hero card. It tilts in 3D under the finger and springs back
+/// on release (`Tilt3D`, off with reduce motion). Transfers show the From
+/// and To accounts in their colours with an arrow that slides in.
+class DetailHero extends StatelessWidget {
   const DetailHero({required this.item, super.key});
 
   final TransactionListItem item;
 
-  /// Largest tilt in radians (about 7 degrees).
-  static const double maxTilt = 0.12;
-
-  @override
-  State<DetailHero> createState() => _DetailHeroState();
-}
-
-class _DetailHeroState extends State<DetailHero>
-    with SingleTickerProviderStateMixin {
-  /// x = rotation around Y (left-right), y = rotation around X (up-down).
-  final ValueNotifier<Offset> _tilt = ValueNotifier<Offset>(Offset.zero);
-  late final AnimationController _back = AnimationController(
-    vsync: this,
-    duration: AppMotion.durationSlow,
-  )..addListener(_onBack);
-  Offset _from = Offset.zero;
-  Size _size = Size.zero;
-
-  @override
-  void dispose() {
-    _back.dispose();
-    _tilt.dispose();
-    super.dispose();
-  }
-
-  void _onBack() {
-    final double t = AppMotion.springy.transform(_back.value);
-    _tilt.value = _from * (1 - t);
-  }
-
-  void _onPanUpdate(DragUpdateDetails d) {
-    if (_size.isEmpty) return;
-    _back.stop();
-    final double nx = (d.localPosition.dx / _size.width * 2 - 1).clamp(
-      -1.0,
-      1.0,
-    );
-    final double ny = (d.localPosition.dy / _size.height * 2 - 1).clamp(
-      -1.0,
-      1.0,
-    );
-    _tilt.value = Offset(nx * DetailHero.maxTilt, -ny * DetailHero.maxTilt);
-  }
-
-  void _springBack() {
-    _from = _tilt.value;
-    if (_from == Offset.zero) return;
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _tilt.value = Offset.zero;
-      return;
-    }
-    _back.forward(from: 0);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final bool reduce = AppMotion.reduceMotion(context);
-    final Widget card = _HeroCard(item: widget.item);
-    if (reduce) return card;
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints c) {
-        _size = Size(c.maxWidth, c.maxHeight.isFinite ? c.maxHeight : 260);
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanUpdate: _onPanUpdate,
-          onPanEnd: (DragEndDetails _) => _springBack(),
-          onPanCancel: _springBack,
-          child: ValueListenableBuilder<Offset>(
-            valueListenable: _tilt,
-            builder: (BuildContext context, Offset tilt, Widget? child) =>
-                Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.0012)
-                    ..rotateX(tilt.dy)
-                    ..rotateY(tilt.dx),
-                  child: child,
-                ),
-            child: card,
-          ),
-        );
-      },
+    return Tilt3D(
+      borderRadius: AppRadius.card,
+      child: _HeroCard(item: item),
     );
   }
 }
@@ -118,7 +43,7 @@ class _HeroCard extends StatelessWidget {
     final TransactionEntry e = item.entry;
     final Color amountColour = switch (e.type) {
       TransactionType.expense => AppColors.ink,
-      TransactionType.income => AppColors.success,
+      TransactionType.income => AppColors.accentText,
       TransactionType.transfer => AppColors.inkMuted,
     };
     final String kind = kindLabel(e.type).toUpperCase();
@@ -126,10 +51,9 @@ class _HeroCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.space5),
       decoration: const BoxDecoration(
-        color: AppColors.card,
-        borderRadius: AppRadius.hero,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.line)),
-        boxShadow: AppShadows.shadowFloat,
+        color: AppColors.background,
+        borderRadius: AppRadius.card,
+        boxShadow: AppShadows.shadowLayered,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +63,7 @@ class _HeroCard extends StatelessWidget {
               if (item.isTransfer)
                 const DecoratedBox(
                   decoration: BoxDecoration(
-                    color: AppColors.fill,
+                    color: AppColors.navIndicator,
                     shape: BoxShape.circle,
                   ),
                   child: SizedBox.square(
@@ -147,7 +71,7 @@ class _HeroCard extends StatelessWidget {
                     child: Icon(
                       LucideIcons.arrowLeftRight,
                       size: AppSizes.iconInline,
-                      color: AppColors.inkMuted,
+                      color: AppColors.ink,
                     ),
                   ),
                 )
@@ -217,7 +141,7 @@ class _TransferFlow extends StatelessWidget {
         TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0, end: 1),
           duration: AppMotion.resolve(context, AppMotion.durationSlow),
-          curve: AppMotion.springy,
+          curve: AppDepth.springy,
           builder: (BuildContext context, double t, Widget? child) => Opacity(
             opacity: t,
             child: Transform.translate(

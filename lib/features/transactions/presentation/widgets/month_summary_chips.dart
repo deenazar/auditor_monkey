@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/rolling_amount.dart';
+import '../../../../shared/widgets/stat_tile.dart';
 import '../../../home/domain/home_format.dart';
-import '../../../home/presentation/widgets/stat_chip.dart';
 import '../../application/transactions_list_providers.dart';
 import '../../domain/transaction_list_item.dart';
 
-/// Spent, Income and Net of [month] (`YYYY-MM`) as three glass chips. The
-/// amounts roll when the month changes while the list is scrolled.
+/// Spent, Income and Net of [month] (`YYYY-MM`) as three compact stat tiles.
+/// The amounts roll when the month changes while the list is scrolled.
 class MonthSummaryChips extends ConsumerWidget {
   const MonthSummaryChips({required this.month, super.key});
 
@@ -20,18 +22,26 @@ class MonthSummaryChips extends ConsumerWidget {
     final MonthSummary summary =
         ref.watch(monthSummaryProvider(month)).value ??
         MonthSummary(month: month);
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+    return Row(
       children: <Widget>[
-        _Amount(paise: summary.spent, label: 'Spent'),
-        _Amount(paise: summary.income, label: 'Income'),
-        _Amount(
-          paise: summary.net,
-          label: 'Net',
-          valueColour: summary.net < 0
-              ? AppColors.todayBarTop
-              : AppColors.glassInk,
+        Expanded(
+          child: _Amount(paise: summary.spent, label: 'SPENT'),
+        ),
+        const SizedBox(width: AppSpacing.space2),
+        Expanded(
+          child: _Amount(
+            paise: summary.income,
+            label: 'INCOME',
+            colour: AppColors.accentText,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.space2),
+        Expanded(
+          child: _Amount(
+            paise: summary.net,
+            label: 'NET',
+            colour: summary.net < 0 ? AppColors.danger : AppColors.ink,
+          ),
         ),
       ],
     );
@@ -42,21 +52,31 @@ class _Amount extends StatelessWidget {
   const _Amount({
     required this.paise,
     required this.label,
-    this.valueColour = AppColors.glassInk,
+    this.colour = AppColors.ink,
   });
 
   final int paise;
   final String label;
-  final Color valueColour;
+  final Color colour;
 
   @override
   Widget build(BuildContext context) {
-    return RollingAmount(
-      paise: paise,
-      builder: (BuildContext context, int value) => StatChip(
-        value: compactRupees(value),
-        label: label,
-        valueColour: valueColour,
+    return StatTile(
+      label: label,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.space2,
+        vertical: AppSpacing.space3,
+      ),
+      child: RollingAmount(
+        paise: paise,
+        builder: (BuildContext context, int value) => FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            compactRupees(value),
+            maxLines: 1,
+            style: AppTextStyles.headline.copyWith(fontSize: 16, color: colour),
+          ),
+        ),
       ),
     );
   }

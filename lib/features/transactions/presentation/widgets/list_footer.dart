@@ -40,9 +40,9 @@ class LoadMoreRetry extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space3),
       decoration: const BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.tile,
         borderRadius: AppRadius.card,
-        border: Border.fromBorderSide(BorderSide(color: AppColors.line)),
+        border: Border.fromBorderSide(BorderSide(color: AppColors.divider)),
       ),
       child: Row(
         children: <Widget>[

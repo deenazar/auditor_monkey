@@ -12,7 +12,7 @@ Future<void> showSaveFilterDialog(
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) => AlertDialog(
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.background,
       title: const Text('Save as chip'),
       content: SizedBox(
         width: 320,

@@ -8,7 +8,7 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_text_field.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/wow/spring_press.dart';
 import '../../application/transactions_list_providers.dart';
 import '../../domain/transaction_filter.dart';
 import '../transactions_actions.dart';
@@ -87,7 +87,7 @@ class _SaveFilterFieldState extends ConsumerState<SaveFilterField> {
         const SizedBox(height: AppSpacing.space3),
         Align(
           alignment: Alignment.centerRight,
-          // Secondary: the sheet's Apply is the one coral action.
+          // Secondary: the sheet's Apply is the one mint action.
           child: _SecondaryButton(
             label: _saving ? 'Saving…' : widget.buttonLabel,
             onTap: _saving ? null : _save,
@@ -98,8 +98,8 @@ class _SaveFilterFieldState extends ConsumerState<SaveFilterField> {
   }
 }
 
-/// A quiet pill button (`fill` with `ink` text), for a second action next to
-/// the coral primary one.
+/// A quiet pill button (`tile` with `ink` text), for a second action next to
+/// the mint primary one.
 class _SecondaryButton extends StatelessWidget {
   const _SecondaryButton({required this.label, required this.onTap});
 
@@ -109,21 +109,23 @@ class _SecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool enabled = onTap != null;
-    return PressScale(
+    return SpringPress(
       semanticLabel: label,
       onTap: onTap,
-      child: Container(
-        height: AppSizes.buttonHeight,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space5),
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: AppColors.fill,
-          borderRadius: AppRadius.pill,
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.button.copyWith(
-            color: enabled ? AppColors.ink : AppColors.inkMuted,
+      child: ExcludeSemantics(
+        child: Container(
+          height: AppSizes.buttonHeight,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space5),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: AppColors.tile,
+            borderRadius: AppRadius.pill,
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: enabled ? AppColors.ink : AppColors.inkMuted,
+            ),
           ),
         ),
       ),

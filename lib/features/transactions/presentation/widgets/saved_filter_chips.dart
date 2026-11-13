@@ -5,12 +5,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/logging/logger_provider.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_depth.dart';
 import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/widgets/glass.dart';
+import '../../../../shared/wow/spring_press.dart';
 import '../../application/transactions_list_providers.dart';
 import '../../domain/transaction_filter.dart';
 import '../transactions_actions.dart';
@@ -42,7 +43,9 @@ class SavedFilterChips extends ConsumerWidget {
       height: AppSizes.chipHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.screenPadding,
+        ),
         itemCount: chips.length,
         separatorBuilder: (BuildContext context, int index) =>
             const SizedBox(width: AppSpacing.space2),
@@ -95,7 +98,8 @@ class _SavedChip extends ConsumerWidget {
             _remove(context, ref),
       },
       excludeSemantics: true,
-      child: GestureDetector(
+      child: SpringPress(
+        scale: 0.95,
         onTap: () {
           ref.read(transactionFilterProvider.notifier).applySaved(saved);
           ref
@@ -110,10 +114,10 @@ class _SavedChip extends ConsumerWidget {
             curve: AppMotion.curveEnter,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: selected ? AppColors.primaryDeep : AppColors.card,
+              color: selected ? AppColors.primaryDeep : AppColors.tile,
               borderRadius: AppRadius.pill,
               border: Border.all(
-                color: selected ? AppColors.primaryDeep : AppColors.line,
+                color: selected ? AppColors.primaryDeep : AppColors.divider,
               ),
             ),
             alignment: Alignment.center,
@@ -144,8 +148,8 @@ class _SelectPulse extends StatelessWidget {
     if (!selected || AppMotion.reduceMotion(context)) return child;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.9, end: 1),
-      duration: AppMotion.durationPress,
-      curve: AppMotion.springy,
+      duration: AppDepth.press,
+      curve: AppDepth.springy,
       builder: (BuildContext context, double scale, Widget? child) =>
           Transform.scale(scale: scale, child: child),
       child: child,
@@ -158,7 +162,7 @@ class _SaveChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PressScale(
+    return SpringPress(
       semanticLabel: 'Save current filter as a chip',
       onTap: () async {
         final TransactionFilter filter = ref.read(transactionFilterProvider);

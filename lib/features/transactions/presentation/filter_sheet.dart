@@ -5,13 +5,14 @@ import '../../../core/logging/logger_provider.dart';
 import '../../../core/utils/date_keys.dart';
 import '../../../core/utils/today_provider.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_motion.dart';
 import '../../../shared/theme/app_radius.dart';
 import '../../../shared/theme/app_sizes.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_text_styles.dart';
-import '../../../shared/widgets/glass.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
+import '../../../shared/wow/spring_press.dart';
+import '../../../shared/wow/wow_sheet.dart';
 import '../../accounts/application/accounts_providers.dart';
 import '../../accounts/domain/account.dart';
 import '../../categories/application/categories_providers.dart';
@@ -24,20 +25,12 @@ import 'transactions_actions.dart';
 import 'widgets/filter_sheet_sections.dart';
 import 'widgets/save_filter_field.dart';
 
-/// Opens the filter sheet with the Quick Add sheet's spring.
+/// Opens the filter sheet with the shared sheet spring (`showWowSheet`).
 Future<void> showTransactionFilterSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showWowSheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: AppColors.panel,
+    backgroundColor: AppColors.background,
     shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
-    sheetAnimationStyle: AnimationStyle(
-      duration: AppMotion.resolve(context, AppMotion.durationSheetOpen),
-      reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),
-      curve: AppMotion.sheetSpringCurve,
-      reverseCurve: AppMotion.curveExit,
-    ),
     builder: (BuildContext context) => const TransactionFilterSheet(),
   );
 }
@@ -152,7 +145,7 @@ class _TransactionFilterSheetState
               width: 38,
               height: 4,
               decoration: const BoxDecoration(
-                color: AppColors.line,
+                color: AppColors.divider,
                 borderRadius: BorderRadius.all(Radius.circular(2)),
               ),
             ),
@@ -167,52 +160,55 @@ class _TransactionFilterSheetState
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  DateSection(
-                    filter: _draft,
-                    today: today,
-                    onPreset: (DatePreset p) => _choosePreset(p, today),
-                    onCustom: () => _pickCustom(today),
-                  ),
-                  TypeSection(types: _draft.types, onToggle: _toggleType),
-                  AccountSection(
-                    accounts: accounts,
-                    selected: _draft.accountIds,
-                    onToggle: _toggleAccount,
-                  ),
-                  if (transferOnly)
-                    const FilterSection(
-                      title: 'CATEGORIES',
-                      child: Text(
-                        'Transfers have no category.',
-                        style: AppTextStyles.caption,
-                      ),
-                    )
-                  else
-                    CategorySection(
-                      categories: categories,
-                      selected: _draft.categoryIds,
-                      onToggle: _toggleCategory,
-                    ),
-                  FilterSection(
-                    title: 'SAVE AS CHIP',
-                    child: SaveFilterField(
+              child: StaggeredEntrance(
+                index: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    DateSection(
                       filter: _draft,
-                      buttonLabel: 'Save and apply',
-                      onSaved: _apply,
+                      today: today,
+                      onPreset: (DatePreset p) => _choosePreset(p, today),
+                      onCustom: () => _pickCustom(today),
                     ),
-                  ),
-                ],
+                    TypeSection(types: _draft.types, onToggle: _toggleType),
+                    AccountSection(
+                      accounts: accounts,
+                      selected: _draft.accountIds,
+                      onToggle: _toggleAccount,
+                    ),
+                    if (transferOnly)
+                      const FilterSection(
+                        title: 'CATEGORIES',
+                        child: Text(
+                          'Transfers have no category.',
+                          style: AppTextStyles.caption,
+                        ),
+                      )
+                    else
+                      CategorySection(
+                        categories: categories,
+                        selected: _draft.categoryIds,
+                        onToggle: _toggleCategory,
+                      ),
+                    FilterSection(
+                      title: 'SAVE AS CHIP',
+                      child: SaveFilterField(
+                        filter: _draft,
+                        buttonLabel: 'Save and apply',
+                        onSaved: _apply,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           Container(
             padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + bottom),
             decoration: const BoxDecoration(
-              color: AppColors.card,
-              border: Border(top: BorderSide(color: AppColors.line)),
+              color: AppColors.background,
+              border: Border(top: BorderSide(color: AppColors.divider)),
             ),
             child: Row(
               children: <Widget>[
@@ -237,20 +233,22 @@ class _ResetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PressScale(
+    return SpringPress(
       semanticLabel: 'Reset filters',
       onTap: onTap,
-      child: Container(
-        height: AppSizes.buttonHeight,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space5),
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: AppColors.fill,
-          borderRadius: AppRadius.pill,
-        ),
-        child: Text(
-          'Reset',
-          style: AppTextStyles.button.copyWith(color: AppColors.ink),
+      child: ExcludeSemantics(
+        child: Container(
+          height: AppSizes.buttonHeight,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space5),
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: AppColors.tile,
+            borderRadius: AppRadius.pill,
+          ),
+          child: Text(
+            'Reset',
+            style: AppTextStyles.bodyStrong.copyWith(color: AppColors.ink),
+          ),
         ),
       ),
     );
