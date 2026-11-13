@@ -37,7 +37,7 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('pressed scales to pressScale and turns primaryDeep', (
+  testWidgets('pressed scales to pressScale and keeps the coral fill', (
     WidgetTester tester,
   ) async {
     await pumpCompact(tester, PrimaryButton(label: 'Save', onPressed: () {}));
@@ -58,7 +58,7 @@ void main() {
     final BoxDecoration decoration =
         tester.widget<AnimatedContainer>(_button()).decoration!
             as BoxDecoration;
-    expect(decoration.color, AppColors.primaryDeep);
+    expect(decoration.color, AppColors.primary);
 
     await gesture.up();
     await tester.pump(const Duration(milliseconds: 200));

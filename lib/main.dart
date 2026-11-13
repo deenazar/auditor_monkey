@@ -27,12 +27,18 @@ Future<void> main() async {
     return true;
   };
 
-  // Show the Outfit font license (OFL) on the licenses page.
+  // Show the font licenses (OFL) on the licenses page.
   LicenseRegistry.addLicense(() async* {
-    final String text = await rootBundle.loadString(
-      'assets/fonts/outfit/OFL.txt',
-    );
-    yield LicenseEntryWithLineBreaks(<String>['Outfit font'], text);
+    for (final (String name, String dir) in <(String, String)>[
+      ('Unbounded font', 'unbounded'),
+      ('DM Sans font', 'dm_sans'),
+      ('DM Mono font', 'dm_mono'),
+    ]) {
+      final String text = await rootBundle.loadString(
+        'assets/fonts/$dir/OFL.txt',
+      );
+      yield LicenseEntryWithLineBreaks(<String>[name], text);
+    }
   });
 
   logger.info('app', 'app started');

@@ -16,7 +16,7 @@ enum AmountKind {
   /// Money out: `ink`, with a `−` sign.
   expense,
 
-  /// Money in: `accentText`, with a `+` sign.
+  /// Money in: `success` green, with a `+` sign.
   income,
 
   /// Between accounts: `inkMuted`, no sign, with a ⇄ icon.
@@ -63,7 +63,7 @@ class AmountText extends StatelessWidget {
     return switch (kind) {
       AmountKind.plain => plainColour ?? AppColors.ink,
       AmountKind.expense => AppColors.ink,
-      AmountKind.income => AppColors.accentText,
+      AmountKind.income => AppColors.success,
       AmountKind.transfer => AppColors.inkMuted,
     };
   }

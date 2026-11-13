@@ -72,13 +72,14 @@ class EmptyState extends StatelessWidget {
                     Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.title,
+                      style: AppTextStyles.title.copyWith(fontSize: 15),
                     ),
                     const SizedBox(height: AppSpacing.space2),
                     Text(
                       message,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.body.copyWith(
+                        fontSize: 13,
                         color: AppColors.inkMuted,
                       ),
                     ),

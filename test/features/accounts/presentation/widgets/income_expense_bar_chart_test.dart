@@ -1,5 +1,6 @@
 import 'package:auditor_monkey/features/accounts/presentation/widgets/income_expense_bar_chart.dart';
 import 'package:auditor_monkey/features/transactions/domain/statement_line.dart';
+import 'package:auditor_monkey/shared/theme/app_colors.dart';
 import 'package:auditor_monkey/shared/theme/app_motion.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ void main() {
     expect(_rods(tester), hasLength(12));
   });
 
-  testWidgets('bars are 6pt pills: primary income, sun expense', (
+  testWidgets('bars are 6pt pills: teal income, coral expense', (
     WidgetTester tester,
   ) async {
     setPhoneSurface(tester);
@@ -56,8 +57,8 @@ void main() {
     final BarChartRodData income = _data(tester).barGroups[1].barRods[0];
     final BarChartRodData expense = _data(tester).barGroups[1].barRods[1];
     expect(income.width, 6);
-    expect(income.color, const Color(0xFF70D0B2));
-    expect(expense.color, const Color(0xFFFDD85C));
+    expect(income.color, AppColors.teal);
+    expect(expense.color, AppColors.coral);
     // The library caps the radius at half the width: a full pill.
     expect(income.borderRadius, BorderRadius.circular(3));
     expect(income.toY, 500000);

@@ -48,7 +48,7 @@ void main() {
     expect(find.bySemanticsLabel('Expense ₹500.00'), findsOneWidget);
   });
 
-  testWidgets('income shows a plus sign in accentText', (
+  testWidgets('income shows a plus sign in success green', (
     WidgetTester tester,
   ) async {
     await pumpThemed(
@@ -56,7 +56,7 @@ void main() {
       const AmountText(paise: 150000, kind: AmountKind.income),
     );
     expect(_plain(tester), '+₹1,500.00');
-    expect(_richText(tester).text.style?.color, AppColors.accentText);
+    expect(_richText(tester).text.style?.color, AppColors.success);
     expect(find.bySemanticsLabel('Income ₹1,500.00'), findsOneWidget);
   });
 
@@ -105,7 +105,7 @@ void main() {
     expect(_richText(tester).text.style?.color, AppColors.onDark);
   });
 
-  testWidgets('digits use tabular figures and the ₹ is 75% and Light', (
+  testWidgets('digits use tabular figures and the ₹ is 75% and Regular', (
     WidgetTester tester,
   ) async {
     await pumpThemed(
@@ -121,8 +121,11 @@ void main() {
 
     final TextSpan rupee = _allSpans(root)
         .firstWhere((TextSpan s) => s.text == '₹');
-    expect(rupee.style!.fontSize, closeTo(40 * 0.75, 0.001));
-    expect(rupee.style!.fontWeight, FontWeight.w300);
+    expect(
+      rupee.style!.fontSize,
+      closeTo(AppTextStyles.displayAmount.fontSize! * 0.75, 0.001),
+    );
+    expect(rupee.style!.fontWeight, FontWeight.w400);
   });
 
   testWidgets('shrinks to fit a narrow width instead of cutting off', (

@@ -22,17 +22,18 @@ const List<String> _names = <String>[
 
 /// DESIGN.md "Illustrations" palette, lower case, `#RRGGBB`.
 const Set<String> _allowedHex = <String>{
-  '#70d0b2', // primary
-  '#476e61', // primaryDeep
-  '#e4e782', // lime
-  '#fdd85c', // sun
-  '#f7f7f7', // tile
-  '#1e3b31', // ink
-  '#5f7670', // inkMuted
-  '#ffffff', // background (white)
-  '#ddf4ec', // navIndicator
-  '#ecefee', // divider
-  '#2a8466', // accentText
+  '#10202a', // ink
+  '#5e6e76', // inkMuted (sec)
+  '#ff6b4a', // coral
+  '#0e9f9a', // teal
+  '#ffd86e', // warm yellow (today bar top)
+  '#ffc24d', // sun (night / burst)
+  '#dfe7e5', // line
+  '#ebf1ef', // fill
+  '#f5f8f7', // panel
+  '#ffffff', // card (white)
+  '#ffe3db', // navIndicator
+  '#c2410c', // accentText
 };
 
 const int _maxBytes = 8 * 1024;

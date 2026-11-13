@@ -2,7 +2,6 @@ import 'package:auditor_monkey/app/app.dart';
 import 'package:auditor_monkey/app/router.dart';
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/accounts/presentation/account_statement_screen.dart';
-import 'package:auditor_monkey/features/mascot/application/mascot_providers.dart';
 import 'package:auditor_monkey/features/quick_add/presentation/quick_add_sheet.dart';
 import 'package:auditor_monkey/features/setup/presentation/setup_wizard_screen.dart';
 import 'package:auditor_monkey/shared/theme/app_colors.dart';
@@ -30,10 +29,7 @@ Future<Widget> _app(
   return MediaQuery(
     data: MediaQueryData(disableAnimations: disableAnimations),
     child: ProviderScope(
-      overrides: <Override>[
-        ...envOverrides(env),
-        mascotPosterOnlyProvider.overrideWithValue(true),
-      ],
+      overrides: <Override>[...envOverrides(env)],
       child: AuditorMonkeyApp(initialLocation: initialLocation),
     ),
   );

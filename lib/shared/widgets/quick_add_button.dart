@@ -6,8 +6,8 @@ import '../theme/app_motion.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_sizes.dart';
 
-/// The centre Quick Add button: 56pt primary circle, ink plus icon,
-/// `shadowFloat`. Shrinks slightly while pressed.
+/// The centre Quick Add button: 56pt coral circle, white plus icon, coral
+/// glow. Springs smaller while pressed (mini_checklist `.addbtn`).
 class QuickAddButton extends StatefulWidget {
   const QuickAddButton({required this.onPressed, super.key});
 
@@ -42,20 +42,20 @@ class _QuickAddButtonState extends State<QuickAddButton> {
         onTapCancel: () => _setPressed(false),
         child: AnimatedScale(
           scale: _pressed && !reduce ? AppSizes.pressScale : 1,
-          duration: AppMotion.resolve(context, AppMotion.durationFast),
-          curve: AppMotion.curveEnter,
+          duration: AppMotion.resolve(context, AppMotion.durationPress),
+          curve: AppMotion.springy,
           child: Container(
             width: QuickAddButton.size,
             height: QuickAddButton.size,
-            decoration: BoxDecoration(
-              color: _pressed ? AppColors.primaryDeep : AppColors.primary,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
               shape: BoxShape.circle,
-              boxShadow: AppShadows.shadowFloat,
+              boxShadow: AppShadows.shadowCoral,
             ),
-            child: Icon(
+            child: const Icon(
               LucideIcons.plus,
               size: AppSizes.iconNav,
-              color: _pressed ? AppColors.onDark : AppColors.ink,
+              color: AppColors.onDark,
             ),
           ),
         ),

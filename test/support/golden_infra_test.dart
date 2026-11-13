@@ -10,7 +10,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'golden.dart';
 
-/// Proves the golden setup: Outfit text and Lucide icons are real glyphs
+/// Proves the golden setup: app-font text and Lucide icons are real glyphs
 /// (not boxes), the surface is 780x1688, and shadows are drawn.
 void main() {
   testWidgets('fonts, icons, surface and shadow look right', (

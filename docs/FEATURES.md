@@ -342,6 +342,35 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-13
 - **PR link**: -
 
+## mini_checklist look and feel (before roadmap session 5)
+- **What it does**: Gives the whole app mini_checklist's look: a sky
+  that follows the time of day, frosted glass, coral accent, Unbounded /
+  DM Sans / DM Mono fonts, and springy motion. Design rules: DESIGN.md.
+- **Home**:
+  - Top: the date, glass buttons (Recent, Open accounts, Demo data in
+    debug builds), the Auditor Monkey beside the last 7 days of spending
+    as bars (today is the warm bar), and three chips: Today spent, Month
+    left (Budget left when budgets exist), Savings %.
+  - Panel: slides up over the sky. A 9-day strip (dot = spending, red
+    dot = a busy day), a list head with this month's progress, and the
+    20 latest entries. Tap a day (strip or bar) to see that day; tap it
+    again or "Recent" to go back.
+  - Monkey: hops and says "Logged ₹…" after a Quick Add save; worried
+    when the month is over plan (budget, or income when there is no
+    budget), happy when under, asleep from 23:00 to 5:00 when idle. Tap
+    its head, belly, ears or tail; stroke it; double-tap; tap fast six
+    times.
+- **Other screens**: same data and flows, new colours, fonts, cards and
+  presses (setup wizard, Accounts, statement, Quick Add, empty and error
+  states). The wizard shows the new 2D monkey.
+- **Reduce motion**: the sky and monkey stay still; bars show at once;
+  moods and speech still change.
+- **Data**: read-only; no schema or money-rule change. Home uses the
+  existing repository totals (transfers never count as spending).
+- **Tests**: Home summary maths, formatting, keyframes, sky phases,
+  monkey widget (speech, reactions, touch, reduce motion, rest), Home
+  screen, goldens for dawn, day, night and late night.
+
 ## 3. Accounts
 - **What it does**: Shows live balances and each account's statement;
   lets the owner fix or add an account.
