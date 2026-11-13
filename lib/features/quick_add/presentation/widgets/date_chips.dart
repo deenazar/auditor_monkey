@@ -5,6 +5,7 @@ import '../../../../core/utils/date_keys.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/wow/haptics.dart';
 import 'choice_pill.dart';
 
 /// Date row: "Today", "Yesterday" and a calendar pill.
@@ -99,12 +100,16 @@ class DateChips extends StatelessWidget {
         : chosen.isAfter(last)
         ? last
         : chosen;
+    AppHaptics.press();
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: first,
       lastDate: last,
     );
-    if (picked != null) onChanged(dayOnly(picked));
+    if (picked != null) {
+      AppHaptics.tap();
+      onChanged(dayOnly(picked));
+    }
   }
 }

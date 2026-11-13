@@ -372,6 +372,32 @@ Details are filled in further when each feature is planned and built.
   summary maths; goldens for Home (data, over plan, empty) and updated
   wizard / accounts / illustrations goldens.
 
+## Motion & illustration pass (before roadmap session 5)
+- **What it does**: Brings every screen to the Home dashboard's level of
+  illustration, motion and interaction. The ticked list of screens and
+  what each got: [motion-illustration-pass.md](plans/motion-illustration-pass.md).
+- **New screen**: Settings (gear at the top left of Home):
+  - Demo data (debug builds only).
+  - "Say hi to the monkey" (the monkey dances, with confetti).
+  - Motion (shows whether the phone's Reduce Motion is on).
+  - Open-source licences.
+  - About.
+- **What you notice**:
+  - The monkey reacts on every screen.
+  - Errors show a worried monkey with Try again.
+  - Pages swing in with depth.
+  - Sheets spring up.
+  - Rows can be swiped:
+    - Statement: delete, with Undo.
+    - Accounts: preview, or open the statement.
+    - Settings: run the setting.
+  - Long-press shows a preview.
+  - The account sheet shows a live card as you type.
+- **Rule**: every new screen must ship at this level (DESIGN.md
+  "Quality bar", CLAUDE.md).
+- **Data**: no schema or money-rule change; deletes use the existing soft
+  delete and restore.
+
 ## 3. Accounts
 - **What it does**: Shows live balances and each account's statement;
   lets the owner fix or add an account.

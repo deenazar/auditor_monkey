@@ -5,6 +5,7 @@ import '../theme/app_sizes.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'app_illustration.dart';
+import 'staggered_entrance.dart';
 
 /// Centred empty state: an optional illustration (or icon), `title`, a
 /// `body` message and an optional action (for example a button to add the
@@ -19,6 +20,7 @@ class EmptyState extends StatelessWidget {
     this.illustration,
     this.iconColour = AppColors.inkMuted,
     this.action,
+    this.mascot,
     super.key,
   });
 
@@ -37,6 +39,10 @@ class EmptyState extends StatelessWidget {
 
   /// Optional button or link under the message.
   final Widget? action;
+
+  /// An animated mascot moment shown instead of the illustration
+  /// (Motion & 3D layer), e.g. a worried monkey for errors.
+  final Widget? mascot;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +64,10 @@ class EmptyState extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    if (illustration != null) ...<Widget>[
+                    if (mascot != null) ...<Widget>[
+                      mascot!,
+                      const SizedBox(height: AppSpacing.space3),
+                    ] else if (illustration != null) ...<Widget>[
                       AppIllustration(illustration!),
                       const SizedBox(height: AppSpacing.space3),
                     ] else if (iconData != null) ...<Widget>[
@@ -69,22 +78,29 @@ class EmptyState extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.space3),
                     ],
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.title,
+                    // Title, message and action enter one after another.
+                    StaggeredEntrance(
+                      index: 1,
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.title,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.space2),
-                    Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.inkMuted,
+                    StaggeredEntrance(
+                      index: 2,
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.inkMuted,
+                        ),
                       ),
                     ),
                     if (action != null) ...<Widget>[
                       const SizedBox(height: AppSpacing.space5),
-                      action!,
+                      StaggeredEntrance(index: 3, child: action!),
                     ],
                   ],
                 ),

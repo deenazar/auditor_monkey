@@ -7,6 +7,12 @@ import '../../../core/logging/logger_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_text_styles.dart';
+import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
+import '../../../shared/wow/confetti.dart';
+import '../../../shared/wow/wow_sheet.dart';
+import '../../mascot/domain/mascot_mood.dart';
+import '../../mascot/presentation/mascot_moment.dart';
 import '../application/demo_mode.dart';
 
 /// Debug and profile builds only: a small button that opens the demo data
@@ -22,7 +28,7 @@ class DemoDataMenuButton extends ConsumerWidget {
       icon: const Icon(LucideIcons.flaskConical),
       color: AppColors.inkMuted,
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-      onPressed: () => showModalBottomSheet<void>(
+      onPressed: () => showWowSheet<void>(
         context: context,
         showDragHandle: true,
         builder: (_) => const DemoDataSheet(),
@@ -43,14 +49,23 @@ class _DemoDataSheetState extends ConsumerState<DemoDataSheet> {
   bool _busy = false;
   String? _error;
 
-  Future<void> _run(Future<void> Function() action) async {
+  bool _loading = false;
+
+  Future<void> _run(
+    Future<void> Function() action, {
+    required bool load,
+  }) async {
+    _loading = load;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
       await action();
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      // Motion & 3D: a little celebration when demo data arrives.
+      if (_loading) Confetti.burst(context);
+      Navigator.of(context).pop();
     } catch (error) {
       ref
           .read(loggerProvider)
@@ -82,7 +97,19 @@ class _DemoDataSheetState extends ConsumerState<DemoDataSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const Text('Demo data', style: AppTextStyles.title),
+            Center(
+              child: MascotMoment(
+                mood: on ? MascotMood.happy : MascotMood.idle,
+                reaction: MascotReaction.hello,
+                say: on ? 'Playing with demo data' : 'Want sample data?',
+                size: 96,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.space2),
+            const StaggeredEntrance(
+              index: 1,
+              child: Text('Demo data', style: AppTextStyles.title),
+            ),
             const SizedBox(height: AppSpacing.space2),
             Text(
               on
@@ -102,11 +129,18 @@ class _DemoDataSheetState extends ConsumerState<DemoDataSheet> {
                   ),
                 ),
               ),
-            FilledButton(
-              onPressed: _busy
-                  ? null
-                  : () => _run(on ? controller.clear : controller.load),
-              child: Text(on ? 'Clear demo data' : 'Load demo data'),
+            StaggeredEntrance(
+              index: 2,
+              child: PrimaryButton(
+                label: on ? 'Clear demo data' : 'Load demo data',
+                loading: _busy,
+                onPressed: _busy
+                    ? null
+                    : () => _run(
+                        on ? controller.clear : controller.load,
+                        load: !on,
+                      ),
+              ),
             ),
           ],
         ),

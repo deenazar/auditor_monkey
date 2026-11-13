@@ -3,16 +3,21 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_radius.dart';
+import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/amount_text.dart';
 import '../../../../shared/widgets/page_header.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/widgets/rolling_amount.dart';
 import '../../../../shared/widgets/staggered_entrance.dart';
+import '../../../../shared/wow/shake_in.dart';
+import '../../../../shared/wow/tilt_3d.dart';
 import '../../../accounts/presentation/widgets/account_colours.dart';
 import '../../../mascot/domain/mascot_mood.dart';
-import '../../../mascot/presentation/mascot_view.dart';
+import '../../../mascot/presentation/mascot_controller.dart';
+import '../../../mascot/presentation/mascot_moment.dart';
 import '../../application/setup_wizard_state.dart';
 import 'wizard_frame.dart';
 
@@ -21,6 +26,7 @@ import 'wizard_frame.dart';
 /// a second tap does nothing. A failed save keeps the entries and shows why.
 class WizardReviewStep extends StatelessWidget {
   const WizardReviewStep({
+    this.mascot,
     required this.state,
     required this.onBack,
     required this.onSave,
@@ -30,6 +36,9 @@ class WizardReviewStep extends StatelessWidget {
   final SetupWizardState state;
   final VoidCallback onBack;
   final VoidCallback onSave;
+
+  /// The wizard's Auditor Monkey (celebrates; nods if saving fails).
+  final MascotController? mascot;
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +55,14 @@ class WizardReviewStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                const Center(
-                  child: MascotView(mood: MascotMood.celebrating, size: 180),
+                Center(
+                  child: MascotMoment(
+                    controller: mascot,
+                    mood: MascotMood.celebrating,
+                    reaction: MascotReaction.win,
+                    say: 'Looks great!',
+                    size: 180,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.space3),
                 const PageHeader(eyebrow: 'Step 3 of 3', title: 'All set?'),
@@ -60,10 +75,11 @@ class WizardReviewStep extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.space1),
-                AmountText(
+                RollingAmount.text(
                   paise: state.totalPaise ?? 0,
                   style: AppTextStyles.headline,
-                  alignment: AlignmentDirectional.center,
+                  rollKey: 'wizard-review-total',
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.space6),
               ],
@@ -72,9 +88,12 @@ class WizardReviewStep extends StatelessWidget {
           for (int i = 0; i < picked.length; i++) ...<Widget>[
             StaggeredEntrance(
               index: i + 1,
-              child: _MiniCard(
-                account: picked[i],
-                paise: state.openingFor(picked[i]).paise ?? 0,
+              child: Tilt3D(
+                maxDegrees: 6,
+                child: _MiniCard(
+                  account: picked[i],
+                  paise: state.openingFor(picked[i]).paise ?? 0,
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.space3),
@@ -86,7 +105,7 @@ class WizardReviewStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           if (error != null) ...<Widget>[
-            _ErrorCard(message: error),
+            ShakeIn(child: _ErrorCard(message: error)),
             const SizedBox(height: AppSpacing.space3),
           ],
           PrimaryButton(
@@ -113,6 +132,7 @@ class _MiniCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: accountColourFor(account.colour),
         borderRadius: AppRadius.card,
+        boxShadow: AppShadows.shadowLayered,
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.space4),

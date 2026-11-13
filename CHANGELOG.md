@@ -2,6 +2,38 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-13: Motion & illustration pass on all screens (PR: link added after opening)
+
+### Added
+- Every screen, sheet, dialog and state is now at the Home dashboard's
+  level. Checklist with ticks: `docs/plans/motion-illustration-pass.md`.
+- **Settings** screen (gear on Home): demo data, "Say hi to the monkey",
+  motion status, open-source licences, about.
+- Mascot moments: worried monkey on every error state; a monkey at each
+  wizard step that reacts to picks and typing; the Quick Add header
+  monkey (typing, refused amount, type switch, save); a monkey in the
+  statement bar (edit saved, delete, refresh); the Accounts header
+  monkey (new account, card change, refresh); note and demo sheets.
+- Living headers (`WowHeader`) on Accounts, Settings, Insights and
+  Transactions; live tilting preview card in the add / edit account sheet.
+- Swipe actions: statement lines (delete + Undo), account rows (preview,
+  open), settings rows; long-press previews on statement lines and
+  settings rows; pull-to-refresh on the statement.
+- 3D: pushed pages swing in while the page beneath recedes; the Quick
+  Add amount turns over when the type changes; statement balance card
+  and chart tilt.
+- Shared kit: `showWowSheet`, `SwipeActionRow`, `MascotMoment`,
+  `WowHeader`, `DepthTurn`, `ShakeIn`.
+- Permanent rule in DESIGN.md ("Quality bar") and CLAUDE.md: every new
+  screen ships with illustration, motion and interaction at the Home
+  dashboard's level.
+
+### Changed
+- All bottom sheets rise on the springy sheet curve with a haptic; with
+  reduce motion they appear at once.
+- `StaggeredEntrance` keeps content readable by screen readers while it
+  fades in.
+
 ## 2026-11-13: Original design back + Motion & 3D layer (PR: link added after opening)
 
 ### Changed

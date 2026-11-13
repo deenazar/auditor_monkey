@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../app/router.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_depth.dart';
 import '../../../../shared/theme/app_radius.dart';
@@ -71,7 +74,17 @@ class HomeHero extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      const SizedBox(width: 44),
+                      SizedBox(
+                        width: 44,
+                        child: IconButton(
+                          tooltip: 'Settings',
+                          onPressed: () => context.push(AppRoutes.settings),
+                          icon: const Icon(
+                            LucideIcons.settings,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ),
                       Expanded(
                         child: Text.rich(
                           TextSpan(

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_motion.dart';
 import '../../../../shared/theme/app_radius.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/category_colours.dart';
+import '../../../../shared/widgets/staggered_entrance.dart';
+import '../../../../shared/wow/wow_sheet.dart';
 import 'category_chip.dart';
 import 'quick_add_view_models.dart';
 
@@ -27,18 +28,13 @@ class AllCategoriesSheet extends StatelessWidget {
     required List<CategoryChipData> categories,
     required String? selectedId,
   }) {
-    return showModalBottomSheet<String>(
+    return showWowSheet<String>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
-      sheetAnimationStyle: AnimationStyle(
-        duration: AppMotion.resolve(context, AppMotion.durationMedium),
-        reverseDuration: AppMotion.resolve(context, AppMotion.durationMedium),
-        curve: AppMotion.curveEnter,
-        reverseCurve: AppMotion.curveExit,
-      ),
+      animationStyle: wowSheetAnimation(context),
       builder: (BuildContext sheetContext) => AllCategoriesSheet(
         categories: categories,
         selectedId: selectedId,
@@ -67,12 +63,16 @@ class AllCategoriesSheet extends StatelessWidget {
       if (sections.isNotEmpty) {
         sections.add(const SizedBox(height: AppSpacing.space6));
       }
+      // Groups enter one after another (Motion & 3D).
       sections.add(
-        _Section(
-          group: group,
-          chips: inGroup,
-          selectedId: selectedId,
-          onSelected: onSelected,
+        StaggeredEntrance(
+          index: sections.length ~/ 2,
+          child: _Section(
+            group: group,
+            chips: inGroup,
+            selectedId: selectedId,
+            onSelected: onSelected,
+          ),
         ),
       );
     }

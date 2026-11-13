@@ -110,7 +110,9 @@ void main() {
       c.value = 1;
       await tester.pump();
       final double end = tester.getTopLeft(find.text('page')).dx;
-      expect(start - end, AppMotion.pageSlideOffset);
+      // The page also swings in on the Y axis (3D), which shifts the
+      // projected corner a little; the slide itself is pageSlideOffset.
+      expect(start - end, closeTo(AppMotion.pageSlideOffset, 1));
     });
 
     testWidgets('reduce motion only fades (no movement)', (

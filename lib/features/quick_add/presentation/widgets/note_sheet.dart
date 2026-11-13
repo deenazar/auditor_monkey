@@ -9,6 +9,10 @@ import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import '../../../../shared/wow/wow_sheet.dart';
+import '../../../mascot/domain/mascot_mood.dart';
+import '../../../mascot/presentation/mascot_controller.dart';
+import '../../../mascot/presentation/mascot_moment.dart';
 import 'choice_pill.dart';
 
 /// The note pill in the details row: "Add note" or the first words of the
@@ -74,7 +78,7 @@ class NoteSheet extends StatefulWidget {
     BuildContext context, {
     required String initialNote,
   }) {
-    return showModalBottomSheet<String>(
+    return showWowSheet<String>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -106,6 +110,8 @@ final TextInputFormatter _noControlCharacters =
     FilteringTextInputFormatter.deny(RegExp(r'[\x00-\x1F\x7F]'));
 
 class _NoteSheetState extends State<NoteSheet> {
+  /// The sheet's monkey writes along while you type (Motion & 3D).
+  final MascotController _monkey = MascotController();
   late final TextEditingController _controller = TextEditingController(
     text: widget.initialNote,
   );
@@ -114,6 +120,7 @@ class _NoteSheetState extends State<NoteSheet> {
 
   @override
   void dispose() {
+    _monkey.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -132,6 +139,16 @@ class _NoteSheetState extends State<NoteSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          Center(
+            child: MascotMoment(
+              controller: _monkey,
+              reaction: MascotReaction.hello,
+              say: 'What was it for?',
+              size: 72,
+              halo: false,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.space3),
           AppTextField(
             label: 'Note',
             controller: _controller,
@@ -141,7 +158,10 @@ class _NoteSheetState extends State<NoteSheet> {
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.done,
             inputFormatters: <TextInputFormatter>[_noControlCharacters],
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) {
+              _monkey.type();
+              setState(() {});
+            },
             onSubmitted: (_) => _done(),
           ),
           if (length >= NoteSheet.counterFrom) ...<Widget>[

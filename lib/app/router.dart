@@ -8,12 +8,12 @@ import '../features/accounts/presentation/account_statement_screen.dart';
 import '../features/accounts/presentation/accounts_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/insights/presentation/insights_screen.dart';
+import '../features/settings/presentation/settings_screen.dart';
 import '../features/setup/application/setup_providers.dart';
 import '../features/setup/presentation/setup_wizard_screen.dart';
 import '../features/setup/presentation/start_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
 import '../shared/theme/app_motion.dart';
-
 import '../shared/widgets/fade_indexed_stack.dart';
 import '../shared/widgets/shared_axis_transition.dart';
 import 'app_shell.dart';
@@ -23,6 +23,9 @@ abstract final class AppRoutes {
   static const String insights = '/insights';
   static const String transactions = '/transactions';
   static const String accounts = '/accounts';
+
+  /// Settings, pushed over Home.
+  static const String settings = '/home/settings';
 
   /// Shown while the app opens its data (and when it cannot).
   static const String start = '/start';
@@ -146,7 +149,17 @@ GoRouter createAppRouter({
               ),
             ),
         branches: <StatefulShellBranch>[
-          _branch(AppRoutes.home, const HomeScreen()),
+          _branch(
+            AppRoutes.home,
+            const HomeScreen(),
+            children: <RouteBase>[
+              GoRoute(
+                path: 'settings',
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    _slidePage(context, state, const SettingsScreen()),
+              ),
+            ],
+          ),
           _branch(AppRoutes.insights, const InsightsScreen()),
           _branch(AppRoutes.transactions, const TransactionsScreen()),
           _branch(
@@ -197,12 +210,17 @@ Page<void> _slidePage(BuildContext context, GoRouterState state, Widget child) {
     child: child,
     transitionDuration: AppMotion.durationMedium,
     reverseTransitionDuration: AppMotion.durationMedium,
-    transitionsBuilder: (
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child,
-    ) => SharedAxisTransition(animation: animation, child: child),
+    transitionsBuilder:
+        (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) => SharedAxisTransition(
+          animation: animation,
+          secondaryAnimation: secondaryAnimation,
+          child: child,
+        ),
   );
 }
 

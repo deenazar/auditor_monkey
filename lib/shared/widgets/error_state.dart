@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../features/mascot/domain/mascot_mood.dart';
+import '../../features/mascot/presentation/mascot_moment.dart';
 import '../theme/app_colors.dart';
 import 'empty_state.dart';
 import 'primary_button.dart';
 
-/// Error state in the EmptyState layout: the `error_generic` illustration,
+/// Error state in the EmptyState layout: a worried Auditor Monkey mascot
+/// moment (the `error_generic` illustration is the fallback),
 /// `title`,
 /// a `body` message and a "Try again" button when [onRetry] is given.
 ///
@@ -34,6 +37,13 @@ class ErrorState extends StatelessWidget {
       liveRegion: true,
       child: EmptyState(
         illustration: 'error_generic',
+        // Motion & 3D: a worried Auditor Monkey nods and offers to retry.
+        mascot: const MascotMoment(
+          mood: MascotMood.worried,
+          reaction: MascotReaction.sad,
+          say: "Let's try that again",
+          size: 132,
+        ),
         iconColour: AppColors.danger,
         title: title,
         message: message,
