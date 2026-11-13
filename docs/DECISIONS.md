@@ -914,3 +914,23 @@ approved by the owner on 2026-11-12.
 - Day headers scroll with the list; they are not pinned. Pin later if
   the owner wants it.
 
+
+## 2026-11-13: Transactions restyled to the current design after merging main
+- Decision: The Transactions screens (list, filter sheet, saved chips,
+  detail) were restyled to the current design (DESIGN.md, `app_colors`,
+  `lib/shared/wow/`) instead of bringing the old mini_checklist look
+  back. They use `WowHeader` (blobs, parallax title, Auditor Monkey),
+  `SwipeActionRow` (right = Edit, left = Delete with Undo), `showWowSheet`,
+  `SpringPress`, `Tilt3D`, `StatTile` (Spent, Income, Net), and
+  `EmptyState` / `ErrorState` with illustration or mascot. All behaviour
+  stays: day groups with totals, paging, search, filters, saved chips,
+  detail screen. The header stays fixed and the month summary follows the
+  topmost day. `StatTile` got an optional `padding`; `PageHeader` titles
+  scale down to one line.
+- Options considered: restore the deleted mini_checklist files (glass,
+  sky scene, glass icon button, stat chip, home stage, old tokens);
+  restyle the Transactions screens to the current design.
+- Reason: develop removed the mini_checklist design on purpose. Bringing
+  it back for one feature would split the app into two looks and undo
+  that decision.
+- Decided by: owner.
