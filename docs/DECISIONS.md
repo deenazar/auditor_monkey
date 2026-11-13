@@ -749,3 +749,34 @@ approved by the owner on 2026-11-12.
 - **Isolate note**: the closure given to `NativeDatabase.createInBackground`
   must not capture non-sendable objects, so it is built in its own function
   that holds only the temp path string.
+
+## 2026-11-13: Open after design polish
+- Real-phone checks (no phone in the cloud session): Quick Add open
+  time (target under 300ms, profile mode) and the mascot WebView memory
+  and first-load time. Owner to check.
+- Owner to supply the real `monkey.glb` (requirements in DESIGN.md,
+  Mascot). The placeholder stays until then.
+- Pre-existing flaky test "logs operations by name and short id": when
+  the random UUID's 8-character prefix is all digits, the log redactor
+  masks it as a number. Fixed in this session (see next entry).
+- Wizard choices made by junior-dev: the mascot replaces the welcome
+  illustration on the welcome step, and the review step shows the
+  celebrating mascot (there is no separate done step). So the
+  `wizard_welcome` and `wizard_done` SVGs are currently shown only in
+  the illustrations gallery golden (`illustrations_all.png`).
+
+## 2026-11-13: Short ids in logs are never masked (lead)
+- Decision: the log redactor keeps our own short-id marker `id=` plus
+  exactly 8 hex characters, even when all 8 are digits. A longer digit
+  run after `id=` (a phone or card number) is still masked. The statement
+  log now writes `open id=<short id>` too. Tests: redactor cases for
+  all-digit ids and for a phone after `id=`, and a repository test with a
+  fake id maker whose ids start with 8 digits (`TestEnv(ids: ...)`).
+- Options considered: shorter ids (6 characters, loses detail); a
+  different separator inside the id; fixing only the test with
+  non-random ids (hides the real bug: such logs lost the id in the app
+  too).
+- Reason: about 1 in 100 UUIDs start with 8 digits; those log lines lost
+  their id, and the test "logs operations by name and short id" failed
+  at random.
+- Decided by: team (lead).

@@ -111,7 +111,9 @@ class AccountStatementNotifier extends AsyncNotifier<AccountStatementState> {
               state = AsyncError<AccountStatementState>(error, stack),
         );
     ref.onDispose(sub.cancel);
-    ref.read(loggerProvider).debug('statement', 'open ${shortId(accountId)}');
+    ref
+        .read(loggerProvider)
+        .debug('statement', 'open id=${shortId(accountId)}');
     final AccountStatementState first = await _read(statementPageSize);
     _ready = true;
     if (_dirty) {

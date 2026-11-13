@@ -72,7 +72,6 @@ abstract final class AppMotion {
   static final SpringDescription sheetSpring =
       SpringDescription.withDampingRatio(mass: 1, stiffness: 380, ratio: 0.82);
 
-  /// Incoming tab content scale start (to 1).
   /// How long the Quick Add sheet spring runs (it settles within this).
   static const Duration durationSheetOpen = Duration(milliseconds: 350);
 
@@ -82,6 +81,7 @@ abstract final class AppMotion {
     seconds: 0.35,
   );
 
+  /// Incoming tab content scale start (to 1).
   static const double tabFadeScaleFrom = 0.98;
 
   /// Toast check mark scale start (to 1).

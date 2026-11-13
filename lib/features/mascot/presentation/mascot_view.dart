@@ -138,6 +138,8 @@ class _MascotViewState extends ConsumerState<MascotView>
     if (player == null) return;
     String clip = mood.clipName;
     if (!_clips.contains(clip)) clip = MascotMood.idle.clipName;
+    // A model without even `idle` stays on its first pose.
+    if (!_clips.contains(clip)) return;
     final bool oneShot =
         mood == MascotMood.happy || mood == MascotMood.celebrating;
     try {
