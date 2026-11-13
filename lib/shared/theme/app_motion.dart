@@ -47,6 +47,28 @@ abstract final class AppMotion {
   static const double springStiffness = 200;
   static const double springDampingRatio = 0.8;
 
+  /// Delay between items in a staggered entrance.
+  static const Duration durationStagger = Duration(milliseconds: 40);
+
+  /// Items up to this count are staggered; the rest appear with the last.
+  static const int staggerMaxItems = 8;
+
+  /// Card entrance slide-up distance (pt).
+  static const double cardEnterOffset = 12;
+
+  /// Pushed page shared-axis slide distance (pt, = space6).
+  static const double pageSlideOffset = 24;
+
+  /// Quick Add sheet open spring: stiffness 380, damping ratio 0.82.
+  static final SpringDescription sheetSpring =
+      SpringDescription.withDampingRatio(mass: 1, stiffness: 380, ratio: 0.82);
+
+  /// Incoming tab content scale start (to 1).
+  static const double tabFadeScaleFrom = 0.98;
+
+  /// Toast check mark scale start (to 1).
+  static const double successPopFrom = 0.8;
+
   /// True when the phone's "reduce motion" setting is on.
   static bool reduceMotion(BuildContext context) =>
       MediaQuery.disableAnimationsOf(context);
