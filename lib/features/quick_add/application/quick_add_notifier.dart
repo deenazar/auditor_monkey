@@ -43,6 +43,7 @@ import '../domain/amount_input.dart';
 import '../domain/quick_add_defaults.dart';
 import '../domain/quick_add_validator.dart';
 import 'quick_add_data_provider.dart';
+import 'quick_add_edit.dart';
 import 'quick_add_resolve.dart';
 import 'quick_add_saved.dart';
 import 'quick_add_state.dart';
@@ -70,6 +71,26 @@ class QuickAddNotifier extends Notifier<QuickAddState> {
     final String today = dateKey(
       DateTime.fromMillisecondsSinceEpoch(ref.read(clockProvider).nowMs()),
     );
+    final TransactionEntry? edit = ref.read(quickAddEditProvider);
+    if (edit != null) {
+      // Edit mode: start from the entry. Its own account, category and
+      // date are the picks, so nothing is replaced by a default.
+      return QuickAddState(
+        type: edit.type,
+        today: today,
+        date: edit.date,
+        amount: AmountInput.fromPaise(edit.amount),
+        note: edit.note ?? '',
+        edit: edit,
+        picks: <TransactionType, Picks>{
+          edit.type: Picks(
+            accountId: edit.accountId,
+            toAccountId: edit.toAccountId,
+            categoryId: edit.categoryId,
+          ),
+        },
+      );
+    }
     return QuickAddState(
       type: TransactionType.expense,
       today: today,
@@ -81,6 +102,9 @@ class QuickAddNotifier extends Notifier<QuickAddState> {
 
   bool setType(TransactionType type) {
     if (_locked || type == state.type) return !_locked;
+    // A loan-linked entry keeps its type: the loan link only makes sense
+    // for the direction it was created with.
+    if (state.edit?.loanId != null) return false;
     final QuickAddData? data = _data;
     if (type == TransactionType.transfer &&
         data != null &&
@@ -260,6 +284,7 @@ class QuickAddNotifier extends Notifier<QuickAddState> {
       categoryId: p.categoryId,
       offeredAccountIds: data.accountIds,
       offeredCategoryIds: data.categoryIdsOf(type),
+      unchangedDate: state.edit?.date,
     );
     final QuickAddIssue? issue = validateQuickAdd(form);
     if (issue != null) {
@@ -276,20 +301,42 @@ class QuickAddNotifier extends Notifier<QuickAddState> {
     final TransactionsRepository repository = ref.read(
       transactionsRepositoryProvider,
     );
-    log.info(_tag, 'save started type=${type.name}');
+    final TransactionEntry? edit = state.edit;
+    log.info(
+      _tag,
+      '${edit == null ? 'save' : 'edit save'} started type=${type.name}',
+    );
     final Stopwatch watch = Stopwatch()..start();
     try {
-      final TransactionEntry saved = await repository.create(
-        buildQuickAddDraft(form),
-      );
+      final TransactionDraft draft = buildQuickAddDraft(form);
+      final TransactionEntry saved = edit == null
+          ? await repository.create(draft)
+          : await repository.update(
+              edit.id,
+              // The loan link and the import source are not on the form:
+              // keep what the entry already has.
+              TransactionDraft(
+                type: draft.type,
+                amount: draft.amount,
+                date: draft.date,
+                accountId: draft.accountId,
+                toAccountId: draft.toAccountId,
+                categoryId: draft.categoryId,
+                note: draft.note,
+                loanId: edit.loanId,
+                importSource: edit.importSource,
+              ),
+            );
       log.info(
         _tag,
-        'save done type=${type.name} ms=${watch.elapsedMilliseconds}',
+        '${edit == null ? 'save' : 'edit save'} done type=${type.name} '
+        'ms=${watch.elapsedMilliseconds}',
       );
       final SavedEntry entry = SavedEntry(
         id: saved.id,
         type: type,
         amount: saved.amount,
+        edited: edit != null,
       );
       announce.announce(entry); // the shell shows the toast
       if (!ref.mounted) return;

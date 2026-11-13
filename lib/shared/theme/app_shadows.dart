@@ -4,6 +4,12 @@ import 'app_colors.dart';
 
 /// Design tokens: elevation. Cards and tiles are flat (elevationNone).
 abstract final class AppShadows {
+  /// Soft text shadow for white text on the sky (DESIGN.md: white text on the
+  /// sky always has a soft shadow).
+  static const List<Shadow> textOnSky = <Shadow>[
+    Shadow(color: Color(0x59000000), blurRadius: 12, offset: Offset(0, 2)),
+  ];
+
   /// `elevationNone`: no shadow.
   static const List<BoxShadow> elevationNone = <BoxShadow>[];
 

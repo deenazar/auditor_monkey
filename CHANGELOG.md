@@ -2,6 +2,30 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-13: Transactions (roadmap session 5) (PR: #16)
+
+### Added
+- Transactions tab: month summary chips (Spent / Income / Net, follow
+  the filters), list grouped by day with daily totals, infinite scroll
+  (pages of 50, keyset paging).
+- Search by note, category name or exact amount.
+- Filter sheet: date range (presets or custom), type, account (From or
+  To side), category. AND across facets, OR within one.
+- Saved filter chips (facets only, up to 12, names up to 24 characters),
+  kept in `saved_filters.json` in the app support folder.
+- Swipe left to delete with a 5s Undo toast; swipe right to edit.
+- Detail screen `/transactions/:id` with Edit and Delete (asks to
+  confirm).
+
+### Changed
+- Quick Add has an edit mode: keeps the loan link and import source,
+  loan-linked entries keep their type, an archived account or category
+  on the entry is still offered, and save shows "Changes saved" (no
+  Undo).
+- The Home monkey no longer reacts to edits (only to new entries).
+- Transactions was built on the mini_checklist look on `main`; merged
+  into `develop` and restyled to the current design (see DECISIONS.md).
+
 ## 2026-11-13: Motion & illustration pass on all screens (PR: link added after opening)
 
 ### Added

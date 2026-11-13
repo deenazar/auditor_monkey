@@ -499,18 +499,63 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-12
 - **PR link**: -
 
-## 6. Transactions list
-- **What it does**: Browse, search and fix past entries.
-- **Screens**: Transactions list, filter sheet, edit (reuses Quick Add).
-- **User flow**: Open list → search or filter by month / account /
-  category → swipe left to delete, swipe right to edit.
-- **Business rules**: Delete asks to confirm (or offers undo). Edits
-  update balances and budgets right away.
-- **Data stored**: Transactions.
-- **Validations**: Same as Quick Add when editing.
-- **Edge cases**: 20,000+ rows; no results; deleting a transfer.
-- **Status**: Planned (roadmap session 5)
-- **Date**: 2026-11-12
+## 6. Transactions list (roadmap session 5)
+- **What it does**: Browse, search, filter and fix past entries.
+- **Screens**:
+  - Transactions tab: sky stage on top with month summary chips (Spent /
+    Income / Net for the month of the top visible day; they follow the
+    filters). Below: search field, filter button, saved filter chips and
+    the list grouped by day, each day header with its daily total.
+  - Filter sheet: date range (presets or custom), type, account (matches
+    the From or the To side of a transfer), category.
+  - Detail screen (`/transactions/:id`): the full entry with Edit and
+    Delete.
+  - Edit: the Quick Add sheet in edit mode.
+  - States: loading, no entries, no results for the search / filters,
+    error.
+- **User flow**:
+  - Open the tab → scroll (next page of 50 loads at the end) → search or
+    filter → optionally save the filter as a chip.
+  - Swipe left on a row = delete; a toast "Entry deleted" with Undo
+    shows for 5s.
+  - Swipe right on a row = edit in Quick Add; save shows "Changes saved"
+    (no Undo).
+  - Tap a row → detail → Edit, or Delete (asks to confirm, then back to
+    the list with the Undo toast).
+- **Business rules**:
+  - Pages of 50, loaded with keyset paging (newest first).
+  - Search: note, category name, or the exact amount when the text reads
+    as rupees.
+  - Filters: AND across facets (date, type, account, category), OR
+    within one facet.
+  - Saved filter chips keep facets only (never the search text). Max 12,
+    name up to 24 characters, unique ignoring case.
+  - Balances are always worked out from the rows, so they stay right
+    after edit, delete and undo, transfers included.
+  - Day totals and the month summary leave out transfers and loan-linked
+    entries. Loan-linked entries still show in the list.
+  - Edit mode: keeps the loan link and import source; a loan-linked
+    entry keeps its type; an archived account or category already on the
+    entry is still offered.
+  - Undo restore is refused if the account was deleted meanwhile (an
+    archived account is fine) or if the entry is linked to a loan that
+    was closed meanwhile (DATABASE.md rule; reopen the loan first).
+- **Data stored**: Transactions (no schema change). Saved filters in
+  `saved_filters.json` in the app support folder (facets only).
+- **Validations**: Same as Quick Add when editing; the repository checks
+  again. Filter values (dates, ids, amounts) are checked before any
+  query. Saved filter name: required, ≤ 24, no control characters.
+- **Edge cases**:
+  - 20,000 rows, p50: first page about 2ms, filtered page about 12ms,
+    month summary under 1ms.
+  - No results: message and a way to clear filters.
+  - Deleting a transfer: both balances change back; Undo restores both.
+  - Corrupt saved filters file: starts empty with a warning in the log.
+- **Known gaps**: 60fps scrolling at 20,000 rows and swipe haptics need
+  a real-phone check by the owner. Day headers scroll with the list (not
+  pinned).
+- **Status**: Done (roadmap session 5)
+- **Date**: 2026-11-13
 - **PR link**: -
 
 ## 7. Import from Excel

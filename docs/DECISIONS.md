@@ -841,3 +841,76 @@ approved by the owner on 2026-11-12.
   - No 3D in the system date picker; it gets haptics only.
 - Decided by: owner (scope), lead (build choices).
 
+## 2026-11-13: Saved filters in a JSON file, not the database
+- Decision: Saved filter chips live in `saved_filters.json` in the app
+  support folder. Facets only (dates, type, account and category ids),
+  never search text, amounts or notes. Writes go to a temp file, then a
+  rename. A corrupt file means an empty list plus a warning in the log.
+  The file is capped at 64KB.
+- Options considered: a new database table (schema change and
+  migration); shared preferences.
+- Reason: No schema change, the data is small and not sensitive, and an
+  atomic write keeps it safe.
+- Decided by: team (session 5).
+
+## 2026-11-13: Day totals and month summary follow the filter
+- Decision: Day totals and the month summary use the whole filter (and
+  search). They leave out transfers and loan-linked entries. The list
+  still shows loan-linked entries.
+- Options considered: totals over all entries, ignoring the filter;
+  hiding loan-linked entries from the list.
+- Reason: Totals should match what is on screen; transfers are not
+  spending and loan entries are not counted in spending or income
+  elsewhere in the app.
+- Decided by: team (session 5).
+
+## 2026-11-13: Search with LIKE, no new index
+- Decision: Search matches the note and the category name with LIKE
+  (special characters escaped), plus the exact amount when the text
+  reads as rupees. No new index.
+- Options considered: full text search (FTS) table; a new index on note.
+- Reason: At 20,000 rows the timings are well under target (first page
+  about 2ms, filtered about 12ms, month summary under 1ms, p50), so
+  extra schema is not needed.
+- Decided by: team (session 5).
+
+## 2026-11-13: Undo restore rules
+- Decision: Undo of a delete restores the entry if its account is live
+  or archived. It is refused (with a message) if the account was deleted
+  meanwhile, or if it is linked to a loan that is closed (the existing
+  DATABASE.md rule: a closed loan takes no new links, restore included).
+- Options considered: refuse for archived accounts too; allow restore
+  into a closed loan (QA suggested it; it changes a money rule, so it is
+  left to the owner).
+- Reason: Archived accounts still hold history; a deleted account must
+  not get live rows again; closed-loan rules stay as set in session 2.
+- Decided by: team (session 5).
+
+## 2026-11-13: Edit reuses the Quick Add sheet
+- Decision: Swipe right and the detail Edit open Quick Add in edit
+  mode. It keeps the loan link and import source; a loan-linked entry
+  keeps its type; an archived account or category already on the entry
+  is still offered. Save shows "Changes saved" with no Undo. The Home
+  monkey does not react to edits.
+- Options considered: a separate edit screen.
+- Reason: One form, one set of rules and validations; edits must not
+  break loan links or import de-duplication.
+- Decided by: team (session 5).
+
+## 2026-11-13: List reload rules
+- Decision: When data changes (add, edit, delete, undo), the list
+  reloads the same number of loaded rows and keeps item identity, so the
+  scroll position and open swipes stay put. When the filter or search
+  changes, it resets to the first page.
+- Options considered: always reset to the first page; patch rows in
+  place.
+- Reason: The user should not lose their place after a small change,
+  and a new filter is a new list.
+- Decided by: team (session 5).
+
+## 2026-11-13: Open after session 5
+- 60fps scrolling at 20,000 rows and swipe haptics need a real-phone
+  check by the owner (no phone in the cloud session).
+- Day headers scroll with the list; they are not pinned. Pin later if
+  the owner wants it.
+

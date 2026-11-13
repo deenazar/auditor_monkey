@@ -31,6 +31,7 @@ class SavedEntry {
     required this.id,
     required this.type,
     required this.amount,
+    this.edited = false,
   });
 
   final String id;
@@ -38,6 +39,10 @@ class SavedEntry {
 
   /// Paise.
   final int amount;
+
+  /// True when an existing entry was changed (edit mode). The toast says
+  /// "Changes saved" with no Undo, and the monkey does not react.
+  final bool edited;
 }
 
 /// What the user did in this sheet. Amount, date and note are shared by the
@@ -56,6 +61,7 @@ class QuickAddState {
     this.status = SaveStatus.idle,
     this.saveError,
     this.saved,
+    this.edit,
   });
 
   final TransactionType type;
@@ -88,6 +94,12 @@ class QuickAddState {
   /// Set when [status] is [SaveStatus.done].
   final SavedEntry? saved;
 
+  /// The entry being edited (edit mode), or `null` when adding. Never
+  /// changes while the sheet is open.
+  final TransactionEntry? edit;
+
+  bool get isEditing => edit != null;
+
   Picks picksOf(TransactionType t) => picks[t] ?? Picks.none;
 
   bool get isSaving => status == SaveStatus.saving;
@@ -119,5 +131,6 @@ class QuickAddState {
     status: status ?? this.status,
     saveError: clearError ? null : (saveError ?? this.saveError),
     saved: saved ?? this.saved,
+    edit: edit,
   );
 }

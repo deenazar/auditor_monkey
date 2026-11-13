@@ -21,6 +21,11 @@ void showSavedToast(
     TransactionType.income => 'Income',
     TransactionType.transfer => 'Transfer',
   };
+  if (saved.edited) {
+    // An edit has no Undo: the old values are gone once saved.
+    _show(messenger, context, 'Changes saved', showCheck: true);
+    return;
+  }
   _show(
     messenger,
     context,

@@ -46,11 +46,15 @@ QuickAddIssue? noteIssue(String? note) {
 
 /// Date rule: a real `YYYY-MM-DD` date from 1900-01-01 and at most
 /// [maxDaysAhead] days after [today]. Returns `null` when fine.
-QuickAddIssue? dateIssue(String date, {required String today}) {
+QuickAddIssue? dateIssue(
+  String date, {
+  required String today,
+  bool allowFarDate = false,
+}) {
   if (!isValidDate(date)) {
     return const QuickAddIssue(QuickAddField.date, 'Enter a valid date.');
   }
-  if (date.compareTo(addDays(today, maxDaysAhead)) > 0) {
+  if (!allowFarDate && date.compareTo(addDays(today, maxDaysAhead)) > 0) {
     return const QuickAddIssue(
       QuickAddField.date,
       'Pick a date up to 31 days ahead.',
@@ -72,6 +76,7 @@ class QuickAddForm {
     required this.categoryId,
     required this.offeredAccountIds,
     required this.offeredCategoryIds,
+    this.unchangedDate,
   });
 
   final TransactionType type;
@@ -88,6 +93,10 @@ class QuickAddForm {
 
   /// Offered categories of this type's kind (empty for a transfer).
   final Set<String> offeredCategoryIds;
+
+  /// Edit mode: the date the entry already has. It stays allowed even when
+  /// it is further ahead than [maxDaysAhead] (past dates are always fine).
+  final String? unchangedDate;
 }
 
 /// First problem in the form, or `null` when it can be saved. The
@@ -116,7 +125,12 @@ QuickAddIssue? validateQuickAdd(QuickAddForm f) {
       );
     }
   }
-  return noteIssue(f.note) ?? dateIssue(f.date, today: f.today);
+  return noteIssue(f.note) ??
+      dateIssue(
+        f.date,
+        today: f.today,
+        allowFarDate: f.unchangedDate != null && f.date == f.unchangedDate,
+      );
 }
 
 /// The draft for the repository (transfer: no category; expense / income:
