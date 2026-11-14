@@ -110,12 +110,17 @@ class _LegendRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.space2),
-              SizedBox(
-                width: 44,
-                child: Text(
-                  slice.percentLabel,
-                  style: AppTextStyles.caption,
-                  textAlign: TextAlign.end,
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 44),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Text(
+                    slice.percentLabel,
+                    style: AppTextStyles.caption,
+                    maxLines: 1,
+                    softWrap: false,
+                  ),
                 ),
               ),
             ],

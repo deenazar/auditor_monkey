@@ -175,11 +175,17 @@ class _TopSpendingCardState extends State<TopSpendingCard>
                   Row(
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                          item.name,
-                          style: AppTextStyles.bodyStrong,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        // Scaled down rather than broken: a long name such
+                        // as "Groceries" never splits mid-word.
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(
+                            item.name,
+                            style: AppTextStyles.bodyStrong,
+                            maxLines: 1,
+                            softWrap: false,
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.space2),

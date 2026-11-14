@@ -127,5 +127,27 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.bySemanticsLabel('Budget, ₹13,000.00'), findsOneWidget);
     });
+
+    for (final double scale in <double>[1, 2]) {
+      testWidgets('labels never break mid-word on 360pt at text scale $scale', (
+        WidgetTester tester,
+      ) async {
+        await pumpThemed(
+          tester,
+          _tiles(),
+          textScale: scale,
+          width: 360,
+          height: null,
+        );
+        await tester.pumpAndSettle();
+        // A single overline line is about 14pt at scale 1. A wrapped
+        // label would be two lines, so it is far taller than 1.5 lines.
+        for (final String label in <String>['BUDGET', 'REMAINING', 'INCOME']) {
+          final double h = tester.getSize(find.text(label)).height;
+          expect(h, lessThan(14.3 * scale * 1.5), reason: label);
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }

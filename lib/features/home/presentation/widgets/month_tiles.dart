@@ -192,7 +192,18 @@ class _Tile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(label, style: AppTextStyles.overline),
+                  // One line, never broken mid-word: scaled down to fit the
+                  // tile (REMAINING is the widest label).
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      label,
+                      style: AppTextStyles.overline,
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.space2),
                   value,
                   const SizedBox(height: AppSpacing.space1),

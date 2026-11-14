@@ -127,20 +127,19 @@ class _BalanceDoughnutState extends State<BalanceDoughnut> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Row(
-                children: <Widget>[
-                  const Expanded(
-                    child: Text(
-                      'Where your money is',
-                      style: AppTextStyles.title,
-                    ),
-                  ),
-                  if (data.hasSlices)
-                    MascotMoment(controller: _mascot, size: 64, halo: false),
-                ],
-              ),
+              const Text('Where your money is', style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.space3),
               if (data.hasSlices) ...<Widget>[
+                // Its own row, centred, so the speech bubble has room on
+                // both sides at any text scale.
+                Center(
+                  child: MascotMoment(
+                    controller: _mascot,
+                    size: 72,
+                    halo: false,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.space2),
                 Center(child: _ring(context, sel)),
                 const SizedBox(height: AppSpacing.space3),
                 if (data.hasOwed) _owedLine(data.owed),
@@ -264,13 +263,16 @@ class _BalanceDoughnutState extends State<BalanceDoughnut> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(
-              caption,
-              style: slice == null
-                  ? AppTextStyles.overline
-                  : AppTextStyles.caption,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                caption,
+                style: slice == null
+                    ? AppTextStyles.overline
+                    : AppTextStyles.caption,
+                maxLines: 1,
+                softWrap: false,
+              ),
             ),
             FittedBox(
               fit: BoxFit.scaleDown,

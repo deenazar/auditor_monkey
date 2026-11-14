@@ -1,4 +1,5 @@
 import 'package:auditor_monkey/features/home/presentation/widgets/top_spending_card.dart';
+import 'package:auditor_monkey/shared/theme/app_text_styles.dart';
 import 'package:auditor_monkey/shared/widgets/app_illustration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -183,6 +184,26 @@ void main() {
       expect(
         find.bySemanticsLabel('Rent, ₹15,000.00, 48% of spending'),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('text scale 2.0: a long name never breaks mid-word', (
+      WidgetTester tester,
+    ) async {
+      await pumpThemed(
+        tester,
+        TopSpendingCard(items: _plan56, onOpenCategory: (_) {}),
+        textScale: 2,
+        height: null,
+      );
+      await tester.pumpAndSettle();
+      final double oneLine =
+          AppTextStyles.bodyStrong.fontSize! *
+          AppTextStyles.bodyStrong.height! *
+          2;
+      expect(
+        tester.getSize(find.text('Groceries')).height,
+        lessThan(oneLine * 1.5),
       );
     });
   });

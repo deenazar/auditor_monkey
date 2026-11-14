@@ -1,6 +1,7 @@
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/home/domain/balance_slices.dart';
 import 'package:auditor_monkey/features/home/presentation/widgets/balance_doughnut.dart';
+import 'package:auditor_monkey/shared/theme/app_text_styles.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -291,5 +292,29 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.bySemanticsLabel('PF, ₹1,00,000.00, 50%'), findsOneWidget);
     });
+
+    testWidgets(
+      'text scale 2.0: percents and the centre caption stay on one line',
+      (WidgetTester tester) async {
+        await pumpThemed(
+          tester,
+          BalanceDoughnut(slices: _plan55(), onOpenAccount: (_) {}),
+          textScale: 2,
+          height: null,
+        );
+        await tester.pumpAndSettle();
+        // One caption line at scale 2 is well under 1.5 lines tall.
+        final double oneLine =
+            AppTextStyles.caption.fontSize! * AppTextStyles.caption.height! * 2;
+        expect(
+          tester.getSize(find.text('50%')).height,
+          lessThan(oneLine * 1.5),
+        );
+        expect(
+          tester.getSize(find.text('ASSETS')).height,
+          lessThan(oneLine * 1.5),
+        );
+      },
+    );
   });
 }
