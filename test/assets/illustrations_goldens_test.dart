@@ -16,6 +16,7 @@ const List<String> _names = <String>[
   'empty_statement',
   'empty_insights',
   'empty_home',
+  'empty_top_spending',
   'error_generic',
   'wizard_welcome',
   'wizard_pick',
@@ -28,8 +29,8 @@ const List<String> _names = <String>[
 void main() {
   testWidgets('golden: illustrations_all', (WidgetTester tester) async {
     setGoldenSurface(tester);
-    // A taller surface, so all eleven fit on one image.
-    tester.view.physicalSize = const Size(390 * 2, 1500 * 2);
+    // A taller surface, so all thirteen fit on one image (7 rows of 2).
+    tester.view.physicalSize = const Size(390 * 2, 1900 * 2);
     await tester.pumpWidget(
       rupeeGoldenApp(
         Scaffold(
