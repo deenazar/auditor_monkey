@@ -89,7 +89,8 @@ class MonthTiles extends StatelessWidget {
       preview: b == null
           ? 'No budget yet. Budgets come in a later update.'
           : '${formatPaise(b)} budget − ${formatPaise(spent)} spent',
-      onTap: b == null ? null : onBudgetTap,
+      // Always tappable: with no budget it still shows the "later update" note.
+      onTap: onBudgetTap,
       value: b == null
           ? const Text('No budget yet', style: _valueStyle, maxLines: 2)
           : RollingAmount(

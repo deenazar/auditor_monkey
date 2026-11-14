@@ -65,7 +65,47 @@ class BalanceDoughnut extends StatefulWidget {
 
 class _BalanceDoughnutState extends State<BalanceDoughnut> {
   final MascotController _mascot = MascotController();
-  int? _selected;
+
+  /// The selected slice's key (see [_keyOf]), not its index: when the
+  /// balances change, the same account stays selected, wherever it moved.
+  String? _selectedKey;
+
+  /// Key of the "Other" slice (it has no account id).
+  static const String _otherKey = 'other';
+
+  static String _keyOf(BalanceSlice slice) => slice.accountId ?? _otherKey;
+
+  /// Index of the selected slice in [data], or null when it is gone.
+  int? _indexOf(BalanceSlices data) {
+    final String? key = _selectedKey;
+    if (key == null) return null;
+    final int i = data.slices.indexWhere((BalanceSlice s) => _keyOf(s) == key);
+    return i < 0 ? null : i;
+  }
+
+  @override
+  void didUpdateWidget(BalanceDoughnut old) {
+    super.didUpdateWidget(old);
+    final String? key = _selectedKey;
+    if (key == null) return;
+    final int? now = _indexOf(widget.slices);
+    if (now == null) {
+      // The selected account is gone (or no longer a slice): clear it.
+      _selectedKey = null;
+      return;
+    }
+    // Still there: if its label or share changed, the monkey must not
+    // repeat the old numbers.
+    final BalanceSlice slice = widget.slices.slices[now];
+    final int before = old.slices.slices.indexWhere(
+      (BalanceSlice s) => _keyOf(s) == key,
+    );
+    if (before < 0 ||
+        old.slices.slices[before].percentLabel != slice.percentLabel ||
+        old.slices.slices[before].label != slice.label) {
+      _mascot.say('${slice.label} holds ${slice.percentLabel}');
+    }
+  }
 
   @override
   void dispose() {
@@ -76,13 +116,13 @@ class _BalanceDoughnutState extends State<BalanceDoughnut> {
   /// Slice [i] was tapped (from the ring or the legend).
   void _tap(int i) {
     final BalanceSlice slice = widget.slices.slices[i];
-    if (_selected == i) {
+    if (_indexOf(widget.slices) == i) {
       final String? id = slice.accountId;
       if (id != null) widget.onOpenAccount(id);
       return;
     }
     AppHaptics.tap();
-    setState(() => _selected = i);
+    setState(() => _selectedKey = _keyOf(slice));
     _mascot.look(_directionOf(i));
     _mascot.say('${slice.label} holds ${slice.percentLabel}');
   }
@@ -112,9 +152,7 @@ class _BalanceDoughnutState extends State<BalanceDoughnut> {
   @override
   Widget build(BuildContext context) {
     final BalanceSlices data = widget.slices;
-    final int? sel = _selected != null && _selected! < data.slices.length
-        ? _selected
-        : null;
+    final int? sel = _indexOf(data);
     return Tilt3D(
       child: DecoratedBox(
         decoration: const BoxDecoration(

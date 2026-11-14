@@ -316,5 +316,87 @@ void main() {
         );
       },
     );
+
+    testWidgets('a selected account stays selected when the balances change', (
+      WidgetTester tester,
+    ) async {
+      final List<String> opened = <String>[];
+      BalanceSlices slicesOf(List<(String, int, int)> rows) =>
+          buildBalanceSlices(<AccountBalance>[
+            for (final (String name, int n, int amount) in rows)
+              fixtureBalance(
+                fixtureAccount(n: n, name: name, colour: 'accountSbi'),
+                amount,
+              ),
+          ]);
+      final List<(String, int, int)> before = <(String, int, int)>[
+        ('PF', 7, 10000000),
+        ('SBI', 2, 8000000),
+        ('Axis', 3, 1790000),
+      ];
+      await pumpThemed(
+        tester,
+        BalanceDoughnut(slices: slicesOf(before), onOpenAccount: opened.add),
+        height: null,
+      );
+      await tester.tap(find.bySemanticsLabel('SBI, ₹80,000.00, 40%'));
+      await tester.pump();
+      expect(find.text('SBI'), findsNWidgets(2));
+
+      // A bigger account arrives first: SBI moves from index 1 to 2 but
+      // stays the selected account, and the monkey reads its new share.
+      await pumpThemed(
+        tester,
+        BalanceDoughnut(
+          slices: slicesOf(<(String, int, int)>[
+            ('Zed', 9, 20000000),
+            ...before,
+          ]),
+          onOpenAccount: opened.add,
+        ),
+        height: null,
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('SBI'), findsNWidgets(2));
+      expect(find.text('ASSETS'), findsNothing);
+      // The monkey repeats the new share, not the old 40%.
+      expect(find.text('SBI holds 20%'), findsOneWidget);
+
+      // SBI is now 20% of the assets. A second tap still opens SBI, not
+      // the account now at index 1.
+      await tester.tap(find.bySemanticsLabel('SBI, ₹80,000.00, 20%'));
+      await tester.pump();
+      expect(opened, <String>[fixtureId(2)]);
+    });
+
+    testWidgets('the selection clears when the selected account is gone', (
+      WidgetTester tester,
+    ) async {
+      await pumpThemed(
+        tester,
+        BalanceDoughnut(slices: _plan55(), onOpenAccount: (_) {}),
+        height: null,
+      );
+      await tester.tap(find.bySemanticsLabel('SBI, ₹80,000.00, 40%'));
+      await tester.pump();
+      expect(find.text('ASSETS'), findsNothing);
+
+      await pumpThemed(
+        tester,
+        BalanceDoughnut(
+          slices: buildBalanceSlices(<AccountBalance>[
+            fixtureBalance(
+              fixtureAccount(n: 7, name: 'PF', colour: 'accountPf'),
+              10000000,
+            ),
+          ]),
+          onOpenAccount: (_) {},
+        ),
+        height: null,
+      );
+      await tester.pump();
+      expect(find.text('ASSETS'), findsOneWidget);
+      expect(find.text('SBI'), findsNothing);
+    });
   });
 }

@@ -149,5 +149,19 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+
+    testWidgets('the Budget tile is tappable with no budget too', (
+      WidgetTester tester,
+    ) async {
+      int taps = 0;
+      await pumpThemed(
+        tester,
+        _tiles(budget: null, remaining: null, onBudgetTap: () => taps++),
+        height: null,
+      );
+      await tester.tap(find.bySemanticsLabel('Budget: no budget yet'));
+      await tester.pump();
+      expect(taps, 1);
+    });
   });
 }
