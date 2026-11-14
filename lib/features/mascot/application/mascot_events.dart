@@ -15,8 +15,11 @@ class MascotEventsNotifier extends Notifier<SavedForMascot?> {
   @override
   SavedForMascot? build() => null;
 
-  void saved(SavedEntry entry) =>
-      state = SavedForMascot(entry, (state?.serial ?? 0) + 1);
+  /// Edits (changing an old entry) get no reaction.
+  void saved(SavedEntry entry) {
+    if (entry.edited) return;
+    state = SavedForMascot(entry, (state?.serial ?? 0) + 1);
+  }
 }
 
 final NotifierProvider<MascotEventsNotifier, SavedForMascot?>

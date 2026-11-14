@@ -1,8 +1,10 @@
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/quick_add/application/quick_add_data_provider.dart';
+import 'package:auditor_monkey/features/quick_add/application/quick_add_edit.dart';
 import 'package:auditor_monkey/features/quick_add/application/quick_add_notifier.dart';
 import 'package:auditor_monkey/features/quick_add/application/quick_add_state.dart';
 import 'package:auditor_monkey/features/quick_add/application/quick_add_view.dart';
+import 'package:auditor_monkey/features/transactions/domain/transaction_entry.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,7 +14,12 @@ import 'test_env.dart';
 /// A container for Quick Add tests: wired to [env], with the sheet's
 /// providers kept alive (as the open sheet does).
 class QuickAddHarness {
-  QuickAddHarness(this.env) : container = containerFor(env) {
+  /// [edit] opens the sheet in edit mode for that entry.
+  QuickAddHarness(this.env, {TransactionEntry? edit})
+    : container = containerFor(env) {
+    if (edit != null) {
+      container.read(quickAddEditProvider.notifier).begin(edit);
+    }
     _keep = <ProviderSubscription<Object?>>[
       container.listen(quickAddProvider, (_, _) {}),
       container.listen(quickAddDataProvider, (_, _) {}),

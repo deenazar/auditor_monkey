@@ -42,8 +42,15 @@ class QuickAddView {
           ? current.toAccountId != null
           : current.categoryId != null);
 
-  /// "Save expense", "Save income" or "Save transfer".
-  String get saveLabel => 'Save ${state.type.name}';
+  bool get isEditing => state.isEditing;
+
+  /// "Save expense", "Save income" or "Save transfer"; "Save changes" when
+  /// editing.
+  String get saveLabel =>
+      isEditing ? 'Save changes' : 'Save ${state.type.name}';
+
+  /// Header text over the tabs: "Edit entry" when editing, else `null`.
+  String? get headerTitle => isEditing ? 'Edit entry' : null;
 
   /// True when the current expense / income tab has no category to pick.
   bool get noCategories =>

@@ -42,10 +42,16 @@ class PageHeader extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.space1),
           ],
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.displayTitle,
+          // One line at every text size: it scales down instead of breaking
+          // a word.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.displayTitle,
+            ),
           ),
         ],
       ),
