@@ -951,3 +951,65 @@ approved by the owner on 2026-11-12.
   offline only today, so it should not ask for network access it does
   not use (least privilege).
 - Decided by: team (cleanup, owner approved).
+
+## 2026-11-14: Dashboard number rules (session 6, Q1-Q7)
+- Decision: The owner approved the session 6 plan with its proposals
+  (docs/plans/session-6-answers.md):
+  - Q1: the 4 loan categories are left out of Spent, Income and Top 3
+    everywhere, even without a loan link, the same as loan-linked rows.
+    One shared SQL filter, so Transactions and the Statement chart follow.
+  - Q2: "This month" = the whole calendar month; future-dated rows count.
+  - Q3: Remaining = Budget total − all spending. No budget: "—".
+  - Q4: Refunds stay income; they do not lower Spent or the category.
+  - Q5: Net Worth = sum of account balances only (archived and cards in;
+    no loans or gold). Future-dated rows count in balances.
+  - Q6: Recent shows future-dated rows with their date.
+  - Q7: Keep the Spendings / Savings tiles under the new month tiles.
+  - Section 7 low-risk choices: as written.
+- Options considered: Top 3 only for Q1; up to today for Q2; only
+  budgeted categories or Income − Spent for Q3; subtract refunds for
+  Q4; add loans and gold for Q5; hide future rows for Q6; drop the
+  tiles for Q7.
+- Reason: Same numbers on every screen; matches how budgets will work
+  in session 7; no data we do not have (refund links).
+- Decided by: owner.
+
+## 2026-11-14: Dashboard build choices (session 6)
+- Decision:
+  - The Dashboard is the Home tab, extended. No second screen; Insights
+    stays a placeholder.
+  - `DashboardRepository.load` reads Spent, Income, Budget, Top 3, the
+    5 recent rows and the 9-day chart in ONE read transaction, reusing
+    the existing DAO methods (no second copy of the month SQL).
+  - One shared filter `notLoanMoneySql` (`loan_filter.dart`) for every
+    spending / income sum: Dashboard, Transactions day totals and month
+    summary, top categories, statement chart, day strip.
+  - The three month tiles tilt as one row (`Tilt3D` cannot sit under
+    `IntrinsicHeight`), each tile still springs.
+  - Top spending bars show the category's share of this month's
+    spending (not of the biggest category).
+  - Haptics on the month tiles are played in our own code (a pointer
+    listener), so they also play with reduce motion, where `Tilt3D` does
+    nothing.
+  - Recent rows and the doughnut open the detail / statement with
+    `context.go`. Back then goes to that tab's root (Transactions or
+    Accounts), not to Home. The owner decides if it should be a push.
+  - The selected doughnut slice is kept by account id, not by index,
+    so it stays on the same account when balances change.
+- Options considered: a separate Dashboard screen; one query per
+  section; copying the loan rule into each query; tilt per tile; bars
+  scaled to the biggest category; `context.push` for drill-downs.
+- Reason: Fewer screens, numbers that always agree, one rule to change,
+  steady layout, and the same navigation as the other tabs for now.
+- Decided by: team (session 6).
+
+## 2026-11-14: Open after session 6
+- Back-to-Home navigation: detail and statement open with `context.go`,
+  so Back lands on the other tab. Owner to choose go or push.
+- Text scale 2: the month tile amounts shrink a lot and recent names
+  are cut short.
+- Top spending rows show "Category" for a moment while categories load.
+- Real-phone checks by the owner: 60fps ring and scroll, haptics, cold
+  start under 2s.
+- Session 7 (budgets): every "spent" sum must use `notLoanMoneySql`, so
+  budgets match the Dashboard.

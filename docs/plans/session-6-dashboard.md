@@ -1,6 +1,6 @@
 # Session 6 plan: Dashboard
 
-- Roadmap item 6 (Feature 4). Status: **Waiting for owner approval**.
+- Roadmap item 6 (Feature 4). Status: **Approved 2026-11-14, built**.
 - Date: 2026-11-13. Planned by project-manager.
 - Suggested branch: `feature/20261113-dashboard` (from `develop`).
 - Done when: every number matches the hand-checked test month (section 5).
