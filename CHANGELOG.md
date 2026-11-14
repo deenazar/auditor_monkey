@@ -2,7 +2,7 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-14: Dashboard (roadmap session 6) (PR: link added after opening)
+## 2026-11-14: Dashboard (roadmap session 6) (PR: #20)
 
 ### Added
 - Home is now the Dashboard. New sections: Budget / Remaining / Income
@@ -35,7 +35,7 @@ One entry per pull request, grouped as Added / Changed / Fixed / Security.
   Home rolls over at midnight and on the 1st.
 - The mascot mood now uses the real budget total (it used 0).
 
-## 2026-11-14: Remove 3D mascot leftovers (PR: link added after opening)
+## 2026-11-14: Remove 3D mascot leftovers (PR: #19)
 
 ### Removed
 - Unused `visibility_detector` package (it had no version limit).

@@ -582,7 +582,7 @@ Details are filled in further when each feature is planned and built.
   `home_data.png`, `home_over_plan.png`, `home_empty.png`.
 - **Status**: Done (roadmap session 6)
 - **Date**: 2026-11-14
-- **PR link**: -
+- **PR link**: [#20](https://github.com/deenazar/auditor_monkey/pull/20)
 
 ## 5. Monthly budgets
 - **What it does**: Set a budget per category each month and get alerts.
