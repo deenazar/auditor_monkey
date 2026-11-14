@@ -39,7 +39,10 @@ class MonthTilesSection extends ConsumerWidget {
     if (s == null) {
       return summary.hasError
           ? HomeSectionError(
-              message: 'Could not load this month.',
+              message: summaryErrorMessage(
+                summary,
+                'Could not load this month.',
+              ),
               onRetry: () => ref.invalidate(dashboardSummaryProvider),
             )
           : const SkeletonBlock(height: 96);
@@ -150,7 +153,10 @@ class TopSpendingSection extends ConsumerWidget {
     if (s == null) {
       return summary.hasError
           ? HomeSectionError(
-              message: 'Could not load top spending.',
+              message: summaryErrorMessage(
+                summary,
+                'Could not load top spending.',
+              ),
               onRetry: () => ref.invalidate(dashboardSummaryProvider),
             )
           : const SkeletonBlock(height: 200);

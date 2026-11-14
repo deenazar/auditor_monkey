@@ -64,7 +64,10 @@ class RecentSection extends ConsumerWidget {
                 horizontal: AppSpacing.screenPadding,
               ),
               child: HomeSectionError(
-                message: 'Could not load recent entries.',
+                message: summaryErrorMessage(
+                  summary,
+                  'Could not load recent entries.',
+                ),
                 onRetry: () => ref.invalidate(dashboardSummaryProvider),
               ),
             )

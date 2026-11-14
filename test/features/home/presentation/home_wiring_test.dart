@@ -3,6 +3,7 @@
 // tiny one that only shows where it went.
 import 'package:auditor_monkey/app/router.dart';
 import 'package:auditor_monkey/core/utils/clock.dart';
+import 'package:auditor_monkey/core/utils/validation_failure.dart';
 import 'package:auditor_monkey/features/accounts/application/accounts_providers.dart';
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/home/application/dashboard_providers.dart';
@@ -187,6 +188,23 @@ void main() {
     expect(find.byType(DoughnutLegend), findsOneWidget);
     expect(find.text('NET WORTH'), findsOneWidget);
     expect(find.byType(RecentRow), findsNothing);
+  });
+
+  testWidgets('summary overflow: "A balance is too large to show"', (
+    WidgetTester t,
+  ) async {
+    await _pump(
+      t,
+      dashboard: false,
+      extra: <Override>[
+        dashboardSummaryProvider.overrideWith(
+          (Ref ref) => Stream<DashboardSummary>.error(const OverflowFailure()),
+        ),
+      ],
+    );
+    expect(find.text('A balance is too large to show.'), findsWidgets);
+    expect(find.text('Could not load this month.'), findsNothing);
+    expect(find.byType(DoughnutLegend), findsOneWidget);
   });
 
   testWidgets('balances fail: only the doughnut shows Try again', (

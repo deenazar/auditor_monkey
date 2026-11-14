@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/utils/validation_failure.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_radius.dart';
@@ -72,3 +75,11 @@ class HomeSectionError extends StatelessWidget {
     );
   }
 }
+
+/// The line for a failed summary-driven section: an [OverflowFailure] says a
+/// balance is too large; anything else gets [fallback]. Never shows error
+/// text, amounts or names.
+String summaryErrorMessage(AsyncValue<Object?> state, String fallback) =>
+    state.error is OverflowFailure
+    ? 'A balance is too large to show.'
+    : fallback;

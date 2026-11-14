@@ -199,7 +199,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       bottom: 0,
                       child: StaggeredEntrance(
                         index: 0,
-                        child: _summaryCard(summary, async.hasError),
+                        child: _summaryCard(async),
                       ),
                     ),
                   ],
@@ -245,7 +245,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _summaryCard(DashboardSummary? summary, bool failed) {
+  Widget _summaryCard(AsyncValue<DashboardSummary> async) {
+    final DashboardSummary? summary = async.value;
     if (summary != null) {
       return SummaryCard(
         key: _summaryKey,
@@ -255,9 +256,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             HomeActions(ref, context).openMonthSpending(summary.month),
       );
     }
-    if (!failed) return const SkeletonBlock(height: 92);
+    if (!async.hasError) return const SkeletonBlock(height: 92);
     return HomeSectionError(
-      message: 'Could not load this month.',
+      message: summaryErrorMessage(async, 'Could not load this month.'),
       onRetry: () => ref.invalidate(dashboardSummaryProvider),
     );
   }

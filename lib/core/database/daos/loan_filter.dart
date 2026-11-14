@@ -1,9 +1,12 @@
 import '../seed/default_categories.dart';
 
 /// The one rule that decides which rows are loan money and so never count
-/// as spending or income (Session 6, answer Q1). Every sum uses it: the
-/// Dashboard, the Transactions month summary and day totals, the budgets
-/// spent sums and the account chart.
+/// as spending or income (Session 6, answer Q1). Used by the Dashboard, the
+/// Transactions month summary and day totals, top categories, the account
+/// chart sums and the day strip.
+///
+/// Session 7 (budgets) must use it too for any "spent" sum, so a budget's
+/// spending matches the Dashboard. No budgets spent sum uses it yet.
 ///
 /// A row is left out when it has a loan link OR its category is one of the 4
 /// fixed loan categories (an imported row can have the category without the
