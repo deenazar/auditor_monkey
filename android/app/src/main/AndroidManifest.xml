@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The 3D mascot WebView loads the model from a loopback server. -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- No INTERNET permission: the app is offline only until sync
+         (roadmap session 9) adds it back. Debug and profile builds get it
+         from their own manifests for hot reload. -->
     <application
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="false"

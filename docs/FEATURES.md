@@ -281,9 +281,10 @@ Details are filled in further when each feature is planned and built.
     pages inside a tab slide in.
   - Illustrations: 11 original drawings in the app's colours for empty
     states, errors, the wizard and the mascot poster.
-  - Mascot: a 3D Auditor Monkey on Home and in the setup wizard. It
+  - Mascot: the Auditor Monkey on Home and in the setup wizard. It
     idles, looks happy, worried, celebrates or sleeps. Tap it to see it
-    happy.
+    happy. (Built here as a 3D `.glb` model; since replaced by the 2.5D
+    painter, see "Motion & 3D layer" below.)
   - Demo data: fills the app with 3 months of sample Indian personal
     finance entries, so you can see how screens look with real-sized
     data.
@@ -301,18 +302,9 @@ Details are filled in further when each feature is planned and built.
   demo data → the app switches to the demo data and shows the "Demo
   data" ribbon. Tap the flask again → clear → the app goes back to your
   real data and the demo file is deleted.
-- **User flow (real mascot model)**: Follow the requirements in
-  [DESIGN.md, Mascot](../DESIGN.md#mascot-3d-auditor-monkey). Replace
-  `assets/3d/monkey.glb` with your model, keep the clip names `idle`,
-  `happy`, `worried`, `celebrating`, `sleeping`, keep the file under
-  3MB, and rebuild the app. No code change is needed.
 - **Business rules**:
   - Reduce motion on: no slides, springs, rolls or ticks; final state
-    shown at once. The mascot shows its still poster.
-  - The mascot loads after the first frame, is removed when off-screen
-    or when the app is in the background, and shows a still poster
-    until it is ready or if it fails. A missing clip falls back to
-    `idle`.
+    shown at once. The mascot stays still.
   - Demo data lives in its own database file
     (`auditor_monkey_demo.sqlite`); your real data is never touched.
     Release builds do not contain demo data.
@@ -321,20 +313,15 @@ Details are filled in further when each feature is planned and built.
   small marker file (`auditor_monkey_demo.on`) while it is on.
 - **Validations**: n/a (no new inputs). Demo entries go through the
   normal repositories, so all existing rules apply.
-- **Edge cases**: Large text (illustrations shrink to 120pt); no 3D
-  support or slow first load (poster shows); app sent to background
-  (mascot unmounted); demo data cleared while screens are open (they
-  switch back to real data).
-- **Security**: Android allows plain HTTP only to `127.0.0.1` /
-  `localhost` (the mascot's local file server); everything else stays
-  HTTPS only.
+- **Edge cases**: Large text (illustrations shrink to 120pt); demo
+  data cleared while screens are open (they switch back to real data).
+- **Security**: Plain HTTP is blocked everywhere. Release builds have
+  no `INTERNET` permission until sync (roadmap session 9); see
+  DECISIONS.md, 2026-11-14.
 - **Known limits**:
-  - The 3D mascot only runs on a device. Tests always show the poster.
   - Quick Add open time on a real phone (target under 300ms, profile
     mode) is not measured yet; there is no phone in the cloud session.
-  - The model is a placeholder until the owner supplies the real
-    `monkey.glb`.
-- **Tests**: motion widgets, roll-up keys, mascot view (fake viewer),
+- **Tests**: motion widgets, roll-up keys, mascot view,
   demo seed and load / clear, illustrations, plus goldens.
 - **Goldens**: all new and updated pictures on one page:
   [design-polish-goldens.md](plans/design-polish-goldens.md).

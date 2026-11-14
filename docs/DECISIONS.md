@@ -753,9 +753,11 @@ approved by the owner on 2026-11-12.
 ## 2026-11-13: Open after design polish
 - Real-phone checks (no phone in the cloud session): Quick Add open
   time (target under 300ms, profile mode) and the mascot WebView memory
-  and first-load time. Owner to check.
+  and first-load time. Owner to check. (WebView part closed 2026-11-14:
+  the WebView mascot was removed; Quick Add open time is still open.)
 - Owner to supply the real `monkey.glb` (requirements in DESIGN.md,
-  Mascot). The placeholder stays until then.
+  Mascot). The placeholder stays until then. (Closed 2026-11-14: the
+  `.glb` mascot was replaced by the 2.5D painter; no model needed.)
 - Pre-existing flaky test "logs operations by name and short id": when
   the random UUID's 8-character prefix is all digits, the log redactor
   masks it as a number. Fixed in this session (see next entry).
@@ -934,3 +936,18 @@ approved by the owner on 2026-11-12.
   it back for one feature would split the app into two looks and undo
   that decision.
 - Decided by: owner.
+
+## 2026-11-14: Internet permission removed until sync
+- Decision: Release builds have no `INTERNET` permission, and
+  `network_security_config.xml` blocks plain HTTP everywhere (the
+  `127.0.0.1` / `localhost` exception is gone). The unused
+  `visibility_detector` package is removed. Debug and profile builds
+  keep `INTERNET` from their own manifests (hot reload needs it).
+  Roadmap session 9 (Supabase sync) adds `INTERNET` back, HTTPS only.
+- Options considered: keep the permission now, since sync needs it
+  later.
+- Reason: Both were only there for the 3D mascot's local WebView
+  server (2026-11-13, mascot loopback), which was removed. The app is
+  offline only today, so it should not ask for network access it does
+  not use (least privilege).
+- Decided by: team (cleanup, owner approved).
