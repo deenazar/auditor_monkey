@@ -4,6 +4,7 @@ import '../../utils/validation_failure.dart';
 import '../app_database.dart';
 import '../row_ops.dart';
 import '../tables/transactions.dart';
+import 'loan_filter.dart';
 
 part 'transactions_dao.g.dart';
 
@@ -22,20 +23,21 @@ String transactionPageSql({required bool hasCursor}) =>
     '${hasCursor ? ' AND (date, created_at, id) < (?, ?, ?)' : ''} '
     'ORDER BY date DESC, created_at DESC, id DESC LIMIT ?';
 
-/// Total of one type between two dates. Loan-linked rows are left out.
+/// Total of one type between two dates. Loan money is left out (see
+/// [notLoanMoneySql]: loan-linked rows and the loan categories).
 ///
-/// `+loan_id` (unary plus) stops SQLite from choosing `ix_tx_loan` for the
-/// `IS NULL` test, which would match almost every row. The date index is the
-/// right one for these queries.
-const String transactionTotalSql =
+/// The unary plus inside the filter stops SQLite from choosing `ix_tx_loan`
+/// for the `IS NULL` test, which would match almost every row. The date
+/// index is the right one for these queries.
+final String transactionTotalSql =
     'SELECT COALESCE(SUM(amount), 0) AS total FROM transactions '
-    'WHERE type = ? AND +loan_id IS NULL AND deleted_at IS NULL '
+    'WHERE type = ? AND ${notLoanMoneySql()} AND deleted_at IS NULL '
     'AND date >= ? AND date <= ?';
 
 /// Expense total per category between two dates, biggest first.
-const String expenseByCategorySql =
+final String expenseByCategorySql =
     'SELECT category_id, SUM(amount) AS total FROM transactions '
-    "WHERE type = 'expense' AND +loan_id IS NULL AND deleted_at IS NULL "
+    "WHERE type = 'expense' AND ${notLoanMoneySql()} AND deleted_at IS NULL "
     'AND date >= ? AND date <= ? '
     'GROUP BY category_id ORDER BY total DESC, category_id';
 
@@ -121,14 +123,14 @@ SELECT p.*, typeof(p.balance_after) AS balance_type,
 ''';
 
 /// Income and expense of one account per month (`?1` = account id, `?2` /
-/// `?3` = first and last date). Transfers (not income or expense) and
-/// loan-linked rows are left out, like every other income / spending sum.
-/// `+loan_id` keeps SQLite off the weak `ix_tx_loan` index.
-const String accountMonthlySumsSql =
+/// `?3` = first and last date). Transfers (not income or expense) and loan
+/// money ([notLoanMoneySql]) are left out, like every other income /
+/// spending sum.
+final String accountMonthlySumsSql =
     'SELECT substr(date, 1, 7) AS month, type, SUM(amount) AS total '
     'FROM transactions '
     "WHERE account_id = ?1 AND type IN ('income', 'expense') "
-    'AND +loan_id IS NULL AND deleted_at IS NULL '
+    'AND ${notLoanMoneySql()} AND deleted_at IS NULL '
     'AND date >= ?2 AND date <= ?3 '
     'GROUP BY month, type';
 

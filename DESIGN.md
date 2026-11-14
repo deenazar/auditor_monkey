@@ -213,6 +213,23 @@ aligned with the date or amount right aligned.
 | Bars (income vs expense, savings) | Pill bars 6pt wide, fully rounded; may be centred on a middle line; `primary` for income, `sun` for expense |
 | Progress (budgets) | Pill bar 8pt tall on `divider`; fill `success` / `warning` / `danger` |
 
+### Balance doughnut: legend and slice select (session 6)
+- Max 5 slices. With 6 or more positive accounts: the 4 biggest +
+  "Other" (last), coloured `iconInactive`. Other slices use the
+  account's colour token.
+- Only positive balances get a slice. Negatives show as an "Owed −₹…"
+  line (`caption`, `inkMuted`) under the ring.
+- Centre: "ASSETS" (`overline`) and the sum of the slices
+  (`bodyStrong`). A selected slice swaps it to the account name and
+  "₹… · %".
+- Legend under the ring: dot, name, amount and %. Whole % adding to
+  100; a share under 1% shows "<1%".
+- First tap on a slice or legend row selects it: it pops out 6pt and a
+  selection haptic plays. Second tap opens the account statement
+  ("Other" does nothing).
+- Sweep in `chartDraw`, morph on change `durationChart`; ring inside a
+  `RepaintBoundary`. Reduce motion: final ring at once.
+
 ## Motion
 | Token | Value | Use |
 |-------|-------|-----|

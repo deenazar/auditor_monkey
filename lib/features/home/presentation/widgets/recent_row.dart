@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/money/money.dart';
@@ -8,8 +7,9 @@ import '../../../../shared/theme/app_sizes.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/category_icon_circle.dart';
-import '../../../../shared/wow/haptics.dart';
 import '../../../../shared/wow/long_press_preview.dart';
+import '../../../../shared/wow/spring_press.dart';
+import '../../../../shared/wow/swipe_action_row.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 
 /// What one recent row shows, resolved from ids to names.
@@ -42,35 +42,46 @@ class RecentRowView {
 /// DESIGN.md list row: 44pt icon circle, name in `bodyStrong`, amount
 /// below in `caption`, date on the right in `body`.
 ///
-/// Motion & 3D: swipe left to delete (red reveal, haptic at the
-/// threshold), long-press for a preview card.
+/// Motion & 3D: swipe left to delete, swipe right to edit (haptic at the
+/// threshold, like the Transactions rows), springy tap that opens the
+/// detail, long-press for a preview card.
 class RecentRow extends StatelessWidget {
-  const RecentRow({required this.view, required this.onDelete, super.key});
+  const RecentRow({
+    required this.view,
+    required this.onDelete,
+    required this.onEdit,
+    required this.onTap,
+    super.key,
+  });
 
   final RecentRowView view;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final Widget row = _RowBody(view: view);
-    return Dismissible(
-      key: ValueKey<String>('recent-${view.entry.id}'),
-      direction: DismissDirection.endToStart,
-      dismissThresholds: const <DismissDirection, double>{
-        DismissDirection.endToStart: 0.35,
-      },
-      onUpdate: (DismissUpdateDetails d) {
-        if (d.reached && !d.previousReached) AppHaptics.warning();
-      },
-      onDismissed: (_) => onDelete(),
-      background: const _DeleteBackground(),
+    return SwipeActionRow(
+      id: 'recent-${view.entry.id}',
+      start: SwipeAction(
+        icon: LucideIcons.pencil,
+        label: 'Edit',
+        colour: AppColors.primaryDeep,
+        onTrigger: onEdit,
+      ),
+      end: SwipeAction(
+        icon: LucideIcons.trash2,
+        label: 'Delete',
+        colour: AppColors.swipeDelete,
+        removesRow: true,
+        onTrigger: onDelete,
+      ),
       child: LongPressPreview(
         preview: (_) => _Preview(view: view),
-        child: Semantics(
-          customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
-            const CustomSemanticsAction(label: 'Delete'): onDelete,
-          },
-          child: row,
+        child: SpringPress(
+          scale: 0.98,
+          onTap: onTap,
+          child: _RowBody(view: view),
         ),
       ),
     );
@@ -150,22 +161,6 @@ class _RowBody extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DeleteBackground extends StatelessWidget {
-  const _DeleteBackground();
-
-  @override
-  Widget build(BuildContext context) => const ColoredBox(
-    color: AppColors.swipeDelete,
-    child: Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: Padding(
-        padding: EdgeInsetsDirectional.only(end: AppSpacing.screenPadding),
-        child: Icon(LucideIcons.trash2, color: AppColors.onDark),
-      ),
-    ),
-  );
 }
 
 class _Preview extends StatelessWidget {

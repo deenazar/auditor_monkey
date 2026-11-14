@@ -66,6 +66,9 @@ Shared for all screens:
 | ✅ | Home: empty | `empty_home` pops in | Stagger | Depth pop-in | — | Hero monkey stays |
 | ✅ | Bottom bar | — | Springy indicator | — | Haptic per tab, springy Quick Add | — |
 | ✅ | Long-press preview (all) | Content card | Spring scale-in | Blur + layered shadow | Success haptic | — |
+| ✅ | Dashboard (Home, session 6) | Hero monkey; `empty_top_spending` for a month with no spending; doughnut empty mascot moment ("Add an account balance to see it here") | Stagger across sections, all amounts roll, doughnut sweeps in and morphs, Top 3 bars grow, shimmer skeletons | Month tiles (one row), doughnut card and Top 3 card tilt with layered shadows; hero parallax; the statement opens in the Accounts tab with its page turn | Haptic on taps, springy tiles and "See all", slice select, long-press previews, swipe-delete + Undo, pull-to-refresh | Worried when over budget, "Back on track!"; looks at the tapped slice and says e.g. "PF holds 50%"; hops on save; spins on refresh |
+| ✅ | Dashboard: section error | Worried mascot moment (that card only) | — (shows at once) | — | Springy "Try again" | Worried look |
+| ✅ | Dashboard: only negative balances | Mascot moment "Only debts for now" | Stagger | Card tilts | — | Idle |
 
 "—" means the item does not fit that screen. For example, a list sheet
 has no hero to show a mascot in.

@@ -12,6 +12,7 @@ const List<String> _names = <String>[
   'empty_statement',
   'empty_insights',
   'empty_home',
+  'empty_top_spending',
   'error_generic',
   'wizard_welcome',
   'wizard_pick',

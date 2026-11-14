@@ -2,7 +2,40 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
-## 2026-11-14: Remove 3D mascot leftovers (PR: link added after opening)
+## 2026-11-14: Dashboard (roadmap session 6) (PR: #20)
+
+### Added
+- Home is now the Dashboard. New sections: Budget / Remaining / Income
+  tiles, "Where your money is" account doughnut, "Top spending" (top 3
+  categories) and "See all" under recent transactions.
+- Doughnut: max 5 slices (4 + Other), "ASSETS" in the centre, "Owed"
+  line for card debt, first tap selects a slice (pop-out, haptic, monkey
+  speaks), second tap opens the account statement.
+- Drill-downs: the lime card and Top spending rows open Transactions
+  filtered to this month (and that category); recent rows open the
+  entry detail; "See all" opens Transactions with no filter.
+- New illustration `empty_top_spending.svg`; section errors with a
+  worried monkey and "Try again" on that card only.
+- `DashboardRepository`: every Dashboard number read in one read
+  transaction. Hand-checked October 2026 test month, numbers test,
+  performance test (20,000 rows) and 9 Dashboard goldens.
+
+### Changed
+- Loan categories without a loan link (4 fixed ids) are now left out of
+  spending and income everywhere: Dashboard, Transactions day totals
+  and month summary, account statement chart (one shared filter,
+  `notLoanMoneySql`).
+- "This month" on Home is the whole calendar month (future-dated
+  entries count), not up to today.
+- Recent transactions on Home: 5 rows plus "See all" (was 12).
+- The Home data reloads when budgets change too.
+
+### Fixed
+- Today's date is read again when the app comes back to the front, so
+  Home rolls over at midnight and on the 1st.
+- The mascot mood now uses the real budget total (it used 0).
+
+## 2026-11-14: Remove 3D mascot leftovers (PR: #19)
 
 ### Removed
 - Unused `visibility_detector` package (it had no version limit).

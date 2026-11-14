@@ -46,7 +46,8 @@ Details are filled in further when each feature is planned and built.
   - A transfer changes two balances and leaves net worth the same. It is
     never counted as income or expense.
   - Loan-linked entries count in balances but are left out of spending,
-    income sums, budgets and top categories.
+    income sums, budgets and top categories. Since session 6 (Q1) the
+    same goes for entries in the 4 loan categories without a loan link.
   - Loans: lent = giving money is an expense, a repayment is income;
     borrowed = the other way round. Outstanding = principal − repayments
     (can go below zero if overpaid).
@@ -86,8 +87,8 @@ Details are filled in further when each feature is planned and built.
     data to SQLCipher, never wipe it). Android backup is off until then.
   - iOS: the file should be excluded from iCloud / device backup;
     to do in session 8.
-  - Whether archived accounts count in net worth on screen: yes on the
-    Accounts screen (session 3); confirm on the dashboard in session 6.
+  - ~~Whether archived accounts count in net worth on the dashboard~~:
+    closed in session 6 (yes, Q5).
   - ~~Category colour groups have no colours in DESIGN.md yet~~: closed
     in session 4 (each group uses an existing colour token at 20% tint;
     statement rows and Quick Add chips use it).
@@ -337,7 +338,9 @@ Details are filled in further when each feature is planned and built.
   lime card (saved % and spent this month) tilts when touched;
   Spendings bars and a Savings ring; "Savings goal reached" card at 20%
   saved; recent transactions: swipe left to delete (Undo in the toast),
-  long-press to preview; pull down to refresh.
+  long-press to preview; pull down to refresh. Since session 6 the
+  recent list shows 5 rows plus "See all" (was 12), and Home also has
+  the Dashboard sections (Feature 4).
 - **Monkey**: follows your finger, reacts to taps (head, belly, ears,
   tail, stroke, double tap, many taps), hops on a save, worries when
   spending is above income this month, dances with confetti when the
@@ -419,7 +422,10 @@ Details are filled in further when each feature is planned and built.
     account, then cut into pages of 50. Transfers count on both sides.
     Deleted entries are left out.
   - Chart: income and expense of this account per month; transfers and
-    loan entries left out; empty months show 0.
+    loan money left out (loan-linked entries and, since session 6, the 4
+    loan categories without a link); empty months show 0.
+  - The Home doughnut's second tap on a slice opens this statement
+    (session 6).
   - Amounts: expense and negative balances use "−" (U+2212); income
     `+` in `accentText`; transfers no sign.
   - Editing the opening balance changes every running balance at once
@@ -453,21 +459,130 @@ Details are filled in further when each feature is planned and built.
 - **Date**: 2026-11-12
 - **PR link**: [#9](https://github.com/deenazar/auditor_monkey/pull/9)
 
-## 4. Dashboard
-- **What it does**: One-screen overview of the month.
-- **Screens**: Dashboard (top cards, balance doughnut, top 3 expense
-  categories, recent transactions).
-- **User flow**: App opens to Dashboard after unlock.
-- **Business rules**: Top cards: This Month Spent, Budget, Remaining,
-  Income, Net Worth. Spending excludes transfers. Top categories exclude
-  transfers and loan entries. Net Worth = sum of all account balances.
-- **Data stored**: None (reads Transactions, Accounts, Budgets).
-- **Validations**: n/a (read-only).
-- **Edge cases**: New month with no entries; no budget set; negative
-  remaining.
-- **Status**: Planned (roadmap session 6)
-- **Date**: 2026-11-12
-- **PR link**: -
+## 4. Dashboard (roadmap session 6)
+- **What it does**: One-screen overview of the month. The Dashboard **is
+  the Home tab**, extended (no second screen). Insights stays a
+  placeholder. Plan: [session-6-dashboard.md](plans/session-6-dashboard.md).
+- **Screens** (Home, top to bottom):
+  - Hero (existing): NET WORTH rolls, area chart, monkey, parallax blobs.
+  - Lime card (existing, tilts): THIS MONTH SPENT + saved %. Tap opens
+    Transactions filtered to this month + expense.
+  - Month tiles (new): one row of 3, Budget / Remaining / Income. The
+    row tilts as one; each tile springs and has a long-press preview
+    with the sum (e.g. "₹13,000.00 budget − ₹31,300.50 spent").
+  - Spendings / Savings tiles (existing, kept, Q7).
+  - Goal banner (existing, when saved % is 20 or more).
+  - "Where your money is" (new): account balance doughnut with legend.
+  - "Top spending" (new): the 3 biggest categories, each with icon,
+    name, amount, % and a pill bar.
+  - "Recent transactions": 5 rows plus a "See all" button.
+  - States: loading (each section shimmers), empty month, no budget,
+    over budget, only negative balances, section error (worried monkey
+    + "Try again" on that card only).
+- **User flow**:
+  - Open the app → Home shows the month at a glance.
+  - Tap a doughnut slice (or legend row) → it pops out and the monkey
+    says e.g. "PF holds 50%" → tap it again → that account's statement.
+  - Tap a Top spending row → Transactions filtered to this month +
+    expense + that category.
+  - Tap a recent row → the entry detail. Swipe left = delete with Undo,
+    swipe right = edit (same actions as the Transactions tab).
+  - "See all" → the Transactions tab with no filter.
+  - Tap Budget → toast "Budgets come in a later update" (session 7).
+  - Pull down to refresh.
+- **Business rules** (number rules; `M` = the whole calendar month of
+  today, future-dated rows included, Q2):
+  - **This Month Spent**: sum of live `expense` rows in `M`, without
+    loan money. Transfers never count. Refunds do not lower it (Q4).
+  - **Income**: sum of live `income` rows in `M`, without loan money.
+    Refunds count here.
+  - **Loan money** (Q1): a row with a loan link OR one of the 4 loan
+    categories. One shared SQL filter (`notLoanMoneySql`) used by the
+    Dashboard, the Transactions day totals and month summary, and the
+    account statement chart, so Spent / Income match on every screen.
+  - **Budget**: sum of live budgets with `month = M`. None: "No budget
+    yet".
+  - **Remaining** (Q3): Budget − all of This Month Spent. Negative: in
+    `danger` as "−₹…" with "over budget". No budget: "—" and "Set a
+    budget (coming soon)".
+  - **Net Worth** (Q5): sum of every live account's balance (all rows
+    of any date, loan rows included), archived accounts and cards in.
+    No loans outstanding or gold. Same as the Accounts screen.
+  - **Doughnut**: one slice per account with balance > 0 (archived
+    included). Zero: no slice. Negatives: no slice, an "Owed −₹…" line
+    under the ring. Biggest first, ties by sort order then name. Max 5
+    slices: with 6 or more, the 4 biggest + "Other". Centre: "ASSETS"
+    and the sum of the slices. % = share of assets, whole numbers by
+    the largest-remainder method, adding to 100; a share under 1% shows
+    "<1%". Rules in DESIGN.md "Charts".
+  - **Top 3**: live expense rows in `M` without loan money, grouped by
+    category, biggest first (ties by category id). % = share of This
+    Month Spent, whole %, rounded half up in integer maths. The bar
+    length is that share.
+  - **Recent**: the 5 newest live rows of all types (transfers and loan
+    rows included). Order: date, then created time, then id, newest
+    first. Future-dated rows show with their date (Q6).
+  - **Saved %**: `round((Income − Spent) × 100 / Income)`, hidden when
+    Income is 0; now over the whole month.
+  - **Mascot mood**: plan = Budget if above 0, else Income. Worried when
+    Spent is above the plan ("Uh-oh, over budget"), "Back on track!"
+    when it recovers.
+  - One snapshot: Spent, Income, Budget, Top 3, Recent and the 9-day
+    chart are read in ONE read transaction, so they always agree. They
+    reload when entries, accounts, categories or budgets change.
+  - Today comes from the phone clock and is read again when the app
+    comes back to the front, so Home rolls over at midnight and on the
+    1st. Dates are local `YYYY-MM-DD` text; no time zone maths.
+  - Money is integer paise, never rounded; INR only.
+- **Data stored**: None. Read-only (Transactions, Accounts, Categories,
+  Budgets). No schema change.
+- **Validations**: Today must be a valid date; list limits 1 to 500
+  (default 5 recent, 3 top). Account ids from the doughnut go through
+  the statement's UUID check. Logs: `load ok ms=… rows=…`, never
+  amounts or names.
+- **Edge cases**:
+  - Empty month: Spent ₹0.00, Income ₹0.00, Top spending empty
+    illustration, doughnut still shows balances.
+  - No accounts (cannot happen after setup): mascot "Add an account
+    balance to see it here".
+  - Only negative balances: ring hidden, "Owed −₹…" line and mascot
+    "Only debts for now".
+  - A balance too large: "A balance is too large to show" on that card
+    only.
+  - The selected slice stays selected (by account id) when balances
+    change; it clears if the account is gone.
+  - Large text (2.0): labels scale down to one line; nothing clips.
+  - Reduce motion: no sweep, bar grow, tilt or stagger; final values at
+    once. Haptics, moods and speech stay.
+- **Known gaps**:
+  - Detail and statement open with `context.go`, so Back goes to the
+    Transactions / Accounts tab root, not to Home. Owner to decide on
+    push.
+  - At text scale 2 the tile amounts shrink a lot and recent names are
+    cut short.
+  - While categories load, Top spending rows show "Category" briefly.
+  - Real-phone checks by the owner: 60fps ring and scroll, haptics,
+    cold start under 2s.
+- **Tests**: `test/features/home/` (domain: balance slices, top
+  categories, dashboard summary; data: dashboard repository;
+  `dashboard_numbers_test.dart` on the October 2026 test month, every
+  value to the paisa; the repository test also pins "whole month" with
+  today = 2026-10-15; `dashboard_fixture_test.dart`; `dashboard_performance_test.dart`
+  on 20,000 rows, median and p95 recorded, fails if the median is above
+  300ms; widgets: month tiles, doughnut, top spending, see all; Home
+  screen and wiring), `test/support/fixtures/test_month_2026_10.dart`,
+  `test/features/transactions/loan_category_filter_test.dart`,
+  `test/core/utils/date_keys_test.dart`.
+- **Goldens** (`test/features/home/presentation/goldens/`):
+  `dashboard_data.png`, `dashboard_loading.png`,
+  `dashboard_empty_month.png`, `dashboard_no_budget.png`,
+  `dashboard_over_budget.png`, `dashboard_only_negative.png`,
+  `dashboard_section_error.png`, `dashboard_text_scale_2.png`,
+  `dashboard_slice_selected.png`. Home goldens still run:
+  `home_data.png`, `home_over_plan.png`, `home_empty.png`.
+- **Status**: Done (roadmap session 6)
+- **Date**: 2026-11-14
+- **PR link**: [#20](https://github.com/deenazar/auditor_monkey/pull/20)
 
 ## 5. Monthly budgets
 - **What it does**: Set a budget per category each month and get alerts.
@@ -519,8 +634,10 @@ Details are filled in further when each feature is planned and built.
     name up to 24 characters, unique ignoring case.
   - Balances are always worked out from the rows, so they stay right
     after edit, delete and undo, transfers included.
-  - Day totals and the month summary leave out transfers and loan-linked
-    entries. Loan-linked entries still show in the list.
+  - Day totals and the month summary leave out transfers and loan money:
+    loan-linked entries and, since session 6 (Q1), entries in the 4 loan
+    categories without a loan link. Same shared filter as the Dashboard,
+    so Spent / Income match. These entries still show in the list.
   - Edit mode: keeps the loan link and import source; a loan-linked
     entry keeps its type; an archived account or category already on the
     entry is still offered.

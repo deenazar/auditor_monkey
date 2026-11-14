@@ -1,6 +1,7 @@
 import 'package:auditor_monkey/features/accounts/domain/account.dart';
 import 'package:auditor_monkey/features/home/presentation/home_screen.dart';
 import 'package:auditor_monkey/features/home/presentation/widgets/hero_area_chart.dart';
+import 'package:auditor_monkey/features/home/presentation/widgets/home_hero.dart';
 import 'package:auditor_monkey/features/home/presentation/widgets/recent_row.dart';
 import 'package:auditor_monkey/features/home/presentation/widgets/summary_card.dart';
 import 'package:auditor_monkey/features/mascot/presentation/auditor_monkey.dart';
@@ -36,9 +37,21 @@ void main() {
   ) async {
     await _pump(t);
     expect(find.text('NET WORTH'), findsOneWidget);
-    expect(find.text('₹1,26,843.00'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(HomeHero),
+        matching: find.text('₹1,26,843.00'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byType(HeroAreaChart), findsOneWidget);
-    expect(find.byType(AuditorMonkey), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(HomeHero),
+        matching: find.byType(AuditorMonkey),
+      ),
+      findsOneWidget,
+    );
     expect(find.byType(SummaryCard), findsOneWidget);
     expect(find.text('+78%'), findsOneWidget);
     expect(find.text('SPENDINGS'), findsOneWidget);
@@ -70,7 +83,12 @@ void main() {
     WidgetTester t,
   ) async {
     await _pump(t);
-    await t.longPress(find.text('Groceries'));
+    await t.longPress(
+      find.descendant(
+        of: find.byType(RecentRow),
+        matching: find.text('Groceries'),
+      ),
+    );
     await t.pumpAndSettle();
     expect(find.text('EXPENSE'), findsOneWidget);
     expect(find.text('Milk and bread'), findsOneWidget);
@@ -105,7 +123,7 @@ void main() {
     );
     await t.pumpAndSettle();
     expect(await env.count('transactions', liveOnly: true), 0);
-    expect(find.text('Entry removed'), findsOneWidget);
+    expect(find.text('Entry deleted'), findsOneWidget);
 
     await t.tap(find.text('Undo'));
     await t.runAsync(

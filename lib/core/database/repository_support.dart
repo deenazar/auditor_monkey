@@ -74,19 +74,28 @@ class RepositoryContext {
   final IdGenerator ids;
   final AppLogger logger;
 
-  /// Runs [body]. Logs the operation (name and short id only, never values),
+  /// Runs [body]. Logs the operation (name, short id and optional safe
+  /// [detailOf] text only, never values),
   /// and turns every error into a [DataFailure].
   Future<T> run<T>(
     String tag,
     String op,
     Future<T> Function() body, {
     String? Function(T result)? idOf,
+    String? Function(T result)? detailOf,
     String? duplicateMessage,
   }) async {
     try {
       final T result = await body();
       final String? id = idOf?.call(result);
-      logger.info(tag, id == null ? '$op ok' : '$op ok id=${shortId(id)}');
+      // [detailOf] returns safe key=value text (counts, timings), never
+      // amounts or names.
+      final String? detail = detailOf?.call(result);
+      logger.info(
+        tag,
+        '$op ok${id == null ? '' : ' id=${shortId(id)}'}'
+        '${detail == null ? '' : ' $detail'}',
+      );
       return result;
     } on DataFailure catch (failure) {
       logger.warning(tag, '$op rejected: ${failure.code.name}');
