@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../money/money.dart';
 import '../app_database.dart';
+import 'loan_filter.dart';
 import 'transactions_dao.dart';
 
 /// Queries of the Transactions list: filtered pages with names, day totals,
@@ -10,8 +11,9 @@ import 'transactions_dao.dart';
 /// Rules (same as every other sum in the app):
 /// - only live rows;
 /// - sums count expense and income only (a transfer is never either);
-/// - sums leave out loan-linked rows (`+loan_id IS NULL`; the unary plus
-///   keeps SQLite off the weak `ix_tx_loan` index);
+/// - sums leave out loan money (`notLoanMoneySql`: loan-linked rows and the
+///   4 loan categories; the unary plus keeps SQLite off the weak
+///   `ix_tx_loan` index);
 /// - every user value is a bound variable, never part of the SQL text.
 ///
 /// No schema change: the date index (`ix_tx_date`) drives every query. The
@@ -134,9 +136,9 @@ const String listDetailSql =
 String _sumJoin(ListWhere w) =>
     w.usesCategory ? ' LEFT JOIN categories c ON c.id = t.category_id' : '';
 
-const String _sumBase =
+final String _sumBase =
     "WHERE t.deleted_at IS NULL AND t.type IN ('expense', 'income') "
-    'AND +t.loan_id IS NULL';
+    'AND ${notLoanMoneySql('t.')}';
 
 const String _sums =
     "COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount END), 0) "

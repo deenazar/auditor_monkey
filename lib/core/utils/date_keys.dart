@@ -5,6 +5,11 @@
 ({String start, String end}) monthRange(String month) =>
     (start: '$month-01', end: '$month-31');
 
+/// The real last calendar day of a `YYYY-MM` month, as `YYYY-MM-DD`
+/// (leap years included). Use it where the date is validated; [monthRange]
+/// is only for SQL text comparison.
+String monthLastDay(String month) => addDays('${addMonths(month, 1)}-01', -1);
+
 /// `YYYY-MM-DD` text of a calendar date (the parts of [date] as given; no
 /// time zone change).
 String dateKey(DateTime date) =>
