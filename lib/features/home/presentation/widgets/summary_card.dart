@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_shadows.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widgets/rolling_amount.dart';
+import '../../../../shared/wow/haptics.dart';
 import '../../../../shared/wow/tilt_3d.dart';
 
 /// The lime summary card that overlaps the hero (reference: "+12%
@@ -15,8 +16,12 @@ class SummaryCard extends StatelessWidget {
   const SummaryCard({
     required this.savingsPercent,
     required this.monthSpent,
+    this.onSpentTap,
     super.key,
   });
+
+  /// Opens this month's spending (Transactions, filtered). Null = no tap.
+  final VoidCallback? onSpentTap;
 
   final int? savingsPercent;
   final int monthSpent;
@@ -60,17 +65,30 @@ class SummaryCard extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Column(
-                  children: <Widget>[
-                    RollingAmount.text(
-                      paise: monthSpent,
-                      style: big,
-                      rollKey: 'home-month-spent',
-                      textAlign: TextAlign.center,
+                child: Semantics(
+                  button: onSpentTap != null,
+                  hint: 'Shows this month\'s expenses',
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onSpentTap == null
+                        ? null
+                        : () {
+                            AppHaptics.tap();
+                            onSpentTap!();
+                          },
+                    child: Column(
+                      children: <Widget>[
+                        RollingAmount.text(
+                          paise: monthSpent,
+                          style: big,
+                          rollKey: 'home-month-spent',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.space1),
+                        Text('Spent this month', style: small),
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.space1),
-                    Text('Spent this month', style: small),
-                  ],
+                  ),
                 ),
               ),
             ],
