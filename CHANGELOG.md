@@ -2,6 +2,22 @@
 
 One entry per pull request, grouped as Added / Changed / Fixed / Security.
 
+## 2026-11-14: Remove 3D mascot leftovers (PR: link added after opening)
+
+### Removed
+- Unused `visibility_detector` package (it had no version limit).
+
+### Security
+- Release builds no longer ask for the `INTERNET` permission, and
+  plain HTTP is now blocked everywhere, `127.0.0.1` / `localhost`
+  included. Both were only for the removed 3D mascot. Sync (roadmap
+  session 9) adds `INTERNET` back.
+
+### Changed
+- Docs: stale 3D mascot / `monkey.glb` / WebView text removed from
+  FEATURES; old open items closed in DECISIONS; README now explains the
+  app and how to run it.
+
 ## 2026-11-13: Transactions (roadmap session 5) (PR: #16)
 
 ### Added
